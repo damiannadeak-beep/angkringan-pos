@@ -5,7 +5,7 @@
 ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 
-Angkringan POS adalah sebuah Sistem Kasir Terpadu berbasis web yang dikembangkan menggunakan arsitektur **MVC (Model-View-Controller)** pada framework **Laravel 11**. Aplikasi ini dirancang untuk menyelesaikan permasalahan antrean dan rekapitulasi manual pada bisnis skala UMKM (Food & Beverage).
+Angkringan POS adalah sebuah Sistem Kasir Terpadu berbasis web yang dikembangkan menggunakan arsitektur **MVC (Model-View-Controller)** pada framework **Laravel 12**. Aplikasi ini dirancang untuk menyelesaikan permasalahan antrean dan rekapitulasi manual pada bisnis skala UMKM (Food & Beverage).
 
 Sistem ini memiliki 3 antarmuka/Role utama: **Admin (Pemilik), Kasir, dan Konsumen**.
 
@@ -35,7 +35,7 @@ Sistem ini memiliki 3 antarmuka/Role utama: **Admin (Pemilik), Kasir, dan Konsum
 
 ## 🛠️ Teknologi yang Digunakan (Tech Stack)
 
-- **Backend:** PHP 8.x, Laravel 11.x
+- **Backend:** PHP 8.x, Laravel 12.x
 - **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5 (Laravel UI)
 - **Database:** MySQL / MariaDB
 - **Integrasi Pihak Ketiga:** SimpleSoftwareIO/QrCode, Symfony Mailer (Google SMTP)
