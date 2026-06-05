@@ -1,75 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🍡 Angkringan POS (Point of Sales) & Self-Ordering System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 
-## About Laravel
+Angkringan POS adalah sebuah Sistem Kasir Terpadu berbasis web yang dikembangkan menggunakan arsitektur **MVC (Model-View-Controller)** pada framework **Laravel 11**. Aplikasi ini dirancang untuk menyelesaikan permasalahan antrean dan rekapitulasi manual pada bisnis skala UMKM (Food & Beverage).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sistem ini memiliki 3 antarmuka/Role utama: **Admin (Pemilik), Kasir, dan Konsumen**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-## Queue Setup
+## ✨ Fitur Utama
 
-This application is configured to use the `database` queue connection (`QUEUE_CONNECTION=database`). To process queued promo emails, run:
+### 👨‍💼 1. Panel Admin (Pemilik)
+- **Dashboard Analitik:** Pantau total pendapatan harian, bulanan, dan grafik penjualan secara *real-time*.
+- **Manajemen Master Data:** Kelola data Kasir, Meja (beserta pembuatan QR Code otomatis), dan Promo/Diskon.
+- **Manajemen Inventaris (Auto-Deduct):** Sistem secara cerdas akan memotong stok bahan baku (resep) secara otomatis setiap kali ada menu yang terjual.
+- **Pencatatan Keuangan:** Catat pengeluaran operasional warung (*Expense Tracking*).
 
+### 👩‍💻 2. Panel Kasir (Point of Sales)
+- **Proses Transaksi Cepat:** Antarmuka kasir yang dirancang untuk kecepatan (tap-and-go).
+- **Manajemen Pesanan Lanjut:** Mendukung *Split Bill* (Pisah Bon) dan *Void Order* (Pembatalan dengan catatan log keamanan).
+- **Sistem Cetak Ganda:** Mendukung pencetakan Struk Thermal Kasir dan Struk Dapur (KDS).
+- **Laporan Tutup Shift:** Rekonsiliasi jumlah uang fisik dengan sistem secara akurat di akhir shift.
+- **E-Receipt Integration:** Mampu mengirimkan struk digital langsung ke email pelanggan via integrasi **Google SMTP**.
+
+### 📱 3. Panel Konsumen (Self-Ordering)
+- **Pesan via QR Code:** Konsumen dapat memindai QR di meja mereka dan langsung memilih menu tanpa bantuan pelayan (*Dine-in*).
+- **Takeaway Mode:** Mendukung pemesanan bungkus/bawa pulang.
+- **Sistem Rating:** Konsumen dapat memberikan ulasan dan rating untuk pelayanan/makanan.
+
+---
+
+## 🛠️ Teknologi yang Digunakan (Tech Stack)
+
+- **Backend:** PHP 8.x, Laravel 11.x
+- **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5 (Laravel UI)
+- **Database:** MySQL / MariaDB
+- **Integrasi Pihak Ketiga:** SimpleSoftwareIO/QrCode, Symfony Mailer (Google SMTP)
+
+---
+
+## 🚀 Panduan Instalasi (Local Development)
+
+Ikuti langkah-langkah di bawah ini untuk menjalankan proyek ini di komputer lokal Anda.
+
+### 1. Kebutuhan Sistem (Prerequisites)
+Pastikan Anda sudah menginstal:
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL (XAMPP / Laragon)
+
+### 2. Langkah Instalasi
+
+Clone repositori ini ke komputer Anda:
 ```bash
-php artisan queue:work
+git clone https://github.com/damiannadeak-beep/angkringan-pos.git
+cd angkringan-pos
 ```
 
-If the `jobs` table is not present, run:
-
+Install semua *dependency* PHP (Vendor):
 ```bash
-php artisan migrate
+composer install
 ```
 
-The promo email job class is `App\Jobs\SendPromoEmail`, and promo notifications are dispatched when a promo is created or updated as active.
+Install semua *dependency* Frontend (Node Modules) dan lakukan proses Build:
+```bash
+npm install
+npm run build
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Salin file pengaturan environment dan *generate* kunci aplikasi:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Learning Laravel
+### 3. Konfigurasi Database & Email (.env)
+Buka file `.env` dan sesuaikan pengaturan berikut:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+**Database:**
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=angkringan_pos
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Email SMTP (Untuk E-Receipt):**
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=email_anda@gmail.com
+MAIL_PASSWORD=app_password_google_anda
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS="email_anda@gmail.com"
+MAIL_FROM_NAME="Angkringan POS"
+```
 
-## Laravel Sponsors
+### 4. Migrasi & Seeder (Reset Database)
+Jalankan perintah ini untuk membuat tabel database beserta akun Admin bawaan:
+```bash
+php artisan migrate:fresh --seed
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+*(Catatan: Akun bawaan Super Admin bisa Anda ubah di dalam file `.env` pada variabel `ADMIN_EMAIL` dan `ADMIN_PASSWORD` sebelum menjalankan seeder).*
 
-### Premium Partners
+### 5. Jalankan Aplikasi
+Nyalakan *local server*:
+```bash
+php artisan serve
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Buka browser dan akses: `http://127.0.0.1:8000`
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 👨‍💻 Kontributor
+- **Damian Gregorius Nadeak** - *Fullstack Developer* - Politeknik Negeri Bengkalis (D3 Teknik Informatika).
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Proyek ini dikembangkan sebagai portofolio pengembangan perangkat lunak.*
