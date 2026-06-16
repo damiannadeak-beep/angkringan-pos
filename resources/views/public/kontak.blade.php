@@ -15,29 +15,59 @@
                     <div class="col-md-5 border-end">
                         <h5 class="fw-bold mb-4">Informasi Kontak</h5>
                         
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="bi bi-whatsapp fs-3 text-success me-3"></i>
-                            <div>
-                                <small class="text-muted d-block">WhatsApp (Admin)</small>
-                                <span class="fw-bold">+62 812-3456-7890</span>
-                            </div>
-                        </div>
+                        @php
+                            $waRaw = \App\Models\Setting::getVal('kontak_wa') ?? '+62 812-3456-7890';
+                            $waClean = preg_replace('/[^0-9]/', '', $waRaw);
+                            if (str_starts_with($waClean, '0')) {
+                                $waClean = '62' . substr($waClean, 1);
+                            }
+                            
+                            $emailRaw = \App\Models\Setting::getVal('kontak_email') ?? 'halo@angkringan.com';
 
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="bi bi-envelope fs-3 text-primary me-3"></i>
-                            <div>
-                                <small class="text-muted d-block">Email</small>
-                                <span class="fw-bold">halo@angkringan.com</span>
-                            </div>
-                        </div>
+                            $sosmedDynamic = json_decode(\App\Models\Setting::getVal('kontak_sosmed_dynamic') ?? '[]', true);
+                            if (empty($sosmedDynamic)) {
+                                $igRaw = \App\Models\Setting::getVal('kontak_ig');
+                                $tiktokRaw = \App\Models\Setting::getVal('kontak_tiktok');
+                                if (!empty($igRaw)) {
+                                    $sosmedDynamic[] = ['platform' => 'Instagram', 'url' => 'https://instagram.com/'.ltrim($igRaw, '@'), 'label' => $igRaw, 'icon' => 'bi-instagram'];
+                                }
+                                if (!empty($tiktokRaw)) {
+                                    $sosmedDynamic[] = ['platform' => 'TikTok', 'url' => 'https://tiktok.com/@'.ltrim($tiktokRaw, '@'), 'label' => $tiktokRaw, 'icon' => 'bi-tiktok'];
+                                }
+                            }
+                        @endphp
 
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-instagram fs-3 text-danger me-3"></i>
-                            <div>
-                                <small class="text-muted d-block">Instagram</small>
-                                <span class="fw-bold">@angkringan.pos</span>
+                        <a href="https://wa.me/{{ $waClean }}" target="_blank" class="text-decoration-none text-dark">
+                            <div class="d-flex align-items-center mb-4 item-kontak">
+                                <i class="bi bi-whatsapp fs-3 text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted d-block">WhatsApp (Admin)</small>
+                                    <span class="fw-bold">{{ $waRaw }}</span>
+                                </div>
                             </div>
-                        </div>
+                        </a>
+
+                        <a href="mailto:{{ $emailRaw }}" class="text-decoration-none text-dark">
+                            <div class="d-flex align-items-center mb-4 item-kontak">
+                                <i class="bi bi-envelope fs-3 text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted d-block">Email</small>
+                                    <span class="fw-bold">{{ $emailRaw }}</span>
+                                </div>
+                            </div>
+                        </a>
+
+                        @foreach($sosmedDynamic as $sosmed)
+                            <a href="{{ $sosmed['url'] }}" target="_blank" class="text-decoration-none text-dark">
+                                <div class="d-flex align-items-center item-kontak mt-4">
+                                    <i class="bi {{ $sosmed['icon'] ?? 'bi-link-45deg' }} fs-3 text-secondary me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">{{ $sosmed['platform'] }}</small>
+                                        <span class="fw-bold">{{ $sosmed['label'] }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
                     </div>
 
                     <div class="col-md-7 ps-md-4">

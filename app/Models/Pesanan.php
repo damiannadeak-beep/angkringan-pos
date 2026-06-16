@@ -3,6 +3,7 @@
 namespace App\Models; 
  
 use Illuminate\Database\Eloquent\Model; 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\DetailPesanan; 
 use App\Models\Pembayaran; 
 use App\Models\User; 
@@ -10,8 +11,13 @@ use App\Models\Meja;
  
 class Pesanan extends Model 
 { 
+    use SoftDeletes;
+    
     protected $table = 'pesanan'; 
-    protected $guarded = []; 
+    protected $fillable = [
+        'id_konsumen', 'id_meja', 'id_kasir', 'tipe_pesanan', 'tanggal',
+        'total', 'total_hpp', 'discount_amount', 'promo_id', 'status',
+    ]; 
 
     public function detail_pesanan() 
     { 
@@ -76,6 +82,9 @@ class Pesanan extends Model
             if ($this->pembayaran) {
                 $this->pembayaran->update(['status' => 'failed']);
             }
+
+            // Soft delete agar pesanan tidak muncul di list aktif
+            $this->delete();
         }
     }
 }

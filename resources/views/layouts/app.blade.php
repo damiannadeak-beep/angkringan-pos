@@ -6,15 +6,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Angkringan POS</title>
     
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 <body class="bg-light">
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm sticky-top">
+        <nav class="navbar navbar-expand-md navbar-light bg-light border-bottom border-secondary shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand fw-bold text-primary" href="{{ url('/') }}">
                     <i class="bi bi-shop me-1"></i> Angkringan POS
@@ -100,6 +101,9 @@
             @yield('content')
         </main>
     </div>
+    
+    @yield('scripts')
+    @include('components.webpush')
 </body>
 </html>
 

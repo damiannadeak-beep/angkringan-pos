@@ -4,9 +4,9 @@
 <!-- Hero Section -->
 <div class="bg-primary bg-opacity-10 py-5 mb-5 rounded-bottom-4 shadow-sm">
     <div class="container py-5 text-center">
-        <h1 class="display-4 fw-bold text-primary mb-3">Cerita di Balik Gerobak Kami</h1>
+        <h1 class="display-4 fw-bold text-primary mb-3">Selamat Datang di Angkringan Kami</h1>
         <p class="fs-5 text-muted mx-auto" style="max-width: 700px;">
-            Lebih dari sekadar tempat makan, ini adalah ruang hangat untuk berbagi cerita, tawa, dan kenangan—dibangun dari semangat kebersamaan.
+            Tempat di mana rasa rindu akan kesederhanaan terobati. Silakan duduk, nikmati hidangan kami, dan biarkan kehangatan malam mengalir.
         </p>
     </div>
 </div>
@@ -25,12 +25,12 @@
             </div>
         </div>
         <div class="col-lg-6 ps-lg-5">
-            <h3 class="fw-bold mb-4 text-dark">Berawal dari Obrolan Sederhana</h3>
+            <h3 class="fw-bold mb-4 text-dark">Berawal dari Kerinduan Seduh Kopi</h3>
             <p class="text-muted lh-lg mb-4" style="text-align: justify;">
-                Pembuatan angkringan ini bermula dari kerinduan kami akan sebuah tempat nongkrong yang sederhana, merakyat, namun tetap nyaman. Berada di lingkungan kampus dan perumahan, kami melihat banyak mahasiswa dan warga yang membutuhkan tempat untuk melepas penat setelah seharian beraktivitas, tanpa harus mengeluarkan biaya yang mahal.
+                Berada di lingkungan kampus, kami sadar bahwa tumpukan tugas kuliah dan hiruk-pikuk rutinitas sering kali membuat lelah. Angkringan ini hadir bukan sekadar untuk mengisi perut, melainkan menjadi pelarian manis bagi para mahasiswa dan warga sekitar untuk rehat sejenak. Kami ingin menciptakan tempat nongkrong yang hangat, merakyat, dan tentunya pas di kantong.
             </p>
             <p class="text-muted lh-lg mb-4" style="text-align: justify;">
-                Gerobak angkringan kami desain tidak hanya sebagai tempat berjualan nasi kucing dan sate-satean, tetapi sebagai "titik temu". Sebuah ruang di mana perbedaan status sosial dilebur oleh segelas es teh dan hangatnya seduhan kopi jahe.
+                Di sini, gerobak sederhana kami ubah menjadi "titik temu". Sebuah ruang inklusif di mana jabatan dan status sosial menguap, digantikan oleh tawa ringan dan cerita keseharian, ditemani kepulan asap kopi jahe dan nikmatnya nasi kucing.
             </p>
             <div class="d-inline-block bg-light p-3 rounded-3 border-start border-4 border-primary shadow-sm">
                 <p class="mb-0 fst-italic text-secondary">
@@ -88,7 +88,7 @@
     <div class="row mt-5 pt-5">
         <div class="col-12">
             <div class="bg-dark text-white rounded-4 p-5 text-center shadow-lg position-relative overflow-hidden">
-                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at top right, rgba(13,110,253,0.2) 0%, transparent 60%); pointer-events: none;"></div>
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none;"></div>
                 <h3 class="fw-bold mb-3 position-relative z-index-1">Siap Mencicipi Hidangan Kami?</h3>
                 <p class="text-light mb-4 opacity-75 mx-auto position-relative z-index-1" style="max-width: 500px;">
                     Jangan biarkan rasa penasaran Anda berlalu. Jelajahi berbagai macam menu sate, nasi kucing, dan minuman hangat kami sekarang juga.

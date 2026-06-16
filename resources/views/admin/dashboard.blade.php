@@ -224,41 +224,109 @@
             </div>
         </div>
     </div>
+    
+    <!-- Row 4: Best Seller -->
+    <div class="row g-4 mt-1 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white pt-3 pb-2">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-award-fill text-warning me-2"></i> Top 5 Menu Terlaris (Bulan Ini)</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4" style="width: 80px;">Peringkat</th>
+                                    <th>Menu</th>
+                                    <th class="text-end pe-4">Total Terjual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($topMenus as $index => $menu)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="rounded-circle d-inline-flex justify-content-center align-items-center bg-light text-muted fw-bold" style="width: 35px; height: 35px;">
+                                            #{{ $index + 1 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            @if($menu->image)
+                                                <img src="{{ asset('storage/'.$menu->image) }}" alt="Menu" class="rounded object-fit-cover" width="40" height="40">
+                                            @else
+                                                <div class="bg-secondary bg-opacity-10 rounded d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                </div>
+                                            @endif
+                                            <span class="fw-medium">{{ $menu->nama_menu }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <span class="badge bg-success rounded-pill px-3 py-2 fs-6">{{ $menu->total_terjual }} porsi</span>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted">Belum ada data penjualan bulan ini.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const dailyLabels = @json($chartDailyLabels);
     const dailyData = @json($chartDailyData);
+    const dailyLaba = @json($chartDailyLaba);
     const monthlyLabels = @json($chartMonthlyLabels);
     const monthlyData = @json($chartMonthlyData);
+    const monthlyLaba = @json($chartMonthlyLaba);
 
-    const createSalesChart = (elementId, labels, data, label, color) => {
+    const createSalesChart = (elementId, labels, dataSales, dataLaba) => {
         const ctx = document.getElementById(elementId);
         if (!ctx) return;
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels,
-                datasets: [{
-                    label,
-                    data,
-                    fill: true,
-                    backgroundColor: `rgba(${color}, 0.12)`,
-                    borderColor: `rgba(${color}, 1)`,
-                    tension: 0.35,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                }]
+                datasets: [
+                    {
+                        label: 'Penjualan (Kotor)',
+                        data: dataSales,
+                        fill: true,
+                        backgroundColor: 'rgba(13, 110, 253, 0.05)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        tension: 0.35,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                    },
+                    {
+                        label: 'Laba Bersih',
+                        data: dataLaba,
+                        fill: true,
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        tension: 0.35,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false },
+                    legend: { display: true, position: 'top' },
                     tooltip: {
                         callbacks: {
-                            label: (context) => 'Rp ' + context.formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+                            label: (context) => context.dataset.label + ': Rp ' + context.formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
                         }
                     }
                 },
@@ -280,7 +348,7 @@
         });
     };
 
-    createSalesChart('dailySalesChart', dailyLabels, dailyData, 'Penjualan Harian', '13, 110, 253'); // Blue
-    createSalesChart('monthlySalesChart', monthlyLabels, monthlyData, 'Penjualan Bulanan', '25, 135, 84'); // Green
+    createSalesChart('dailySalesChart', dailyLabels, dailyData, dailyLaba);
+    createSalesChart('monthlySalesChart', monthlyLabels, monthlyData, monthlyLaba);
 </script>
 @endsection

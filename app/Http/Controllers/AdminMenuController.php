@@ -39,7 +39,8 @@ class AdminMenuController extends Controller
 
     public function create()
     {
-        return view('admin.menu.form', ['menu' => new Menu()]);
+        $bahans = \App\Models\Bahan::all();
+        return view('admin.menu.form', ['menu' => new Menu(), 'bahans' => $bahans]);
     }
 
     public function store(Request $request)
@@ -51,6 +52,7 @@ class AdminMenuController extends Controller
             'kategori' => 'required|in:makanan,minuman',
             'is_available' => 'nullable|boolean',
             'deskripsi' => 'nullable|string',
+            'variants_json' => 'nullable|json',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:6000',
         ]);
         $data['is_available'] = $request->has('is_available');
@@ -78,14 +80,28 @@ class AdminMenuController extends Controller
             $data['image'] = $path;
         }
 
-        Menu::create($data);
+        $menu = Menu::create($data);
+
+        // Sync Bahans (Recipe)
+        if ($request->has('bahans')) {
+            $syncData = [];
+            foreach ($request->bahans as $index => $bahanId) {
+                if (!empty($bahanId)) {
+                    $qty = $request->jumlah_dibutuhkan[$index] ?? 1;
+                    $syncData[$bahanId] = ['jumlah_dibutuhkan' => $qty];
+                }
+            }
+            $menu->bahans()->sync($syncData);
+        }
+
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil ditambahkan.');
     }
 
     public function edit($id)
     {
-        $menu = Menu::findOrFail($id);
-        return view('admin.menu.form', compact('menu'));
+        $menu = Menu::with('bahans')->findOrFail($id);
+        $bahans = \App\Models\Bahan::all();
+        return view('admin.menu.form', compact('menu', 'bahans'));
     }
 
     public function update(Request $request, $id)
@@ -98,6 +114,7 @@ class AdminMenuController extends Controller
             'kategori' => 'required|in:makanan,minuman',
             'is_available' => 'nullable|boolean',
             'deskripsi' => 'nullable|string',
+            'variants_json' => 'nullable|json',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:6000',
         ]);
         $data['is_available'] = $request->has('is_available');
@@ -130,14 +147,36 @@ class AdminMenuController extends Controller
         }
 
         $menu->update($data);
+
+        // Sync Bahans (Recipe)
+        if ($request->has('bahans')) {
+            $syncData = [];
+            foreach ($request->bahans as $index => $bahanId) {
+                if (!empty($bahanId)) {
+                    $qty = $request->jumlah_dibutuhkan[$index] ?? 1;
+                    $syncData[$bahanId] = ['jumlah_dibutuhkan' => $qty];
+                }
+            }
+            $menu->bahans()->sync($syncData);
+        } else {
+            $menu->bahans()->detach();
+        }
+
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $menu = Menu::findOrFail($id);
-        $menu->delete();
-        return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil dihapus.');
+        try {
+            $menu->delete();
+            return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == 23000) {
+                return redirect()->route('admin.menu.index')->with('error', 'Tidak dapat menghapus produk ini karena sudah pernah dipesan. Silakan "Edit" produk ini jika ingin mengganti gambar atau menonaktifkannya.');
+            }
+            throw $e;
+        }
     }
 
     // Update stock endpoint (AJAX or form)

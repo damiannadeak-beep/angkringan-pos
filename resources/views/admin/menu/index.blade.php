@@ -17,6 +17,9 @@
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
     <div class="card shadow-sm">
         <div class="card-body p-0">
@@ -51,7 +54,9 @@
                             <tr>
                                 <td>
                                     @if($m->image)
-                                        <img src="{{ asset('storage/'.$m->image) }}" alt="img" style="width:80px;height:auto;">
+                                        <div class="bg-white border rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                            <img src="{{ asset('storage/'.$m->image) }}" alt="img" style="object-fit: contain; width: 100%; height: 100%; padding: 4px;">
+                                        </div>
                                     @else
                                         -
                                     @endif

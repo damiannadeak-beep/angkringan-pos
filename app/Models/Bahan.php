@@ -9,7 +9,7 @@ class Bahan extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = ['nama_bahan', 'satuan', 'stok', 'harga_beli'];
 
     public function menus()
     {

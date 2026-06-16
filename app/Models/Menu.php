@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     protected $table = 'menu';
-    protected $guarded = [];
+    protected $fillable = ['nama_menu', 'harga', 'stok', 'image', 'kategori', 'is_available', 'variants_json'];
+
+    protected $casts = [
+        'is_available' => 'boolean',
+        'stok' => 'integer',
+        'harga' => 'float',
+    ];
 
     public function detail_pesanan()
     {

@@ -8,7 +8,7 @@ class Rating extends Model
 {
     // Table name is plural 'ratings' (migration creates 'ratings')
     protected $table = 'ratings';
-    protected $guarded = [];
+    protected $fillable = ['id_pesanan', 'id_konsumen', 'rating', 'komentar', 'balasan_admin', 'tanggal'];
 
     public function pesanan()
     {

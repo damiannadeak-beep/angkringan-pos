@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use App\Models\Meja;
 
 class AdminMejaController extends Controller
@@ -42,10 +43,11 @@ class AdminMejaController extends Controller
     public function printQr($id)
     {
         $meja = Meja::findOrFail($id);
-        // We will pass the ordering URL for this meja
-        // Assuming the ordering URL is /konsumen/menu/{id_meja}
-        $url = url('/konsumen/menu/' . $meja->id);
+        // FIX #4 (IDOR): Generate Signed URL agar ID meja tidak bisa dimanipulasi
+        // URL berlaku tanpa batas waktu, namun memiliki signature kriptografi
+        $url = URL::signedRoute('konsumen.menu.meja', ['id_meja' => $meja->id]);
         
         return view('admin.meja.print_qr', compact('meja', 'url'));
     }
 }
+

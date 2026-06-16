@@ -105,26 +105,43 @@
                                             </table>
                                         </div>
                                     </div>
-                                    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 rounded-bottom-4">
-                                        <div class="d-flex align-items-center">
-                                            @if($pesanan->pembayaran->status == 'unpaid')
-                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i> Belum Lunas</span>
-                                            @else
-                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1"><i class="bi bi-check-circle me-1"></i> Lunas</span>
-                                            @endif
+                                    @php
+                                        $hasAction = $pesanan->pembayaran->status == 'unpaid' || ($pesanan->tipe_pesanan === 'dine_in' && $pesanan->id_meja);
+                                    @endphp
+                                    <div class="card-footer bg-white py-3 rounded-bottom-4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                @if($pesanan->pembayaran->status == 'unpaid')
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i> Belum Lunas</span>
+                                                @else
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1"><i class="bi bi-check-circle me-1"></i> Lunas</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-end">
+                                                <p class="small text-muted mb-0">Total Tagihan ({{ $pesanan->detail_pesanan->sum('jumlah') }} Item)</p>
+                                                @if($pesanan->discount_amount > 0)
+                                                    <p class="small text-danger mb-0 text-decoration-line-through">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</p>
+                                                    <h5 class="fw-bold text-primary mb-0">Rp {{ number_format($pesanan->total - $pesanan->discount_amount, 0, ',', '.') }}</h5>
+                                                @else
+                                                    <h5 class="fw-bold text-primary mb-0">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</h5>
+                                                @endif
+                                            </div>
                                         </div>
-                                        <div class="text-end">
-                                            <p class="small text-muted mb-0">Total Pembayaran</p>
-                                            <h5 class="fw-bold text-primary mb-0">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</h5>
-                                        </div>
+                                        @if($hasAction)
+                                            <div class="d-flex justify-content-end gap-2 flex-wrap border-top pt-3 mt-3">
+                                                @if($pesanan->pembayaran->status == 'unpaid')
+                                                    <a href="/konsumen/checkout/{{ $pesanan->id }}" class="btn btn-success fw-bold px-4 rounded-pill">
+                                                        Pilih Pembayaran <i class="bi bi-arrow-right ms-1"></i>
+                                                    </a>
+                                                @endif
+                                                @if($pesanan->tipe_pesanan === 'dine_in' && $pesanan->id_meja)
+                                                    <button onclick="callBell({{ $pesanan->id_meja }})" class="btn btn-outline-danger fw-bold px-4 rounded-pill">
+                                                        <i class="bi bi-bell-fill me-1"></i> Panggil Pelayan
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
-                                    @if($pesanan->pembayaran->status == 'unpaid')
-                                        <div class="card-footer bg-white text-end border-top-0 pt-0 pb-3 rounded-bottom-4">
-                                            <a href="/konsumen/checkout/{{ $pesanan->id }}" class="btn btn-success fw-bold px-4 rounded-pill">
-                                                Bayar Sekarang <i class="bi bi-arrow-right ms-1"></i>
-                                            </a>
-                                        </div>
-                                    @endif
                                 </div>
                             @empty
                                 <div class="text-center bg-white p-5 rounded-4 shadow-sm">
@@ -163,7 +180,11 @@
                                                 {{ $detail->jumlah }}x {{ $detail->menu->nama_menu ?? 'Menu' }}@if(!$loop->last), @endif
                                             @endforeach
                                         </p>
-                                        <h6 class="fw-bold text-dark mt-2 mb-0">Total: Rp {{ number_format($pesanan->total, 0, ',', '.') }}</h6>
+                                        @if($pesanan->discount_amount > 0)
+                                            <h6 class="fw-bold text-dark mt-2 mb-0">Total ({{ $pesanan->detail_pesanan->sum('jumlah') }} Item): <span class="text-muted text-decoration-line-through fw-normal small">Rp {{ number_format($pesanan->total, 0, ',', '.') }}</span> Rp {{ number_format($pesanan->total - $pesanan->discount_amount, 0, ',', '.') }}</h6>
+                                        @else
+                                            <h6 class="fw-bold text-dark mt-2 mb-0">Total ({{ $pesanan->detail_pesanan->sum('jumlah') }} Item): Rp {{ number_format($pesanan->total, 0, ',', '.') }}</h6>
+                                        @endif
                                     </div>
                                     
                                     @if($pesanan->status === 'completed')
@@ -324,5 +345,41 @@
             reader.readAsDataURL(input.files[0]);
         }
     }
+
+    function callBell(id_meja) {
+        if(confirm('Panggil pelayan ke meja Anda?')) {
+            fetch('/konsumen/call-bell', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ id_meja: id_meja })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                alert('Terjadi kesalahan koneksi.');
+            });
+        }
+    }
+
+    // Live Order Tracking: Reload active tab automatically if there are active orders
+    @if(count($pesananAktif) > 0)
+    setInterval(() => {
+        // Only refresh if 'Pesanan Aktif' tab is currently visible
+        let activeTab = document.querySelector('#pills-aktif');
+        if (activeTab.classList.contains('active')) {
+            // Optional: Fetch only the html of this tab or just reload
+            location.reload();
+        }
+    }, 30000); // 30 seconds
+    @endif
 </script>
 @endsection

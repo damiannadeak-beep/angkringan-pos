@@ -123,7 +123,20 @@
     <table>
         @foreach($order->detail_pesanan as $item)
         <tr>
-            <td colspan="3" class="fw-bold">{{ $item->menu->nama_menu ?? 'Menu' }}</td>
+            <td colspan="3" class="fw-bold">
+                {{ $item->menu->nama_menu ?? 'Menu' }}
+                @if($item->selected_variants)
+                    @php 
+                        $variants = json_decode($item->selected_variants, true); 
+                    @endphp
+                    @if(is_array($variants) && count($variants) > 0)
+                        <br><span style="font-size: 10px; font-weight: normal;">- {{ implode(', ', array_column($variants, 'name')) }}</span>
+                    @endif
+                @endif
+                @if($item->catatan)
+                    <br><span style="font-size: 10px; font-style: italic; font-weight: normal;">* {{ $item->catatan }}</span>
+                @endif
+            </td>
         </tr>
         <tr>
             <td style="width: 25%;">{{ $item->jumlah }}x</td>

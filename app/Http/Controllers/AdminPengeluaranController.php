@@ -22,6 +22,8 @@ class AdminPengeluaranController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
+        $data['user_id'] = auth()->id();
+
         Pengeluaran::create($data);
         return redirect()->route('admin.pengeluaran.index')->with('success', 'Data pengeluaran berhasil ditambahkan.');
     }

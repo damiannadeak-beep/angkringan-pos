@@ -7,5 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Pengeluaran extends Model
 {
     protected $table = 'pengeluarans';
-    protected $guarded = [];
+    protected $fillable = ['tanggal', 'deskripsi', 'nominal', 'keterangan', 'user_id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

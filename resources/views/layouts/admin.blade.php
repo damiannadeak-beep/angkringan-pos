@@ -5,30 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard Admin - Angkringan POS</title>
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <style>
-        body { background: #f7eff1; }
+        body { background: transparent; font-family: 'Playfair Display', serif !important; }
         .admin-layout { min-height: 100vh; display: flex; flex-direction: column; }
-        .admin-topbar { background: #e6c9cb; color: #6a3a45; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-        .admin-topbar .brand { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .admin-topbar .logout-top { background: white; color: #6a3a45; border: none; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: all 0.2s ease; }
-        .admin-topbar .logout-top:hover { background: #f8f0f2; }
+        .admin-topbar { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .admin-topbar .brand { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; color: #3e2723; }
+        .admin-topbar .logout-top { background: #3e2723; color: #f0e9dd; border: none; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: all 0.2s ease; }
+        .admin-topbar .logout-top:hover { background: #2d1a11; color: white; }
         .admin-main-wrapper { display: flex; flex: 1; }
-        .admin-sidebar { width: 240px; background: #e6c9cb; color: #6a3a45; display: flex; flex-direction: column; padding: 1.5rem; box-shadow: 2px 0 4px rgba(0,0,0,0.08); }
-        .admin-sidebar .brand-title { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.03em; color: #6a3a45; }
-        .admin-sidebar .brand-subtitle { font-size: 0.85rem; color: #7d555f; }
-        .admin-sidebar .nav-link { color: #6a3a45; border-radius: 0.75rem; padding: 0.85rem 1rem; transition: all 0.2s ease; }
-        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.95); color: #b34b63; }
+        .admin-sidebar { width: 240px; background: #5d4037; color: #f0e9dd; display: flex; flex-direction: column; padding: 1.5rem; box-shadow: 2px 0 4px rgba(0,0,0,0.08); }
+        .admin-sidebar .brand-title { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.03em; color: #f0e9dd; }
+        .admin-sidebar .brand-subtitle { font-size: 0.85rem; color: #d7ccc8; }
+        .admin-sidebar .nav-link { color: #f0e9dd; border-radius: 0.75rem; padding: 0.85rem 1rem; transition: all 0.2s ease; }
+        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: #3e2723; color: #ffffff; }
         .admin-sidebar .nav-link i { width: 1.25rem; }
-        .admin-sidebar .logout-btn { background: #ffffff; color: #6a3a45; border: 1px solid rgba(0,0,0,0.08); border-radius: 1rem; }
-        .admin-sidebar .logout-btn:hover { background: #f8f0f2; }
+        .admin-sidebar .logout-btn { background: #3e2723; color: #f0e9dd; border: 1px solid rgba(0,0,0,0.08); border-radius: 1rem; }
+        .admin-sidebar .logout-btn:hover { background: #2d1a11; }
         .admin-content { flex: 1; padding: 2rem; }
-        .admin-topbar { background: transparent; border-bottom: none; }
         .admin-card { border-radius: 1.25rem; }
         .card-summary { border: none; border-radius: 1.25rem; }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .admin-main-wrapper { flex-direction: column; }
+            .admin-sidebar { width: 100%; padding: 1rem; border-right: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+            .admin-sidebar .nav { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.5rem; gap: 0.5rem; }
+            .admin-sidebar .nav-link { white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.9rem; }
+            .admin-sidebar .brand-title, .admin-sidebar .brand-subtitle { display: none; }
+            .admin-content { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -109,11 +119,29 @@
                     <a class="nav-link {{ request()->routeIs('admin.kasir.*') ? 'active' : '' }}" href="{{ route('admin.kasir.index') }}">
                         <i class="bi bi-people-fill me-2"></i> Kasir
                     </a>
+                    <a class="nav-link {{ request()->routeIs('admin.permintaan.*') ? 'active' : '' }}" href="{{ route('admin.permintaan.index') }}">
+                        <i class="bi bi-cart-check-fill me-2"></i> Permintaan Belanja
+                        @php
+                            $pendingReq = \App\Models\PermintaanBelanja::where('status', 'menunggu')->count();
+                        @endphp
+                        @if($pendingReq > 0)
+                            <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingReq }}</span>
+                        @endif
+                    </a>
                     <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                         <i class="bi bi-person-lines-fill me-2"></i> Pengguna (User)
                     </a>
+                    <a class="nav-link {{ request()->routeIs('admin.void_logs.index') ? 'active' : '' }}" href="{{ route('admin.void_logs.index') }}">
+                        <i class="bi bi-journal-x me-2"></i> Log Void
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.activity_logs.index') ? 'active' : '' }}" href="{{ route('admin.activity_logs.index') }}">
+                        <i class="bi bi-clock-history me-2"></i> Log Aktivitas
+                    </a>
                     <a class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
                         <i class="bi bi-graph-up-arrow me-2"></i> Laporan
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.absensi.*') ? 'active' : '' }}" href="{{ route('admin.absensi.index') }}">
+                        <i class="bi bi-calendar-check-fill me-2"></i> Laporan Absensi
                     </a>
                     <a class="nav-link {{ request()->routeIs('admin.pengeluaran.*') ? 'active' : '' }}" href="{{ route('admin.pengeluaran.index') }}">
                         <i class="bi bi-wallet2 me-2"></i> Pengeluaran
@@ -139,5 +167,7 @@
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
         @csrf
     </form>
+    @include('components.webpush')
+    @stack('scripts')
 </body>
 </html>

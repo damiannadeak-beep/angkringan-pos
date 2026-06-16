@@ -23,8 +23,8 @@
                 </div>
                 <div class="col-md-6 d-flex gap-2 flex-wrap align-items-end">
                     <button type="submit" class="btn btn-primary">Tampilkan Grafik</button>
-                    <a href="{{ route('admin.reports.revenue', ['start_date' => $startDate, 'end_date' => $endDate]) }}" class="btn btn-success">
-                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV
+                    <a href="{{ route('admin.reports.csv', ['start_date' => $startDate, 'end_date' => $endDate]) }}" class="btn btn-success">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV Lengkap
                     </a>
                     <a href="{{ route('admin.reports.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}" class="btn btn-danger" target="_blank">
                         <i class="bi bi-file-earmark-pdf me-1"></i> Cetak PDF
@@ -160,6 +160,76 @@
                                 </tr>
                                 @empty
                                 <tr><td colspan="2" class="text-center text-muted">Belum ada data penggunaan bahan.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Baris 4: Riwayat Tutup Kasir (Rekonsiliasi) -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-bold bg-white">
+                    <i class="bi bi-safe text-danger me-2"></i> Riwayat Rekonsiliasi Kasir (Buka/Tutup Laci)
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kasir</th>
+                                    <th>Waktu Shift</th>
+                                    <th>Modal Awal</th>
+                                    <th>Pemasukan Tunai Sistem</th>
+                                    <th>Uang Fisik Kasir</th>
+                                    <th>Selisih Laci</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($kasirShifts as $shift)
+                                <tr>
+                                    <td class="fw-medium">{{ $shift->user->name ?? 'Unknown' }}</td>
+                                    <td>
+                                        {{ $shift->waktu_buka->format('d/m/Y H:i') }} <br>
+                                        <small class="text-muted">s/d {{ $shift->waktu_tutup ? $shift->waktu_tutup->format('d/m/Y H:i') : 'Sekarang' }}</small>
+                                    </td>
+                                    <td>Rp {{ number_format($shift->modal_awal, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($shift->total_pemasukan_tunai, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if($shift->uang_fisik_aktual)
+                                            Rp {{ number_format($shift->uang_fisik_aktual, 0, ',', '.') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($shift->status == 'open')
+                                            <span class="badge bg-secondary">Sedang Berjalan</span>
+                                        @else
+                                            @if($shift->selisih == 0)
+                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Balance (0)</span>
+                                            @elseif($shift->selisih < 0)
+                                                <span class="badge bg-danger"><i class="bi bi-arrow-down me-1"></i> Kurang Rp {{ number_format(abs($shift->selisih), 0, ',', '.') }}</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="bi bi-arrow-up me-1"></i> Lebih Rp {{ number_format($shift->selisih, 0, ',', '.') }}</span>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($shift->status == 'open')
+                                            <span class="badge bg-primary">Open</span>
+                                        @else
+                                            <span class="badge bg-dark">Closed</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="7" class="text-center text-muted">Belum ada riwayat shift untuk periode ini.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

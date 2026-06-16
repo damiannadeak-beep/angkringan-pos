@@ -29,9 +29,21 @@
                         @foreach($promos as $p)
                             <tr>
                                 <td>{{ $p->title }}</td>
-                                <td>{{ $p->type }}</td>
-                                <td>{{ $p->value }}</td>
-                                <td>{{ $p->starts_at? $p->starts_at->format('d M Y') : '-' }} - {{ $p->ends_at? $p->ends_at->format('d M Y') : '-' }}</td>
+                                <td>
+                                    @if($p->type === 'discount')
+                                        <span class="badge bg-info text-dark">Diskon</span>
+                                    @else
+                                        <span class="badge bg-primary">Paket</span>
+                                    @endif
+                                </td>
+                                <td class="fw-bold">
+                                    @if($p->type === 'discount' && $p->discount_type === 'percentage')
+                                        {{ number_format($p->value, 0, ',', '.') }}%
+                                    @else
+                                        Rp {{ number_format($p->value, 0, ',', '.') }}
+                                    @endif
+                                </td>
+                                <td>{{ $p->starts_at ? $p->starts_at->format('d M Y') : '-' }} - {{ $p->ends_at ? $p->ends_at->format('d M Y') : '-' }}</td>
                                 <td>{{ $p->is_active ? 'Ya' : 'Tidak' }}</td>
                                 <td>
                                     <a href="{{ route('admin.promo.edit', $p->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>

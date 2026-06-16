@@ -54,7 +54,20 @@
                 @foreach($order->detail_pesanan as $item)
                 <tr>
                     <td class="font-weight-bold" style="font-size: 14px;">{{ $item->jumlah }}x</td>
-                    <td style="font-size: 14px;">{{ $item->menu->nama_menu }}</td>
+                    <td style="font-size: 14px;">
+                        {{ $item->menu->nama_menu }}
+                        @if($item->selected_variants)
+                            @php 
+                                $variants = json_decode($item->selected_variants, true); 
+                            @endphp
+                            @if(is_array($variants) && count($variants) > 0)
+                                <br><small style="font-size: 11px;">- {{ implode(', ', array_column($variants, 'name')) }}</small>
+                            @endif
+                        @endif
+                        @if($item->catatan)
+                            <br><small style="font-size: 11px; font-style: italic;">* {{ $item->catatan }}</small>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

@@ -24,13 +24,72 @@
                         <span>Rp {{ number_format($pembayaran->total_bayar, 0, ',', '.') }}</span>
                     </div>
                 </div>
-                <div class="card-footer bg-white text-center py-3">
-                    <button id="pay-button" class="btn btn-success btn-lg w-100 mb-2">
-                        Bayar dengan QRIS
-                    </button>
-                    <button onclick="cancelOrder({{ $pesanan->id }})" class="btn btn-outline-danger w-100 fw-bold">
-                        Batalkan Pesanan
-                    </button>
+                <div class="card-footer bg-white py-4">
+                    <h6 class="fw-bold mb-3 text-center">Pilih Metode Pembayaran:</h6>
+                    
+                    <div class="accordion" id="paymentAccordion">
+                        
+                        <!-- Midtrans Online Payment Removed -->
+                        <!-- Pilihan 2: Tunai (Cash) -->
+                        <div class="accordion-item border-success mb-2 rounded shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold text-success" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCash" aria-expanded="false" aria-controls="collapseCash">
+                                    <i class="bi bi-cash-stack me-2"></i> Bayar Tunai (Cash)
+                                </button>
+                            </h2>
+                            <div id="collapseCash" class="accordion-collapse collapse show" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body text-center bg-success bg-opacity-10">
+                                    <i class="bi bi-person-check fs-1 text-success mb-2 d-block"></i>
+                                    <p class="mb-0 fw-bold">Silakan datangi meja kasir.</p>
+                                    <p class="small text-muted">Sebutkan nama atau nomor meja Anda kepada kasir untuk melakukan pembayaran tunai.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pilihan 3: QRIS Manual -->
+                        @php $qrisImage = \App\Models\Setting::getVal('qris_image'); @endphp
+                        @if($qrisImage)
+                        <div class="accordion-item border-info mb-2 rounded shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold text-info" type="button" data-bs-toggle="collapse" data-bs-target="#collapseQris" aria-expanded="false" aria-controls="collapseQris">
+                                    <i class="bi bi-qr-code-scan me-2"></i> Scan QRIS Manual
+                                </button>
+                            </h2>
+                            <div id="collapseQris" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body text-center bg-light">
+                                    <p class="small text-muted mb-3">Scan kode QR di bawah ini dengan aplikasi DANA, OVO, Gopay, atau M-Banking Anda.</p>
+                                    <img src="{{ asset('storage/'.$qrisImage) }}" alt="QRIS Warung" class="img-fluid rounded border border-3 border-info mb-3" style="max-height: 250px;">
+                                    
+                                    @if(\App\Models\Setting::getVal('gemini_api_key'))
+                                        <p class="small text-danger fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Upload bukti transfer Anda di bawah ini agar pesanan langsung lunas otomatis!</p>
+                                        <hr>
+                                        <p class="small fw-bold text-success mb-2">Validasi Cepat:</p>
+                                        <div class="mb-3 text-start">
+                                            <label for="receipt_image" class="form-label small">Screenshot Bukti Transfer</label>
+                                            <input type="file" class="form-control form-control-sm mb-2" id="receipt_image" accept="image/*">
+                                            <button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm" id="btn-verify-ai" onclick="verifyPaymentWithAi()">
+                                                <i class="bi bi-check2-circle"></i> Konfirmasi Pembayaran
+                                            </button>
+                                            <div class="form-text small" style="font-size: 10px;">Sistem akan memvalidasi bukti transfer Anda secara otomatis (3-5 detik).</div>
+                                        </div>
+                                    @else
+                                        <p class="small text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> Setelah transfer, wajib tunjukkan bukti transfer ke Kasir!</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-center">
+                        <button onclick="cancelOrder({{ $pesanan->id }})" class="btn btn-outline-danger w-100 fw-bold rounded-pill">
+                            Batalkan Pesanan
+                        </button>
+                        <a href="/konsumen/profil" class="btn btn-link text-muted mt-2 small text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i> Kembali ke Profil
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -39,31 +98,50 @@
 @endsection
 
 @section('scripts')
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
+
 
 <script type="text/javascript">
-    document.getElementById('pay-button').onclick = function () {
-        // Panggil fungsi snap.pay() dengan token yang sudah di-generate dari Controller
-        snap.pay('{{ $pembayaran->snap_token }}', {
-            // Callback ketika pembayaran sukses
-            onSuccess: function(result){
-                alert("Pembayaran berhasil!"); 
-                window.location.href = "/konsumen/profil"; // Redirect ke halaman riwayat
+    function verifyPaymentWithAi() {
+        let fileInput = document.getElementById('receipt_image');
+        if (fileInput.files.length === 0) {
+            alert('Silakan pilih gambar bukti transfer terlebih dahulu.');
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('receipt_image', fileInput.files[0]);
+
+        let btn = document.getElementById('btn-verify-ai');
+        let originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memvalidasi...';
+        btn.disabled = true;
+
+        fetch(`/konsumen/checkout/{{ $pesanan->id }}/verify-ai`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            // Callback ketika pembayaran pending
-            onPending: function(result){
-                alert("Menunggu konfirmasi pembayaran Anda.");
-            },
-            // Callback ketika pembayaran gagal
-            onError: function(result){
-                alert("Pembayaran gagal, silakan coba lagi.");
-            },
-            // Callback ketika konsumen menutup popup tanpa membayar
-            onClose: function(){
-                alert("Anda menutup halaman pembayaran sebelum menyelesaikannya.");
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if (data.error) {
+                alert(data.error);
+            } else if (data.success) {
+                alert(data.message);
+                window.location.href = "/konsumen/profil";
             }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert("Terjadi kesalahan saat memproses gambar.");
         });
-    };
+    }
 
     function cancelOrder(id) {
         if (!confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) return;
@@ -81,7 +159,7 @@
                 alert(data.error);
             } else {
                 alert(data.message);
-                window.location.href = "/konsumen/profil"; // Kembali ke profil
+                window.location.href = "/konsumen/profil";
             }
         })
         .catch(err => {

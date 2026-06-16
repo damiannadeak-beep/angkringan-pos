@@ -49,12 +49,12 @@
                 <div class="position-relative">
                     <!-- Gambar -->
                     @if($menu->image)
-                        <div class="ratio ratio-4x3 bg-light">
-                            <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="object-fit: cover; width: 100%; height: 100%;">
+                        <div class="bg-white text-center" style="height: 180px;">
+                            <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="object-fit: contain; width: 100%; height: 100%;">
                         </div>
                     @else
-                        <div class="ratio ratio-4x3 bg-light d-flex align-items-center justify-content-center text-secondary">
-                            <div class="text-center w-100 pt-5">
+                        <div class="bg-light d-flex align-items-center justify-content-center text-secondary" style="height: 180px;">
+                            <div class="text-center w-100">
                                 <i class="bi bi-image fs-1 opacity-50"></i>
                             </div>
                         </div>
@@ -82,7 +82,7 @@
                     <div class="mt-auto">
                         @if($menu->stok > 0)
                             <div class="bg-success bg-opacity-10 text-success text-center py-2 rounded-3 fw-bold small">
-                                <i class="bi bi-check-circle me-1"></i> Tersedia
+                                <i class="bi bi-check-circle me-1"></i> Tersedia (Sisa Stok: {{ $menu->stok }})
                             </div>
                         @else
                             <div class="bg-danger bg-opacity-10 text-danger text-center py-2 rounded-3 fw-bold small">
@@ -105,6 +105,15 @@
     </div>
 </div>
 
+@role('konsumen')
+<!-- Floating Action Button Mobile -->
+<div class="position-fixed bottom-0 start-50 translate-middle-x w-100 p-3 d-md-none" style="z-index: 1050;">
+    <a href="/konsumen/pilih-tipe" class="btn btn-primary fw-bold w-100 rounded-pill shadow-lg py-3 fs-5 text-white" style="background: linear-gradient(135deg, #0d6efd, #0b5ed7); border: none;">
+        <i class="bi bi-cart-plus me-2"></i> Mulai Pesan Sekarang
+    </a>
+</div>
+@endrole
+
 <style>
     .hover-lift {
         transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
@@ -115,9 +124,6 @@
     }
     .backdrop-blur {
         backdrop-filter: blur(4px);
-    }
-    .ratio-4x3 {
-        --bs-aspect-ratio: 75%;
     }
 </style>
 

@@ -10,7 +10,10 @@ use App\Mail\ReceiptMail;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 // PASTIKAN MODEL 'Meja' DITAMBAHKAN DI SINI
-use App\Models\{Pesanan, DetailPesanan, Pembayaran, Menu, Meja, Promo};
+use App\Models\{Pesanan, DetailPesanan, Pembayaran, Menu, Meja, Promo, Setting};
+use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
+use Mike42\Escpos\Printer;
+use Illuminate\Support\Facades\Hash;
 
 class PosController extends Controller
 {
@@ -19,8 +22,8 @@ class PosController extends Controller
      */
     public function index()
     {
-        // Mengambil menu yang tersedia dan stoknya > 0
-        $menus = Menu::where('is_available', true)->where('stok', '>', 0)->get();
+        // Mengambil menu yang tersedia, termasuk yang stok habis agar kasir tetap bisa melihatnya
+        $menus = Menu::where('is_available', true)->get();
         
         // Mengambil semua meja
         $mejas = Meja::all();
@@ -45,11 +48,36 @@ class PosController extends Controller
     {
         // Menampilkan pesanan konsumen yang belum selesai ke kasir
         $orders = Pesanan::with(['meja', 'detail_pesanan.menu', 'pembayaran', 'konsumen'])
-            ->whereIn('status', ['pending', 'processing'])
+            ->where(function ($query) {
+                $query->whereIn('status', ['pending', 'processing'])
+                      ->orWhere(function ($q) {
+                          $q->where('status', 'completed')
+                            ->whereHas('pembayaran', function ($p) {
+                                $p->where('status', '!=', 'paid');
+                            });
+                      });
+            })
             ->orderBy('created_at', 'asc')
             ->get();
 
         return view('kasir.pesanan_aktif', compact('orders'));
+    }
+
+    /**
+     * Mengambil jumlah pesanan aktif untuk badge notifikasi
+     */
+    public function activeOrdersCount()
+    {
+        $count = Pesanan::whereIn('status', ['pending', 'processing'])
+            ->orWhere(function ($q) {
+                $q->where('status', 'completed')
+                  ->whereHas('pembayaran', function ($p) {
+                      $p->where('status', '!=', 'paid');
+                  });
+            })
+            ->count();
+
+        return response()->json(['count' => $count]);
     }
 
     /**
@@ -66,6 +94,8 @@ class PosController extends Controller
             'items' => 'required|array',
             'items.*.id_menu' => 'required|exists:menu,id',
             'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.catatan' => 'nullable|string|max:255',
+            'items.*.variants' => 'nullable|array',
             'promo_id' => 'nullable|exists:promos,id'
         ]);
 
@@ -79,45 +109,110 @@ class PosController extends Controller
                 'id_kasir' => auth()->id(),
                 'tipe_pesanan' => $validated['tipe_pesanan'],
                 'tanggal' => now(),
-                // Jika langsung bayar, status pesanan bisa langsung completed/processing
-                'status' => $validated['pembayaran_langsung'] ? 'completed' : 'pending',
+                // Selalu pending agar muncul di pesanan aktif untuk diproses dapur meskipun sudah dibayar
+                'status' => 'pending',
                 'promo_id' => $validated['promo_id'] ?? null
             ]);
 
             $totalSemua = 0;
             $total_hpp = 0;
 
-            // 3. Masukkan Detail Pesanan & Kurangi Stok
-            foreach ($validated['items'] as $item) {
-                $menu = Menu::with('bahans')->where('id', $item['id_menu'])->where('is_available', true)->lockForUpdate()->first();
-                
-                if (!$menu) {
-                    throw new \Exception("Gagal: Menu tidak tersedia.");
+            // =====================================================================
+            // FIX #1 (Deadlock Prevention): Lock semua row dalam urutan ID ascending
+            // FIX #2 (N+1 Query): Batch-load semua menu & bahan sekaligus di luar loop
+            // =====================================================================
+
+            // 3a. Kumpulkan semua menu IDs, sort ascending
+            $menuIds = collect($validated['items'])->pluck('id_menu')->unique()->sort()->values()->all();
+
+            // 3b. Lock & load semua menu sekaligus
+            $menus = Menu::with('bahans')->whereIn('id', $menuIds)
+                ->where('is_available', true)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($menuIds as $menuId) {
+                if (!$menus->has($menuId)) {
+                    throw new \Exception("Gagal: Menu ID {$menuId} tidak tersedia.");
                 }
+            }
+
+            // 3c. Kumpulkan & lock semua bahan baku sekaligus
+            $allBahanIds = collect();
+            foreach ($menus as $menu) {
+                foreach ($menu->bahans as $bahan) {
+                    $allBahanIds->push($bahan->id);
+                }
+            }
+            $allBahanIds = $allBahanIds->unique()->sort()->values()->all();
+
+            $bahans = \App\Models\Bahan::whereIn('id', $allBahanIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            // 3d. Masukkan Detail Pesanan & Kurangi Stok (dari collection, tanpa query tambahan)
+            foreach ($validated['items'] as $item) {
+                $menu = $menus->get($item['id_menu']);
 
                 // Cek dan kurangi stok bahan baku
-                foreach ($menu->bahans as $bahan) {
-                    $dibutuhkan = $bahan->pivot->jumlah_dibutuhkan * $item['jumlah'];
+                foreach ($menu->bahans as $bahanItem) {
+                    $bahan = $bahans->get($bahanItem->id);
+                    $dibutuhkan = $bahanItem->pivot->jumlah_dibutuhkan * $item['jumlah'];
                     if ($bahan->stok < $dibutuhkan) {
                         throw new \Exception("Gagal: Stok bahan {$bahan->nama_bahan} tidak mencukupi untuk menu {$menu->nama_menu}.");
                     }
                     $bahan->decrement('stok', $dibutuhkan);
+                    $bahan->stok -= $dibutuhkan; // Sync in-memory
                     $total_hpp += $bahan->harga_beli * $dibutuhkan;
                 }
 
-                $subtotal = $menu->harga * $item['jumlah'];
+                $hargaBase = $menu->harga;
+                $hargaVarian = 0;
+                $selectedVariants = [];
+
+                if (!empty($item['variants']) && is_array($item['variants']) && $menu->variants_json) {
+                    $menuVariants = json_decode($menu->variants_json, true);
+                    if (is_array($menuVariants)) {
+                        foreach ($item['variants'] as $selVar) {
+                            // Validasi harga dari backend
+                            foreach ($menuVariants as $g) {
+                                if (isset($selVar['group']) && $g['group_name'] === $selVar['group']) {
+                                    foreach ($g['options'] as $opt) {
+                                        if (isset($selVar['name']) && $opt['name'] === $selVar['name']) {
+                                            $hargaVarian += $opt['price'];
+                                            $selectedVariants[] = [
+                                                'group' => $g['group_name'],
+                                                'name' => $opt['name'],
+                                                'price' => $opt['price']
+                                            ];
+                                            break 2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                $hargaTotalPerItem = $hargaBase + $hargaVarian;
+                $subtotal = $hargaTotalPerItem * $item['jumlah'];
                 $totalSemua += $subtotal;
 
                 DetailPesanan::create([
                     'id_pesanan' => $pesanan->id,
                     'id_menu' => $menu->id,
                     'jumlah' => $item['jumlah'],
-                    'subtotal' => $subtotal
+                    'subtotal' => $subtotal,
+                    'catatan' => $item['catatan'] ?? null,
+                    'selected_variants' => !empty($selectedVariants) ? json_encode($selectedVariants) : null
                 ]);
 
                 // Tetap kurangi stok menu (jika digunakan sebagai kuota/stok harian produk jadi)
                 if ($menu->stok >= $item['jumlah']) {
                     $menu->decrement('stok', $item['jumlah']);
+                    $menu->stok -= $item['jumlah']; // Sync in-memory
                 } else {
                      throw new \Exception("Gagal: Stok produk {$menu->nama_menu} tidak mencukupi.");
                 }
@@ -128,13 +223,57 @@ class PosController extends Controller
             if (!empty($validated['promo_id'])) {
                 $promo = Promo::find($validated['promo_id']);
                 if ($promo && $promo->is_active) {
+                    
+                    // Filter Hari Promo
+                    $todayName = now()->format('l');
+                    $promoDays = is_string($promo->days) ? json_decode($promo->days, true) : $promo->days;
+                    if (is_array($promoDays) && count($promoDays) > 0) {
+                        if (!in_array($todayName, $promoDays)) {
+                            throw new \Exception("Promo '{$promo->title}' tidak berlaku untuk hari ini (" . now()->translatedFormat('l') . ").");
+                        }
+                    }
+
                     if ($promo->type === 'discount') {
-                        if ($promo->value <= 100) { // Persentase
+                        if ($promo->discount_type === 'percentage') {
                             $discountAmount = $totalSemua * ($promo->value / 100);
                         } else { // Nominal
                             $discountAmount = $promo->value;
                         }
                         if ($discountAmount > $totalSemua) $discountAmount = $totalSemua; // Jangan sampai diskon melebihi tagihan
+                    } else if ($promo->type === 'package') {
+                        // =====================================================================
+                        // FIX #5: Promo Paket Multiple — hitung berapa kali paket terpenuhi
+                        // =====================================================================
+                        $packageItems = $promo->menus;
+                        $packageNormalPrice = 0;
+                        
+                        $cartMap = [];
+                        foreach ($validated['items'] as $item) {
+                            if (!isset($cartMap[$item['id_menu']])) $cartMap[$item['id_menu']] = 0;
+                            $cartMap[$item['id_menu']] += $item['jumlah'];
+                        }
+
+                        // Hitung berapa kali paket bisa dipenuhi
+                        $maxPackageCount = PHP_INT_MAX;
+                        foreach ($packageItems as $pkgMenu) {
+                            $requiredQty = $pkgMenu->pivot->jumlah;
+                            $availableQty = $cartMap[$pkgMenu->id] ?? 0;
+                            if ($availableQty < $requiredQty) {
+                                $maxPackageCount = 0;
+                                break;
+                            }
+                            $maxPackageCount = min($maxPackageCount, intdiv($availableQty, $requiredQty));
+                            $packageNormalPrice += ($pkgMenu->harga * $requiredQty);
+                        }
+
+                        if ($maxPackageCount === 0 || $maxPackageCount === PHP_INT_MAX) {
+                            throw new \Exception("Pesanan tidak memenuhi syarat menu untuk Promo Paket '{$promo->title}'.");
+                        }
+
+                        // Diskon per paket x jumlah paket yang terpenuhi
+                        $discountPerPackage = $packageNormalPrice - $promo->value;
+                        if ($discountPerPackage < 0) $discountPerPackage = 0;
+                        $discountAmount = $discountPerPackage * $maxPackageCount;
                     }
                 }
             }
@@ -190,6 +329,16 @@ class PosController extends Controller
                 'id_kasir' => auth()->id() // Kasir yang memproses pesanan
             ]);
 
+            // Notify Customer via Web Push
+            if ($pesanan->konsumen) {
+                $statusText = $validated['status'] === 'completed' ? 'Selesai' : 'Diproses';
+                $pesanan->konsumen->notify(new \App\Notifications\WebPushNotification(
+                    'Pesanan ' . $statusText,
+                    'Pesanan Anda (Order #' . $pesanan->id . ') saat ini ' . strtolower($statusText) . '.',
+                    '/konsumen/profil'
+                ));
+            }
+
             return response()->json([
                 'message' => 'Status pesanan berhasil diupdate',
                 'status' => $pesanan->status
@@ -231,6 +380,15 @@ class PosController extends Controller
             // Jika dibayar, kasir yang menangani pembayaran ini dicatat
             $pesanan->update(['id_kasir' => auth()->id()]);
 
+            // Notify Customer via Web Push
+            if ($pesanan->konsumen) {
+                $pesanan->konsumen->notify(new \App\Notifications\WebPushNotification(
+                    'Pembayaran Diterima',
+                    'Pembayaran untuk Order #' . $pesanan->id . ' telah dikonfirmasi oleh Kasir.',
+                    '/konsumen/profil'
+                ));
+            }
+
             // Kirim E-Receipt jika ada email pelanggan (opsional dari kasir) ATAU jika pesanan punya relasi konsumen dengan email
             $targetEmail = $validated['email_pelanggan'] ?? null;
             if (!$targetEmail && $pesanan->konsumen && $pesanan->konsumen->email) {
@@ -271,6 +429,98 @@ class PosController extends Controller
     }
 
     /**
+     * Cetak struk langsung ke Printer Thermal (Raw ESC/POS Network)
+     */
+    public function printThermalReceipt($id)
+    {
+        $order = Pesanan::with(['detail_pesanan.menu', 'pembayaran', 'kasir', 'meja'])->findOrFail($id);
+        
+        if (!$order->pembayaran || $order->pembayaran->status !== 'paid') {
+            return response()->json(['error' => 'Pesanan belum dibayar lunas.'], 403);
+        }
+
+        $printer_active = Setting::getVal('printer_active') == '1';
+        $printer_ip = Setting::getVal('printer_ip');
+        $printer_port = Setting::getVal('printer_port', 9100);
+
+        if (!$printer_active || empty($printer_ip)) {
+            return response()->json(['error' => 'Fitur printer thermal tidak aktif atau IP belum diatur di Pengaturan.'], 400);
+        }
+
+        try {
+            $connector = new NetworkPrintConnector($printer_ip, $printer_port);
+            $printer = new Printer($connector);
+            
+            // Pengaturan Struk
+            $storeName = Setting::getVal('store_name', 'Angkringan POS');
+            $storeAddress = Setting::getVal('store_address', '');
+            
+            // Header
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setEmphasis(true);
+            $printer->text($storeName . "\n");
+            $printer->setEmphasis(false);
+            $printer->text($storeAddress . "\n");
+            $printer->text("--------------------------------\n");
+
+            // Info Pesanan
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $printer->text("Waktu   : " . \Carbon\Carbon::parse($order->pembayaran->tanggal)->format('d/m/Y H:i') . "\n");
+            $printer->text("Kasir   : " . ($order->kasir->name ?? 'Kasir') . "\n");
+            $printer->text("Meja    : " . ($order->meja->nama_meja_atau_nomor ?? '-') . "\n");
+            $printer->text("Metode  : " . strtoupper($order->pembayaran->metode ?? '-') . "\n");
+            $printer->text("--------------------------------\n");
+
+            // Items
+            foreach ($order->detail_pesanan as $detail) {
+                $namaMenu = substr($detail->menu->nama_menu, 0, 20); // Potong jika kepanjangan
+                $qty = str_pad($detail->jumlah . "x", 4, " ", STR_PAD_RIGHT);
+                $harga = str_pad(number_format($detail->subtotal, 0, ',', '.'), 8, " ", STR_PAD_LEFT);
+                
+                $printer->text($namaMenu . "\n");
+                $printer->text("    " . $qty . $harga . "\n");
+                
+                if (!empty($detail->selected_variants)) {
+                    $variants = json_decode($detail->selected_variants, true);
+                    if (is_array($variants) && count($variants) > 0) {
+                        $varText = implode(', ', array_column($variants, 'name'));
+                        $printer->text("    - " . substr($varText, 0, 26) . "\n");
+                    }
+                }
+
+                if (!empty($detail->catatan)) {
+                    $printer->text("    * " . substr($detail->catatan, 0, 26) . "\n");
+                }
+            }
+            $printer->text("--------------------------------\n");
+
+            // Total
+            $printer->setJustification(Printer::JUSTIFY_RIGHT);
+            if ($order->discount_amount > 0) {
+                $printer->text("Subtotal : Rp " . number_format($order->total, 0, ',', '.') . "\n");
+                $printer->text("Diskon   : Rp " . number_format($order->discount_amount, 0, ',', '.') . "\n");
+            }
+            $printer->setEmphasis(true);
+            $printer->text("TOTAL : Rp " . number_format($order->pembayaran->total_bayar, 0, ',', '.') . "\n");
+            $printer->setEmphasis(false);
+            $printer->text("--------------------------------\n");
+
+            // Footer
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $footerText = Setting::getVal('receipt_footer', 'Terima kasih atas kunjungan Anda!');
+            $printer->text(str_replace('\n', "\n", $footerText) . "\n\n\n\n\n");
+
+            // Potong kertas
+            $printer->cut();
+            $printer->close();
+
+            return response()->json(['message' => 'Struk berhasil dikirim ke printer thermal.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal terhubung ke printer (' . $printer_ip . ':' . $printer_port . '). Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Membatalkan pesanan dari kasir (Void).
      */
     public function voidOrder(Request $request, $id_pesanan)
@@ -278,6 +528,10 @@ class PosController extends Controller
         try {
             DB::beginTransaction();
             $pesanan = Pesanan::findOrFail($id_pesanan);
+
+            if (!Hash::check($request->input('password'), auth()->user()->password)) {
+                throw new \Exception('Password yang dimasukkan salah.');
+            }
 
             if ($pesanan->status === 'completed') {
                 throw new \Exception('Pesanan sudah selesai dan tidak dapat divoid.');
@@ -319,21 +573,100 @@ class PosController extends Controller
     public function shiftReport()
     {
         $kasir_id = auth()->id();
-        $hariIni = now()->format('Y-m-d');
+        
+        $shift = \App\Models\KasirShift::where('user_id', $kasir_id)->latest('id')->first();
+        if (!$shift) {
+            return redirect()->back()->with('error', 'Tidak ada data shift ditemukan.');
+        }
 
-        $pembayarans = Pembayaran::with('pesanan')
+        $query = Pembayaran::with('pesanan')
             ->whereHas('pesanan', function($q) use ($kasir_id) {
                 $q->where('id_kasir', $kasir_id);
             })
-            ->whereDate('tanggal', $hariIni)
             ->where('status', 'paid')
-            ->get();
+            ->where('updated_at', '>=', $shift->waktu_buka);
+
+        if ($shift->waktu_tutup) {
+            $query->where('updated_at', '<=', $shift->waktu_tutup);
+        }
+        
+        $pembayarans = $query->get();
 
         $totalCash = $pembayarans->where('metode', 'cash')->sum('total_bayar');
         $totalQris = $pembayarans->where('metode', 'qris')->sum('total_bayar');
         $totalSemua = $totalCash + $totalQris;
 
-        return view('kasir.shift_report', compact('totalCash', 'totalQris', 'totalSemua', 'pembayarans'));
+        // Hitung rekap menu terjual
+        $rekapMenu = [];
+        $totalItemTerjual = 0;
+        foreach ($pembayarans as $pay) {
+            if ($pay->pesanan) {
+                foreach ($pay->pesanan->detail_pesanan as $detail) {
+                    if ($detail->menu) {
+                        $nama = $detail->menu->nama_menu;
+                        if (!isset($rekapMenu[$nama])) {
+                            $rekapMenu[$nama] = ['jumlah' => 0, 'subtotal' => 0];
+                        }
+                        $rekapMenu[$nama]['jumlah'] += $detail->jumlah;
+                        $rekapMenu[$nama]['subtotal'] += $detail->subtotal;
+                        $totalItemTerjual += $detail->jumlah;
+                    }
+                }
+            }
+        }
+
+        return view('kasir.shift_report', compact('totalCash', 'totalQris', 'totalSemua', 'pembayarans', 'shift', 'rekapMenu', 'totalItemTerjual'));
+    }
+
+    public function exportShiftReportPdf()
+    {
+        $kasir_id = auth()->id();
+        
+        $shift = \App\Models\KasirShift::where('user_id', $kasir_id)->latest('id')->first();
+        if (!$shift) {
+            return redirect()->back()->with('error', 'Tidak ada data shift ditemukan.');
+        }
+
+        $query = Pembayaran::with('pesanan.detail_pesanan.menu')
+            ->whereHas('pesanan', function($q) use ($kasir_id) {
+                $q->where('id_kasir', $kasir_id);
+            })
+            ->where('status', 'paid')
+            ->where('updated_at', '>=', $shift->waktu_buka);
+
+        if ($shift->waktu_tutup) {
+            $query->where('updated_at', '<=', $shift->waktu_tutup);
+        }
+
+        $pembayarans = $query->get();
+
+        $totalCash = $pembayarans->where('metode', 'cash')->sum('total_bayar');
+        $totalQris = $pembayarans->where('metode', 'qris')->sum('total_bayar');
+        $totalSemua = $totalCash + $totalQris;
+
+        // Hitung rekap menu terjual
+        $rekapMenu = [];
+        $totalItemTerjual = 0;
+        foreach ($pembayarans as $pay) {
+            if ($pay->pesanan) {
+                foreach ($pay->pesanan->detail_pesanan as $detail) {
+                    if ($detail->menu) {
+                        $nama = $detail->menu->nama_menu;
+                        if (!isset($rekapMenu[$nama])) {
+                            $rekapMenu[$nama] = ['jumlah' => 0, 'subtotal' => 0];
+                        }
+                        $rekapMenu[$nama]['jumlah'] += $detail->jumlah;
+                        $rekapMenu[$nama]['subtotal'] += $detail->subtotal;
+                        $totalItemTerjual += $detail->jumlah;
+                    }
+                }
+            }
+        }
+
+        $hariIni = $shift->waktu_buka->format('Y-m-d');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('kasir.shift_report_pdf', compact('totalCash', 'totalQris', 'totalSemua', 'pembayarans', 'hariIni', 'shift', 'rekapMenu', 'totalItemTerjual'));
+        return $pdf->download('Laporan_Shift_' . $hariIni . '.pdf');
     }
 
     /**
@@ -356,9 +689,14 @@ class PosController extends Controller
                 throw new \Exception('Pesanan sudah dibayar, tidak bisa dipisah.');
             }
 
+            // Simpan total asli sebelum split untuk menghitung rasio HPP
+            $totalAsliSebelumSplit = $pesananAsli->total;
+            $hppAsliSebelumSplit = $pesananAsli->total_hpp;
+
             // 1. Buat Pesanan Baru (Clone)
             $pesananBaru = $pesananAsli->replicate();
             $pesananBaru->total = 0;
+            $pesananBaru->total_hpp = 0; // Reset HPP pesanan baru
             $pesananBaru->discount_amount = 0; // Reset diskon
             $pesananBaru->promo_id = null; // Promo tidak dipindah otomatis
             $pesananBaru->save();
@@ -397,18 +735,34 @@ class PosController extends Controller
                 }
             }
 
-            // 3. Update Total Pesanan Baru
-            $pesananBaru->update(['total' => $totalBaru]);
+            // =====================================================================
+            // FIX #3: Distribusi HPP secara proporsional berdasarkan rasio harga jual
+            // =====================================================================
+            $hppBaru = 0;
+            if ($totalAsliSebelumSplit > 0) {
+                // Rasio HPP = (total harga jual yang dipindah / total harga jual sebelum split) * HPP asli
+                $rasio = $totalBaru / $totalAsliSebelumSplit;
+                $hppBaru = round($hppAsliSebelumSplit * $rasio, 2);
+            }
+
+            // 3. Update Total Pesanan Baru (termasuk HPP)
+            $pesananBaru->update([
+                'total' => $totalBaru,
+                'total_hpp' => $hppBaru
+            ]);
             Pembayaran::create([
                 'id_pesanan' => $pesananBaru->id,
                 'status' => 'unpaid',
                 'total_bayar' => $totalBaru
             ]);
 
-            // 4. Update Total Pesanan Lama (Asli)
+            // 4. Update Total Pesanan Lama (Asli) termasuk HPP
             $totalAsli = DetailPesanan::where('id_pesanan', $pesananAsli->id)->sum('subtotal');
+            $hppAsli = $hppAsliSebelumSplit - $hppBaru; // Sisa HPP = HPP awal - HPP yang dipindah
+            
             $pesananAsli->update([
                 'total' => $totalAsli,
+                'total_hpp' => $hppAsli,
                 'promo_id' => null, // Hapus promo jika pesanan pecah
                 'discount_amount' => 0
             ]);
@@ -427,5 +781,30 @@ class PosController extends Controller
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    /**
+     * Mengambil daftar notifikasi terbaru (misal untuk Panggil Pelayan)
+     */
+    public function getNotifications()
+    {
+        $notifications = \App\Models\Notification::where('is_read', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return response()->json($notifications);
+    }
+
+    /**
+     * Tandai notifikasi sudah dibaca
+     */
+    public function readNotification($id)
+    {
+        $notif = \App\Models\Notification::find($id);
+        if ($notif) {
+            $notif->update(['is_read' => true]);
+            return response()->json(['message' => 'Notifikasi ditandai dibaca']);
+        }
+        return response()->json(['error' => 'Notifikasi tidak ditemukan'], 404);
     }
 }

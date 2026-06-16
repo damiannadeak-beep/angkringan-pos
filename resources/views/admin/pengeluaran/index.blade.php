@@ -59,6 +59,7 @@
                                     <th>Tanggal</th>
                                     <th>Deskripsi</th>
                                     <th>Keterangan</th>
+                                    <th>Diinput Oleh</th>
                                     <th class="text-end">Nominal</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
@@ -69,6 +70,13 @@
                                     <td>{{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}</td>
                                     <td class="fw-medium">{{ $p->deskripsi }}</td>
                                     <td class="text-muted small">{{ $p->keterangan ?: '-' }}</td>
+                                    <td>
+                                        @if($p->user)
+                                            <span class="badge bg-secondary">{{ $p->user->name }} ({{ ucfirst($p->user->role) }})</span>
+                                        @else
+                                            <span class="text-muted small">Sistem / Admin</span>
+                                        @endif
+                                    </td>
                                     <td class="text-end text-danger fw-bold">Rp {{ number_format($p->nominal, 0, ',', '.') }}</td>
                                     <td class="text-center">
                                         <form action="{{ route('admin.pengeluaran.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus data pengeluaran ini?');">
@@ -79,7 +87,7 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="5" class="text-center text-muted py-4">Belum ada data pengeluaran.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">Belum ada data pengeluaran.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

@@ -23,6 +23,8 @@
                                 <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> PENDING</span>
                             @elseif($order->status === 'processing')
                                 <span class="badge bg-primary"><i class="bi bi-fire"></i> DIMASAK</span>
+                            @elseif($order->status === 'completed')
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> SIAP DIHIDANGKAN</span>
                             @endif
                         </div>
                     </div>
@@ -34,7 +36,15 @@
                             </div>
                             <div>
                                 <h6 class="mb-0 fw-bold">{{ $order->tipe_pesanan == 'takeaway' ? 'Takeaway' : 'Dine-In' }}</h6>
-                                <small class="text-muted">{{ $order->meja->nama_meja_atau_nomor ?? 'Bungkus' }}</small>
+                                <small class="text-muted">
+                                    @if($order->tipe_pesanan == 'takeaway')
+                                        Bungkus
+                                    @elseif($order->tipe_pesanan == 'dine_in' && !$order->id_meja)
+                                        <span class="text-danger fw-bold"><i class="bi bi-geo-alt"></i> Belum Pilih Meja (Datang Nanti)</span>
+                                    @else
+                                        {{ $order->meja->nama_meja_atau_nomor ?? 'Meja Tidak Diketahui' }}
+                                    @endif
+                                </small>
                             </div>
                         </div>
 
@@ -43,9 +53,14 @@
                                 <tbody>
                                     @foreach($order->detail_pesanan as $item)
                                         <tr>
-                                            <td class="text-muted" style="width: 30px;">{{ $item->jumlah }}x</td>
-                                            <td class="fw-medium">{{ $item->menu->nama_menu ?? 'Menu tidak ditemukan' }}</td>
-                                            <td class="text-end text-muted">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                            <td class="text-muted" style="width: 30px; vertical-align: top;">{{ $item->jumlah }}x</td>
+                                            <td class="fw-medium">
+                                                {{ $item->menu->nama_menu ?? 'Menu tidak ditemukan' }}
+                                                @if($item->catatan)
+                                                    <div class="small text-danger fst-italic"><i class="bi bi-chat-text me-1"></i>Catatan: {{ $item->catatan }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="text-end text-muted" style="vertical-align: top;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -55,8 +70,15 @@
 
                     <div class="card-footer bg-white pt-3 pb-3 rounded-bottom-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted small">Total Tagihan</span>
-                            <h6 class="fw-bold text-primary mb-0">Rp {{ number_format($order->total, 0, ',', '.') }}</h6>
+                            <span class="text-muted small">Total Tagihan ({{ $order->detail_pesanan->sum('jumlah') }} Item)</span>
+                            <div class="text-end">
+                                @if($order->discount_amount > 0)
+                                    <span class="text-danger small text-decoration-line-through d-block" style="font-size: 0.8rem;">Rp {{ number_format($order->total, 0, ',', '.') }}</span>
+                                    <h6 class="fw-bold text-primary mb-0">Rp {{ number_format($order->total - $order->discount_amount, 0, ',', '.') }}</h6>
+                                @else
+                                    <h6 class="fw-bold text-primary mb-0">Rp {{ number_format($order->total, 0, ',', '.') }}</h6>
+                                @endif
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -70,17 +92,14 @@
 
                         <div class="d-flex flex-wrap gap-2 mt-3 pt-2 border-top">
                             @if($order->status === 'pending')
-                                <button class="btn btn-sm btn-primary flex-grow-1 fw-bold" onclick="updateOrderStatus({{ $order->id }}, 'processing')">
+                                <button class="btn btn-sm btn-primary w-100 fw-bold" onclick="updateOrderStatus({{ $order->id }}, 'processing')">
                                     <i class="bi bi-play-circle me-1"></i> Proses Masak
                                 </button>
                             @endif
                             
                             @if($order->status === 'processing')
-                                <a href="{{ route('kasir.order.kitchen', $order->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary flex-grow-1 fw-bold">
-                                    <i class="bi bi-printer me-1"></i> Struk Dapur
-                                </a>
-                                <button class="btn btn-sm btn-success flex-grow-1 fw-bold" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
-                                    <i class="bi bi-check2-all me-1"></i> Selesai
+                                <button class="btn btn-sm btn-success w-100 fw-bold" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                    <i class="bi bi-check2-all me-1"></i> Selesai Dimasak
                                 </button>
                             @endif
 
@@ -92,12 +111,18 @@
                                     <i class="bi bi-trash me-1"></i> Void
                                 </button>
                                 <div class="w-100 m-0 p-0"></div> <!-- Break line -->
-                                <button class="btn btn-sm btn-outline-warning w-100 fw-bold mt-1" onclick="openSplitModal({{ $order->id }}, {{ htmlspecialchars(json_encode($order->detail_pesanan)) }})">
+                                <button class="btn btn-sm btn-outline-warning w-100 fw-bold mt-1" data-details="{{ json_encode($order->detail_pesanan) }}" onclick="openSplitModal({{ $order->id }}, this)">
                                     <i class="bi bi-layout-split me-1"></i> Pisah Bon (Split Bill)
                                 </button>
                             @else
+                                @php $printerActive = \App\Models\Setting::getVal('printer_active') == '1'; @endphp
+                                @if($printerActive)
+                                    <button class="btn btn-sm btn-info text-white flex-grow-1 fw-bold" onclick="printThermal({{ $order->id }})">
+                                        <i class="bi bi-printer me-1"></i> Cetak Thermal
+                                    </button>
+                                @endif
                                 <a href="{{ route('kasir.order.receipt', $order->id) }}" target="_blank" class="btn btn-sm btn-outline-primary flex-grow-1 fw-bold">
-                                    <i class="bi bi-printer me-1"></i> Cetak Struk
+                                    <i class="bi bi-file-earmark-text me-1"></i> Cetak Browser
                                 </a>
                             @endif
                         </div>
@@ -206,6 +231,9 @@
         let alasan = prompt('Masukkan alasan mem-VOID pesanan ini (Wajib):');
         if(!alasan) return; // batalkan jika tidak mengisi alasan
         
+        let password = prompt('Otorisasi Diperlukan. Masukkan password akun Anda:');
+        if(!password) return; // batalkan jika tidak mengisi password
+        
         if(!confirm('Anda yakin ingin mem-VOID pesanan ini? Stok akan dikembalikan dan pesanan dibatalkan.')) return;
         
         fetch(`/kasir/order/${id}/void`, {
@@ -214,7 +242,7 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ alasan: alasan })
+            body: JSON.stringify({ alasan: alasan, password: password })
         })
         .then(res => res.json())
         .then(data => {
@@ -278,8 +306,9 @@
         });
     }
 
-    function openSplitModal(orderId, details) {
+    function openSplitModal(orderId, btnElement) {
         splitOrderId = orderId;
+        let details = JSON.parse(btnElement.getAttribute('data-details'));
         splitDetails = details;
         document.getElementById('split-order-id').innerText = orderId;
 
@@ -358,6 +387,25 @@
             else {
                 alert(data.message);
                 location.reload();
+            }
+        });
+    }
+
+    function printThermal(id) {
+        if(!confirm('Kirim struk ini ke Printer Thermal Jaringan?')) return;
+        
+        fetch(`/kasir/order/${id}/print-thermal`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) alert(data.error);
+            else {
+                alert(data.message);
             }
         });
     }

@@ -1,8 +1,35 @@
 // Fonts
-@import url('https://fonts.bunny.net/css?family=Nunito');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 // Variables
 @import 'variables';
 
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
+
+// Vintage Theme Overrides
+body {
+    background-color: $light;
+    background-image: 
+        linear-gradient(rgba(62, 39, 35, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(62, 39, 35, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-position: center center;
+}
+
+.box-retro {
+    background-color: $primary;
+    color: white;
+    border: 2px solid $dark;
+    border-radius: $border-radius;
+    position: relative;
+    
+    // Corner accents to look like the poster
+    &::before, &::after {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: transparent;
+    }
+}

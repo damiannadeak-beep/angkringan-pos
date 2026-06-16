@@ -48,11 +48,19 @@
                 </tr>
                 <tr>
                     <td class="label">Pelanggan:</td>
-                    <td class="value">{{ $pesanan->konsumen->name ?? 'Walk-in / Kasir' }}</td>
+                    <td class="value">{{ $pesanan->konsumen->name ?? 'Walk-in / Umum' }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Kasir:</td>
+                    <td class="value">{{ $pesanan->kasir->name ?? 'Sistem' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Status:</td>
                     <td class="value"><span class="badge">LUNAS</span></td>
+                </tr>
+                <tr>
+                    <td class="label">Metode Bayar:</td>
+                    <td class="value">{{ strtoupper($pesanan->pembayaran->metode ?? 'TUNAI') }}</td>
                 </tr>
             </table>
         </div>
@@ -98,7 +106,13 @@
         </div>
 
         <div class="footer">
-            <p>{{ \App\Models\Setting::getVal('receipt_footer', 'Terima kasih atas kunjungan Anda!') }}</p>
+            @php 
+                $footerText = \App\Models\Setting::getVal('receipt_footer');
+                if (empty($footerText)) {
+                    $footerText = 'Terima kasih atas kunjungan Anda!';
+                }
+            @endphp
+            <p>{{ $footerText }}</p>
             <p style="margin-top: 15px; font-size: 11px; color: #aaa;">Ini adalah struk otomatis yang sah. Harap simpan sebagai bukti pembayaran Anda.</p>
         </div>
     </div>

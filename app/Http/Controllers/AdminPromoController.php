@@ -19,7 +19,8 @@ class AdminPromoController extends Controller
 
     public function create()
     {
-        return view('admin.promo.form', ['promo' => new Promo()]);
+        $allMenus = \App\Models\Menu::all();
+        return view('admin.promo.form', ['promo' => new Promo(), 'allMenus' => $allMenus]);
     }
 
     public function store(Request $request)
@@ -28,14 +29,29 @@ class AdminPromoController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:discount,package',
+            'discount_type' => 'nullable|in:percentage,nominal',
             'value' => 'required|numeric|min:0',
             'starts_at' => 'nullable|date',
             'ends_at' => 'nullable|date',
-            'is_active' => 'nullable|boolean',
+            'days' => 'nullable|array',
+            'days.*' => 'string'
         ]);
         $data['is_active'] = $request->has('is_active');
-        Promo::create($data);
-        $promo = Promo::latest()->first();
+        $promo = Promo::create($data);
+
+        // Sync Paket Menus
+        if ($promo->type === 'package' && $request->has('package_menus')) {
+            $menus = $request->input('package_menus');
+            $qtys = $request->input('package_qty');
+            $syncData = [];
+            foreach($menus as $index => $menuId) {
+                if(!empty($menuId)) {
+                    $syncData[$menuId] = ['jumlah' => $qtys[$index] ?? 1];
+                }
+            }
+            $promo->menus()->sync($syncData);
+        }
+
         // jika promo aktif dan mulai sekarang, kirim notifikasi email ke users via queue job
         if($promo->is_active && (!$promo->starts_at || $promo->starts_at <= now())){
             $users = User::whereNotNull('email')->where('email','!=','')->cursor();
@@ -43,13 +59,21 @@ class AdminPromoController extends Controller
                 SendPromoEmail::dispatch($u->id, $promo);
             }
         }
+        
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'Create Promo',
+            'description' => 'Membuat promo baru: ' . $promo->title
+        ]);
+
         return redirect()->route('admin.promo.index')->with('success','Promo dibuat.');
     }
 
     public function edit($id)
     {
         $promo = Promo::findOrFail($id);
-        return view('admin.promo.form', compact('promo'));
+        $allMenus = \App\Models\Menu::all();
+        return view('admin.promo.form', compact('promo', 'allMenus'));
     }
 
     public function update(Request $request, $id)
@@ -59,13 +83,34 @@ class AdminPromoController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:discount,package',
+            'discount_type' => 'nullable|in:percentage,nominal',
             'value' => 'required|numeric|min:0',
             'starts_at' => 'nullable|date',
             'ends_at' => 'nullable|date',
-            'is_active' => 'nullable|boolean',
+            'days' => 'nullable|array',
+            'days.*' => 'string'
         ]);
         $data['is_active'] = $request->has('is_active');
+        // Jika type diganti dari package ke discount, kosongkan days? Tidak perlu. Tapi kosongkan menu
+        if ($data['type'] === 'discount') {
+            $promo->menus()->detach();
+        }
+
         $promo->update($data);
+
+        // Sync Paket Menus
+        if ($promo->type === 'package' && $request->has('package_menus')) {
+            $menus = $request->input('package_menus');
+            $qtys = $request->input('package_qty');
+            $syncData = [];
+            foreach($menus as $index => $menuId) {
+                if(!empty($menuId)) {
+                    $syncData[$menuId] = ['jumlah' => $qtys[$index] ?? 1];
+                }
+            }
+            $promo->menus()->sync($syncData);
+        }
+
         // jika promo aktif dan mulai sekarang, kirim notifikasi email via queue job
         if($promo->is_active && (!$promo->starts_at || $promo->starts_at <= now())){
             $users = User::whereNotNull('email')->where('email','!=','')->cursor();
@@ -73,6 +118,13 @@ class AdminPromoController extends Controller
                 SendPromoEmail::dispatch($u->id, $promo);
             }
         }
+        
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'Update Promo',
+            'description' => 'Memperbarui promo: ' . $promo->title
+        ]);
+
         return redirect()->route('admin.promo.index')->with('success','Promo diperbarui.');
     }
 
