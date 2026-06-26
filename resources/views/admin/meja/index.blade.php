@@ -64,24 +64,22 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td class="fw-medium">{{ $m->nama_meja_atau_nomor }}</td>
                                     <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-1 flex-wrap flex-md-nowrap">
-                                            <!-- Tombol Print QR -->
-                                            <a href="{{ route('admin.meja.print_qr', $m->id) }}" target="_blank" class="btn btn-sm btn-outline-success" title="Cetak QR Code">
-                                                <i class="bi bi-qr-code"></i> <span class="d-none d-sm-inline">Cetak QR</span>
-                                            </a>
-                                            
-                                            <!-- Tombol Edit -->
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ $m->id }}" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-    
-                                            <!-- Tombol Hapus -->
-                                            <form action="{{ route('admin.meja.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus meja ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
-                                            </form>
-                                        </div>
+                                        <!-- Tombol Print QR -->
+                                        <a href="{{ route('admin.meja.print_qr', $m->id) }}" target="_blank" class="btn btn-sm btn-outline-success me-1" title="Cetak QR Code">
+                                            <i class="bi bi-qr-code"></i> Cetak QR
+                                        </a>
+                                        
+                                        <!-- Tombol Edit -->
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ $m->id }}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <!-- Tombol Hapus -->
+                                        <form class="d-inline" action="{{ route('admin.meja.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus meja ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        </form>
 
                                         <!-- Modal Edit -->
                                         <div class="modal fade text-start" id="editModal{{ $m->id }}" tabindex="-1" aria-hidden="true">

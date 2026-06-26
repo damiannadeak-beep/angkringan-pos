@@ -74,18 +74,12 @@
                                 </td>
                                 <td>{{ $m->is_available ? 'Ya' : 'Tidak' }}</td>
                                 <td>
-                                    <div class="d-flex justify-content-center gap-1 flex-wrap flex-md-nowrap">
-                                        <a href="{{ route('admin.menu.edit', $m->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Edit</span>
-                                        </a>
-                                        <form action="{{ route('admin.menu.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
-                                                <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <a href="{{ route('admin.menu.edit', $m->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <form class="d-inline" action="{{ route('admin.menu.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach
