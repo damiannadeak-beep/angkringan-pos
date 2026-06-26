@@ -71,11 +71,11 @@
                 </div>
                 
                 <div class="card-body p-3 p-md-4 d-flex flex-column">
-                    <h5 class="fw-bold mb-1 mb-md-2 text-dark fs-6 fs-md-5" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ $menu->nama_menu }}">{{ $menu->nama_menu }}</h5>
+                    <h5 class="fw-bold mb-1 mb-md-2 text-dark fs-6 fs-md-5" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em;" title="{{ $menu->nama_menu }}">{{ $menu->nama_menu }}</h5>
                     <div class="mb-2 mb-md-3">
                         <span class="text-primary fw-bold fs-6 fs-md-5">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
                     </div>
-                    <p class="text-muted flex-grow-1 mb-3 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '3' || this.style.webkitLineClamp === '' ? 'unset' : '3';" title="Klik untuk membaca selengkapnya">
+                    <p class="text-muted flex-grow-1 mb-3 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; min-height: 4.5em;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '3' || this.style.webkitLineClamp === '' ? 'unset' : '3';" title="Klik untuk membaca selengkapnya">
                         {{ $menu->deskripsi ?? 'Hidangan lezat khas angkringan yang siap memanjakan lidah Anda.' }}
                     </p>
                     
