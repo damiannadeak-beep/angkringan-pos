@@ -67,12 +67,7 @@ class AdminMenuController extends Controller
 
             if (extension_loaded('gd') || extension_loaded('imagick')) {
                 $manager = extension_loaded('gd') ? ImageManager::gd() : ImageManager::imagick();
-                $img = $manager->read($file)
-                    ->resize(800, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->encode('jpg', 80);
+                $img = $manager->read($file)->scaleDown(800)->toJpeg(80);
 
                 Storage::disk('public')->put($path, (string) $img);
             } else {
@@ -133,12 +128,7 @@ class AdminMenuController extends Controller
 
             if (extension_loaded('gd') || extension_loaded('imagick')) {
                 $manager = extension_loaded('gd') ? ImageManager::gd() : ImageManager::imagick();
-                $img = $manager->read($file)
-                    ->resize(800, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->encode('jpg', 80);
+                $img = $manager->read($file)->scaleDown(800)->toJpeg(80);
 
                 Storage::disk('public')->put($path, (string) $img);
             } else {
