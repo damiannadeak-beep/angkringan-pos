@@ -65,21 +65,28 @@
                                 <td>{{ ucfirst($m->kategori) }}</td>
                                 <td>Rp {{ number_format($m->harga,0,',','.') }}</td>
                                 <td>
-                                    {{ $m->stok }}
-                                    <form class="d-inline ms-2" action="{{ route('admin.menu.stock', $m->id) }}" method="POST">
-                                        @csrf
-                                        <input type="number" name="stok" value="{{ $m->stok }}" min="0" style="width:80px; display:inline-block">
-                                        <button class="btn btn-sm btn-outline-secondary">Update</button>
-                                    </form>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <form class="d-flex gap-1" action="{{ route('admin.menu.stock', $m->id) }}" method="POST">
+                                            @csrf
+                                            <input type="number" name="stok" value="{{ $m->stok }}" min="0" class="form-control form-control-sm px-1 text-center" style="width:55px;">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Update Stok"><i class="bi bi-check-lg"></i></button>
+                                        </form>
+                                    </div>
                                 </td>
                                 <td>{{ $m->is_available ? 'Ya' : 'Tidak' }}</td>
                                 <td>
-                                    <a href="{{ route('admin.menu.edit', $m->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <form class="d-inline" action="{{ route('admin.menu.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
-                                    </form>
+                                    <div class="d-flex gap-1 flex-nowrap">
+                                        <a href="{{ route('admin.menu.edit', $m->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Edit</span>
+                                        </a>
+                                        <form action="{{ route('admin.menu.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
