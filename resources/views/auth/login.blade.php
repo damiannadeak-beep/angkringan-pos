@@ -12,7 +12,7 @@
                                 <i class="bi bi-shop fs-1"></i>
                             </div>
                             <h3 class="fw-bold text-dark mb-1">Selamat Datang</h3>
-                            <p class="text-muted">Masuk ke sistem Angkringan POS</p>
+                            <p class="text-muted">Masuk ke sistem Warung Angkringan</p>
                         </div>
 
                         @if (session('error'))

@@ -12,7 +12,7 @@
                                 <i class="bi bi-person-plus fs-1"></i>
                             </div>
                             <h3 class="fw-bold text-dark mb-1">Daftar Akun</h3>
-                            <p class="text-muted">Buat akun untuk memesan menu</p>
+                            <p class="text-muted">Daftar akun konsumen Warung Angkringan</p>
                         </div>
 
                         <form method="POST" action="{{ route('register') }}">

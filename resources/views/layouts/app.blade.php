@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Angkringan POS</title>
+    <title>Warung Angkringan</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
         <nav class="navbar navbar-expand-md navbar-light bg-light border-bottom border-secondary shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand fw-bold text-primary" href="{{ url('/') }}">
-                    <i class="bi bi-shop me-1"></i> Angkringan POS
+                    <i class="bi bi-shop me-1"></i> Warung Angkringan
                 </a>
                 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
@@ -42,7 +42,9 @@
                         </li>
                     </ul>
 
-                    <ul class="navbar-nav ms-auto">
+                    <div class="text-center mt-3 small text-muted">
+            &copy; {{ date('Y') }} Warung Angkringan. Hak Cipta Dilindungi.
+        </div>                    <ul class="navbar-nav ms-auto">
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">

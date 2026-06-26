@@ -1,5 +1,5 @@
 self.addEventListener('push', function (e) {
-    var title = 'Angkringan POS';
+    var title = 'Kasir - Warung Angkringan';
     var body = 'Ada pemberitahuan baru!';
     
     if (e.data) {
