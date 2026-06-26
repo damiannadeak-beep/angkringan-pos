@@ -22,39 +22,38 @@
         @foreach($menus as $menu)
         <div class="col-12 col-md-6 col-lg-4 menu-item" data-kategori="{{ $menu->kategori }}">
             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white" style="transition: transform 0.2s;">
-                <div class="row g-0 h-100">
-                    @if($menu->image)
-                    <div class="col-4 bg-white text-center d-flex align-items-center justify-content-center border-end" style="min-height: 120px;">
-                        <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="object-fit: contain; width: 100%; height: 100%; max-height: 120px; padding: 0.5rem;">
+                @if($menu->image)
+                <div style="height: 180px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                @endif
+                <div class="card-body d-flex flex-column p-3">
+                    <h6 class="fw-bold text-dark mb-1">{{ $menu->nama_menu }}</h6>
+                    <small class="text-muted mb-2" style="cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '2' ? 'unset' : '2'" title="Klik untuk membaca selengkapnya">{{ $menu->deskripsi ?? 'Tanpa deskripsi' }}</small>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
+                        <h6 class="text-success fw-bold mb-0">Rp {{ number_format($menu->harga, 0, ',', '.') }}</h6>
+                        <small class="text-muted">Sisa: {{ $menu->stok }}</small>
                     </div>
-                    @endif
-                    <div class="{{ $menu->image ? 'col-8' : 'col-12' }}">
-                        <div class="card-body d-flex flex-column h-100 p-3">
-                            <h6 class="fw-bold text-dark mb-1">{{ $menu->nama_menu }}</h6>
-                            <small class="text-muted mb-2 text-truncate" style="max-width: 100%; display: block;">{{ $menu->deskripsi ?? 'Tanpa deskripsi' }}</small>
-                            <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
-                                <h6 class="text-success fw-bold mb-0">Rp {{ number_format($menu->harga, 0, ',', '.') }}</h6>
-                                <small class="text-muted">Sisa Stok: {{ $menu->stok }}</small>
-                            </div>
-                            
-                            <div class="d-flex justify-content-end align-items-center mt-auto gap-3">
-                                <button class="btn btn-outline-danger rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
-                                        onclick="removeFromCart({{ $menu->id }})"
-                                        style="width: 32px; height: 32px; transition: all 0.2s;">
-                                    <i class="bi bi-dash fs-5"></i>
-                                </button>
-                                <span id="qty-{{ $menu->id }}" class="fw-bold fs-5 mb-0" style="min-width: 15px; text-align: center;">0</span>
-                                <button class="btn btn-success rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
-                                        onclick="addToCart({{ $menu->id }}, '{{ $menu->nama_menu }}', {{ $menu->harga }})"
-                                        style="width: 32px; height: 32px; transition: all 0.2s;">
-                                    <i class="bi bi-plus fs-5"></i>
-                                </button>
-                            </div>
-                            
-                            <div id="catatan-container-{{ $menu->id }}" class="mt-3" style="display: none;">
-                                <input type="text" id="catatan-input-{{ $menu->id }}" class="form-control form-control-sm border-1 bg-light rounded-3 px-3" placeholder="Tambah catatan (opsional)..." onchange="updateCatatan({{ $menu->id }}, this.value)">
-                            </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <button class="btn btn-outline-danger rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
+                                    onclick="removeFromCart({{ $menu->id }})"
+                                    style="width: 32px; height: 32px; transition: all 0.2s;">
+                                <i class="bi bi-dash fs-5"></i>
+                            </button>
+                            <span id="qty-{{ $menu->id }}" class="fw-bold fs-5 mb-0" style="min-width: 15px; text-align: center;">0</span>
+                            <button class="btn btn-success rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
+                                    onclick="addToCart({{ $menu->id }}, '{{ $menu->nama_menu }}', {{ $menu->harga }})"
+                                    style="width: 32px; height: 32px; transition: all 0.2s;">
+                                <i class="bi bi-plus fs-5"></i>
+                            </button>
                         </div>
+                    </div>
+                    
+                    <div id="catatan-container-{{ $menu->id }}" class="mt-3" style="display: none;">
+                        <input type="text" id="catatan-input-{{ $menu->id }}" class="form-control form-control-sm border-1 bg-light rounded-3 px-3" placeholder="Tambah catatan..." onchange="updateCatatan({{ $menu->id }}, this.value)">
                     </div>
                 </div>
             </div>
@@ -62,6 +61,8 @@
         @endforeach
     </div>
 </div>
+
+
 
 <div class="fixed-bottom bg-white shadow-lg" style="z-index: 1030; border-radius: 24px 24px 0 0; border-top: 1px solid #eaeaea;">
     <div class="container px-3 py-3">
@@ -194,7 +195,10 @@
 
         if (!confirm('Apakah pesanan Anda sudah benar?')) return;
 
-        // Untuk takeaway, jangan kirim id_meja
+        proceedToCheckout();
+    }
+
+    function proceedToCheckout() {
         let formData = {
             _token: "{{ csrf_token() }}",
             tipe_pesanan: 'takeaway',

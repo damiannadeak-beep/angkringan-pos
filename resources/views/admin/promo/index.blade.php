@@ -44,7 +44,17 @@
                                     @endif
                                 </td>
                                 <td>{{ $p->starts_at ? $p->starts_at->format('d M Y') : '-' }} - {{ $p->ends_at ? $p->ends_at->format('d M Y') : '-' }}</td>
-                                <td>{{ $p->is_active ? 'Ya' : 'Tidak' }}</td>
+                                <td>
+                                    @if(!$p->is_active)
+                                        <span class="badge bg-danger">Tidak Aktif</span>
+                                    @elseif($p->ends_at && $p->ends_at < now())
+                                        <span class="badge bg-secondary">Kadaluarsa</span>
+                                    @elseif($p->starts_at && $p->starts_at > now())
+                                        <span class="badge bg-warning text-dark">Belum Mulai</span>
+                                    @else
+                                        <span class="badge bg-success">Berjalan</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ route('admin.promo.edit', $p->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                                     <form class="d-inline" action="{{ route('admin.promo.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus promo?');">

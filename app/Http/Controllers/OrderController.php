@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\{Pesanan, DetailPesanan, Pembayaran, Menu, Meja, Promo};
+use App\Models\{Pesanan, DetailPesanan, Pembayaran, Menu, Meja, Promo, Setting};
+use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
@@ -368,4 +369,6 @@ class OrderController extends Controller
 
         return response()->json(['message' => 'Pelayan segera datang ke meja Anda.']);
     }
+
+
 }

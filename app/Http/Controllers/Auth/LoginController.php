@@ -22,6 +22,20 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
+     * Tentukan batas maksimal percobaan login (rate limiting / anti brute-force).
+     *
+     * @var int
+     */
+    protected $maxAttempts = 3;
+
+    /**
+     * Tentukan waktu blokir (dalam menit) jika melebihi batas percobaan login.
+     *
+     * @var int
+     */
+    protected $decayMinutes = 2;
+
+    /**
      * Where to redirect users after login (Ini hanya fallback default).
      *
      * @var string

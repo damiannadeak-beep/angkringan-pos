@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster Presentasi - Warung Angkringan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            orange: '#FF5C00',
+                            blue: '#0070F3',
+                            dark: '#111827',
+                            light: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .poster-container {
+            width: 1080px;
+            height: 1527px; /* Rasio A4 persis (1:1.414) */
+            background-color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            color: #111827;
+        }
+
+        /* Subtle grid pattern for light mode */
+        .grid-pattern {
+            position: absolute;
+            inset: 0;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+            z-index: 0;
+        }
+
+        .clean-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #FF5C00, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-blue {
+            background: linear-gradient(to right, #2563eb, #0284c7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { padding: 0; margin: 0; background: #ffffff !important; }
+            .poster-container { width: 100% !important; height: 100% !important; min-height: 100vh !important; box-shadow: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="font-sans antialiased">
+
+<div class="fixed bottom-10 right-10 z-50 no-print">
+    <button onclick="downloadPoster()" class="bg-gradient-to-r from-brand-orange to-orange-500 hover:from-orange-600 hover:to-orange-600 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_30px_rgba(255,92,0,0.4)] flex items-center gap-3 transition-all hover:scale-105 border border-white/20">
+        <i class="fas fa-download text-xl"></i>
+        <span>Download Poster</span>
+    </button>
+</div>
+
+<div class="poster-container" id="poster-element">
+    <div class="grid-pattern"></div>
+    
+    <!-- Sangat subtle accent shape -->
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange/5 rounded-full mix-blend-multiply filter blur-[100px] pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand-blue/5 rounded-full mix-blend-multiply filter blur-[100px] pointer-events-none"></div>
+
+    <div class="relative z-10 flex flex-col h-full w-full px-16 py-6">
+        
+        <!-- ACADEMIC TOP BAR -->
+        <div class="flex justify-between items-center w-full mb-4 border-b border-gray-100 pb-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm p-1.5">
+                    <img src="logo-polbeng.png" alt="Logo Polbeng" class="w-full h-full object-contain">
+                </div>
+                <div class="text-left">
+                    <p class="text-sm font-bold text-gray-900 uppercase tracking-widest">Politeknik Negeri Bengkalis</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Jurusan Teknik Informatika &bull; D3 Teknik Informatika</p>
+                </div>
+            </div>
+            <div class="text-right bg-gray-50 px-5 py-2.5 rounded-lg border border-gray-200">
+                <p class="text-[10px] font-bold text-brand-orange uppercase tracking-widest mb-0.5">Semester Genap</p>
+                <p class="text-xs font-bold text-gray-800 tracking-widest">T.A 2025/2026</p>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <header class="text-center mt-2 mb-6">
+            <div class="inline-block text-brand-orange text-xs font-bold tracking-[0.2em] uppercase mb-4 whitespace-nowrap">
+                <span style="margin-right: -0.2em;">Proyek Final Pemrograman Web Framework</span>
+            </div>
+            <h1 class="text-6xl font-extrabold tracking-tight leading-[1.1] mb-3 text-gray-900">
+                Sistem Enterprise <br>
+                <span class="text-gradient">Warung Angkringan</span>
+            </h1>
+            <p class="text-lg text-gray-600 font-medium max-w-3xl mx-auto leading-relaxed">
+                Platform Point of Sales & Manajemen Operasional F&B Terintegrasi Penuh. Dibangun dengan arsitektur modern untuk skalabilitas dan efisiensi.
+            </p>
+        </header>
+
+        <!-- HERO MOCKUP -->
+        <div class="relative w-full flex justify-center items-center mb-5">
+            <div class="w-[75%] z-10 relative">
+                
+                <div class="clean-card p-3 relative rounded-[2rem]">
+                    <img src="mockup_landing.png" class="w-full h-auto bg-gray-100 rounded-2xl border border-gray-200 object-contain shadow-sm">
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURES GRID (Penilaian Komprehensif) -->
+        <div class="text-center mb-5">
+            <h2 class="text-2xl font-bold tracking-wide text-gray-900"><span class="text-gradient-blue">Cakupan Sistem & Penilaian</span> Terintegrasi</h2>
+        </div>
+
+        <div class="grid grid-cols-4 gap-5">
+            <!-- Poin 1: Auth -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4 border border-indigo-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 .5-.87l7-4a1 1 0 0 1 1 0l7 4A1 1 0 0 1 20 6v7z"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M8 17.5a4 4 0 0 1 8 0"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Multi-Role Auth</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Sistem autentikasi aman dengan pemisahan hak akses: Admin, Kasir, & Pelanggan. Rute terlindungi middleware.
+                </p>
+            </div>
+
+            <!-- Poin 2: POS & QR -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center mb-4 border border-orange-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Smart POS & QR</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Multi-channel order. Konsumen bisa scan QR di meja (Self-service) atau transaksi langsung di kasir POS.
+                </p>
+            </div>
+
+            <!-- Poin 3: Inventory -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 border border-emerald-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Inventory & Resep</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Manajemen stok bahan baku (Raw Materials) yang terpotong otomatis berdasarkan komposisi resep menu terjual.
+                </p>
+            </div>
+
+            <!-- Poin 4: HR / Absensi -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 border border-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">HR: Absensi & Shift</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Pengelolaan operasional karyawan. Meliputi perekaman absensi harian, pembagian shift kerja, dan log aktivitas.
+                </p>
+            </div>
+
+            <!-- Poin 5: Keuangan -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center mb-4 border border-yellow-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Manajemen Keuangan</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Sistem arus kas real-time. Pencatatan total pendapatan kasir harian serta log pengeluaran/belanja operasional.
+                </p>
+            </div>
+
+            <!-- Poin 6: Promo -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-4 border border-pink-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Sistem Promo Validasi</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Fitur marketing dengan kode diskon dinamis. Terintegrasi dengan limit kuota, rentang tanggal, dan hari khusus.
+                </p>
+            </div>
+
+            <!-- Poin 7: Void & Audit -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mb-4 border border-red-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Keamanan & Void Log</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Audit trail ketat. Memiliki log pembatalan pesanan (Void Log) untuk melacak kecurangan kasir beserta alasannya.
+                </p>
+            </div>
+
+            <!-- Poin 8: Report -->
+            <div class="clean-card p-6 flex flex-col justify-start">
+                <div class="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-4 border border-cyan-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H8v-4z"/><path d="M14 17h4"/><path d="M14 13h4"/><path d="M14 13v4"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Reporting & Ekspor</h3>
+                <p class="text-sm text-gray-600 leading-relaxed font-medium">
+                    Sistem analitik terpadu. Generate laporan pendapatan, shift, dan stok harian dengan fitur cetak PDF langsung.
+                </p>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="mt-auto pt-5 border-t border-gray-200 flex justify-between items-center relative z-20">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-brand-orange border border-orange-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/><path d="m10 10-2 2 2 2"/><path d="m14 14 2-2-2-2"/></svg>
+                </div>
+                <div class="max-w-[500px]">
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">Tim Pengembang</p>
+                    <p class="font-bold text-gray-900 tracking-wide text-sm leading-snug">Damian Gregorius Nadeak (6103240028), Jihan Shona Zehran (6103240053), dan Gladys Maria Margarettha Panjaitan (6103240032)</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 text-right">
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">Dosen Pengampu</p>
+                    <p class="font-bold text-gray-900 tracking-wide text-sm">Afis Julianto, S.Kom., M.Kom</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="9 11 12 17 9 21 6 17 9 11"/></svg>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+</div>
+
+<script>
+    function downloadPoster() {
+        const btn = document.querySelector('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><span>Memproses...</span>';
+        
+        const poster = document.getElementById('poster-element');
+        
+        setTimeout(() => {
+            html2canvas(poster, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                onclone: function(clonedDoc) {
+                    // Hapus text-gradient dan ganti dengan warna solid karena html2canvas tidak support background-clip: text
+                    const gradients = clonedDoc.querySelectorAll('.text-gradient');
+                    gradients.forEach(el => {
+                        el.classList.remove('text-gradient');
+                        el.style.color = '#FF5C00';
+                    });
+                    
+                    const blueGradients = clonedDoc.querySelectorAll('.text-gradient-blue');
+                    blueGradients.forEach(el => {
+                        el.classList.remove('text-gradient-blue');
+                        el.style.color = '#2563eb';
+                    });
+
+                    // Tidak perlu hack ikon FontAwesome lagi karena sudah diganti dengan SVG native
+                    // yang mana dirender secara presisi 100% oleh html2canvas.
+
+                    // Hanya sisakan dorongan kecil untuk teks footer agar sejajar sempurna
+                    const footerLeftText = clonedDoc.querySelector('footer > div > div:nth-child(2)');
+                    if (footerLeftText) footerLeftText.style.marginTop = '4px';
+
+                    const footerRightText = clonedDoc.querySelector('footer > div:nth-child(2) > div:nth-child(1)');
+                    if (footerRightText) footerRightText.style.marginTop = '4px';
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Poster_Warung_Angkringan_PrintReady.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerHTML = originalText;
+            });
+        }, 150);
+    }
+</script>
+
+</body>
+</html>

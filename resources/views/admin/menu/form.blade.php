@@ -50,8 +50,14 @@
                     <label class="form-check-label" for="is_available">Tersedia</label>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Deskripsi</label>
-                    <textarea name="deskripsi" class="form-control">{{ old('deskripsi', $menu->deskripsi) }}</textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="form-label mb-0">Deskripsi</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn-ai-desc" onclick="generateDesc()">
+                            <i class="bi bi-stars"></i> Generate dengan AI
+                        </button>
+                    </div>
+                    <textarea name="deskripsi" id="deskripsi-input" class="form-control" rows="3">{{ old('deskripsi', $menu->deskripsi) }}</textarea>
+                    <small class="text-muted" id="ai-status"></small>
                 </div>
 
                 <hr class="my-4">
@@ -256,6 +262,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial render
     renderVariants();
 });
+
+function generateDesc() {
+    const namaMenu = document.querySelector('input[name="nama_menu"]').value;
+    if (!namaMenu) {
+        alert('Silakan isi Nama Produk terlebih dahulu!');
+        return;
+    }
+
+    const btn = document.getElementById('btn-ai-desc');
+    const status = document.getElementById('ai-status');
+    const descInput = document.getElementById('deskripsi-input');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sedang memikirkan...';
+    status.innerHTML = '';
+
+    fetch('{{ route('admin.menu.ai_description') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ nama_menu: namaMenu })
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-stars"></i> Generate dengan AI';
+        
+        if (data.error) {
+            status.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> ${data.error}</span>`;
+        } else if (data.description) {
+            descInput.value = data.description;
+            status.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Berhasil di-generate oleh AI</span>`;
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-stars"></i> Generate dengan AI';
+        status.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Gagal terhubung ke server AI.</span>`;
+    });
+}
 </script>
 @endpush
 @endsection

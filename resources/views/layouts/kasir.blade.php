@@ -234,15 +234,23 @@
             applyDarkMode(!isCurrentlyDark);
         });
 
+        // Setup audio element for notification
+        const notifSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
         // Fetch Notifications
         function fetchNotifications() {
             fetch('{{ url("/kasir/api/notifications") }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
+                        // Play sound
+                        notifSound.play().catch(e => console.log('Autoplay prevented:', e));
+                        
                         data.forEach(notif => {
-                            // Tampilkan alert
-                            alert('🔔 Notifikasi Baru:\n' + notif.message);
+                            // Tampilkan alert dengan delay sedikit agar suara sempat diputar
+                            setTimeout(() => {
+                                alert('🔔 Notifikasi Baru:\n' + notif.message);
+                            }, 500);
                             
                             // Tandai sudah dibaca
                             fetch('{{ url("/kasir/api/notifications") }}/' + notif.id + '/read', {

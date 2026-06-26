@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Menu;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Intervention\Image\ImageManager;
 
 class AdminMenuController extends Controller
@@ -187,5 +189,36 @@ class AdminMenuController extends Controller
         $menu->stok = $data['stok'];
         $menu->save();
         return back()->with('success', 'Stok berhasil diperbarui.');
+    }
+
+    public function generateAiDescription(Request $request)
+    {
+        $request->validate(['nama_menu' => 'required|string']);
+        $namaMenu = $request->nama_menu;
+
+        $apiKey = Setting::getVal('gemini_api_key');
+        if (!$apiKey) {
+            return response()->json(['error' => 'API Key Gemini belum dikonfigurasi di Pengaturan.'], 400);
+        }
+
+        $prompt = "Buatkan deskripsi makanan/minuman yang menggugah selera untuk menu bernama '{$namaMenu}'. Deskripsi harus singkat, maksimal 2 kalimat, gaya bahasa santai khas Indonesia yang cocok untuk jualan restoran/angkringan. Jangan gunakan kata-kata yang terlalu kaku.";
+
+        try {
+            $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" . $apiKey, [
+                'contents' => [
+                    ['parts' => [['text' => $prompt]]]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                return response()->json(['description' => trim($text)]);
+            }
+
+            return response()->json(['error' => 'Gagal menghubungi server AI.'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Terjadi kesalahan sistem.'], 500);
+        }
     }
 }

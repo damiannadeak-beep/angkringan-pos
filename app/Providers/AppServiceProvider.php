@@ -29,5 +29,10 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(compact('menuMenipis', 'bahanMenipis', 'stokMenipisCount'));
         });
+
+        View::composer('layouts.app', function ($view) {
+            $isStoreOpen = \App\Models\KasirShift::where('status', 'open')->exists();
+            $view->with(compact('isStoreOpen'));
+        });
     }
 }

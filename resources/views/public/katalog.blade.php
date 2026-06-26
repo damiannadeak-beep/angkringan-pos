@@ -75,7 +75,7 @@
                     <div class="mb-2">
                         <span class="text-primary fw-bold fs-5">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
                     </div>
-                    <p class="text-muted small flex-grow-1 mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    <p class="text-muted small flex-grow-1 mb-3" style="cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '2' ? 'unset' : '2'" title="Klik untuk membaca selengkapnya">
                         {{ $menu->deskripsi ?? 'Nikmati kelezatan tiada tara dari hidangan ini.' }}
                     </p>
                     

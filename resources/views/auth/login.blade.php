@@ -15,6 +15,12 @@
                             <p class="text-muted">Masuk ke sistem Angkringan POS</p>
                         </div>
 
+                        @if (session('error'))
+                            <div class="alert alert-danger shadow-sm border-0 rounded-3 text-center mb-4">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+                            </div>
+                        @endif
+
                         <form method="POST" action="{{ route('login') }}">
                             @csrf
                             <div class="mb-4">
@@ -54,9 +60,13 @@
                             </div>
 
                             <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3 mb-2">
                                     Masuk Sekarang <i class="bi bi-arrow-right-circle ms-2"></i>
                                 </button>
+                                <a href="{{ route('google.login') }}" class="btn btn-light btn-lg rounded-pill fw-bold shadow-sm py-3 d-flex align-items-center justify-content-center border" style="color: #444;">
+                                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" class="me-2" style="width: 24px; height: 24px;">
+                                    Masuk dengan Google
+                                </a>
                             </div>
                         </form>
                         

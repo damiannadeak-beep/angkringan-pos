@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\SocialAuthController;
 
 // Import semua controller yang dibutuhkan
 use App\Http\Controllers\OrderController;
@@ -27,6 +28,10 @@ Route::get('/', [PublicController::class, 'home']);
 Route::get('/katalog', [PublicController::class, 'katalog']);
 Route::get('/lokasi', [PublicController::class, 'lokasi']);
 Route::get('/kontak', [PublicController::class, 'kontak']);
+
+// Route Socialite (Google Login)
+Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 
 // Route Autentikasi bawaan Laravel UI (Login, Register, Logout, Verify)
 Auth::routes(['verify' => true, 'middleware' => ['throttle:10,1']]);
@@ -66,6 +71,7 @@ Route::middleware(['auth'])->group(function () {
     // Role: Pemilik (Admin)
     Route::middleware(['role:pemilik'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::get('/api/ai/sales-analysis', [AdminController::class, 'aiSalesAnalysis'])->name('ai_sales_analysis');
         Route::get('/laporan', [AdminController::class, 'reports'])->name('reports.index');
         Route::get('/reports/revenue', [AdminController::class, 'downloadRevenueReport'])->name('reports.revenue');
         Route::get('/reports/pdf', [AdminController::class, 'exportPdf'])->name('reports.pdf');
@@ -120,6 +126,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/menu/{id}', [AdminMenuController::class, 'update'])->name('menu.update');
         Route::delete('/menu/{id}', [AdminMenuController::class, 'destroy'])->name('menu.destroy');
         Route::post('/menu/{id}/stock', [AdminMenuController::class, 'updateStock'])->name('menu.stock');
+        Route::post('/menu/ai-description', [AdminMenuController::class, 'generateAiDescription'])->name('menu.ai_description');
 
         // Kasir management
         Route::get('/kasir/manage', [AdminKasirController::class, 'index'])->name('kasir.index');
@@ -199,7 +206,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/order/add', [OrderController::class, 'tambahPesanan'])->middleware('throttle:30,1');
         Route::post('/order/{id}/cancel', [OrderController::class, 'cancelOrder']);
         Route::get('/checkout/{id_pesanan}', [PaymentController::class, 'checkout']);
-        Route::post('/checkout/{id_pesanan}/verify-ai', [PaymentController::class, 'verifyAi'])->middleware('throttle:10,1');
         Route::post('/call-bell', [OrderController::class, 'callBell'])->middleware('throttle:5,1');
         
         // Fitur Baru: Profil, Riwayat & Rating

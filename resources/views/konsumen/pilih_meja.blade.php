@@ -35,9 +35,9 @@
                                             <small class="text-muted">{{ $meja->keterangan ?? 'Meja tersedia untuk pemesanan.' }}</small>
                                         </div>
                                         @if($meja->is_available)
-                                            <a href="/konsumen/menu/{{ $meja->id }}" class="btn btn-primary">Pilih</a>
+                                            <a href="{{ URL::signedRoute('konsumen.menu.meja', ['id_meja' => $meja->id]) }}" class="btn btn-primary">Pilih</a>
                                         @else
-                                            <a href="/konsumen/menu/{{ $meja->id }}" class="btn btn-outline-secondary">Pilih (Gabung)</a>
+                                            <a href="{{ URL::signedRoute('konsumen.menu.meja', ['id_meja' => $meja->id]) }}" class="btn btn-outline-secondary">Pilih (Gabung)</a>
                                         @endif
                                     </div>
                                 </div>

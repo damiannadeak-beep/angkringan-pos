@@ -20,6 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'shift',
         'foto',
+        'google_id',
     ];
 
     // Jika user adalah konsumen

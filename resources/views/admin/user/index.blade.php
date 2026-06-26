@@ -19,6 +19,7 @@
                         <tr>
                             <th>Nama</th>
                             <th>Email</th>
+                            <th>Status Email</th>
                             <th>Role</th>
                             <th>No. HP</th>
                             <th>Terdaftar</th>
@@ -30,6 +31,13 @@
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>
+                                    @if($user->email_verified_at)
+                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Terverifikasi</span>
+                                    @else
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Palsu/Belum Verifikasi</span>
+                                    @endif
+                                </td>
+                                <td>
                                     @foreach($user->getRoleNames() as $role)
                                         <span class="badge bg-secondary text-uppercase">{{ $role }}</span>
                                     @endforeach
@@ -39,7 +47,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4">Belum ada data user.</td>
+                                <td colspan="6" class="text-center py-4">Belum ada data user.</td>
                             </tr>
                         @endforelse
                     </tbody>

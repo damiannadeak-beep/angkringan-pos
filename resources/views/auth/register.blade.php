@@ -60,9 +60,13 @@
                             </div>
 
                             <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm py-3">
+                                <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm py-3 mb-2">
                                     Daftar Sekarang <i class="bi bi-person-plus-fill ms-2"></i>
                                 </button>
+                                <a href="{{ route('google.login') }}" class="btn btn-light btn-lg rounded-pill fw-bold shadow-sm py-3 d-flex align-items-center justify-content-center border" style="color: #444;">
+                                    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" class="me-2" style="width: 24px; height: 24px;">
+                                    Daftar dengan Google
+                                </a>
                             </div>
                         </form>
                         

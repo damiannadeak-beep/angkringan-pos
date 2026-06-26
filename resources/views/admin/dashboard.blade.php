@@ -127,6 +127,26 @@
         </div>
     </div>
 
+    <!-- Row AI Analysis -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm h-100 border-top border-primary border-3">
+                <div class="card-header bg-white pt-3 pb-2 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-primary mb-0"><i class="bi bi-stars me-2"></i> Analisis Bisnis AI (7 Hari Terakhir)</h6>
+                    <button class="btn btn-sm btn-outline-primary" id="btn-analyze" onclick="getAiAnalysis()">
+                        <i class="bi bi-lightning-charge"></i> Analisis Sekarang
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="ai-analysis-content" class="text-muted text-center py-4">
+                        <i class="bi bi-robot fs-1 d-block mb-2 text-opacity-50"></i>
+                        Tekan tombol <strong>Analisis Sekarang</strong> untuk mendapatkan ringkasan dan saran bisnis dari AI berdasarkan data penjualan minggu ini.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Row 2: Charts -->
     <div class="row g-4 mb-4">
         <div class="col-lg-6">
@@ -350,5 +370,39 @@
 
     createSalesChart('dailySalesChart', dailyLabels, dailyData, dailyLaba);
     createSalesChart('monthlySalesChart', monthlyLabels, monthlyData, monthlyLaba);
+
+    function getAiAnalysis() {
+        const btn = document.getElementById('btn-analyze');
+        const content = document.getElementById('ai-analysis-content');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sedang Menganalisis...';
+        content.innerHTML = '<div class="text-center py-4"><div class="spinner-grow text-primary mb-3" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted small">Gemini AI sedang membaca dan menyimpulkan data penjualan Anda...</p></div>';
+
+        fetch('{{ route('admin.ai_sales_analysis') }}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Analisis';
+            
+            if (data.error) {
+                content.innerHTML = `<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-triangle"></i> ${data.error}</div>`;
+            } else if (data.analysis) {
+                content.classList.remove('text-center', 'text-muted');
+                content.innerHTML = `<div class="fs-6 lh-lg text-dark">${data.analysis}</div>`;
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-lightning-charge"></i> Coba Lagi';
+            content.innerHTML = `<div class="alert alert-danger mb-0"><i class="bi bi-exclamation-triangle"></i> Gagal terhubung ke server AI.</div>`;
+        });
+    }
 </script>
 @endsection

@@ -29,6 +29,15 @@
         .admin-content { flex: 1; padding: 2rem; }
         .admin-card { border-radius: 1.25rem; }
         .card-summary { border: none; border-radius: 1.25rem; }
+        .badge {
+            font-family: system-ui, -apple-system, sans-serif !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            padding: 0.35em 0.65em !important;
+            font-weight: 700;
+        }
         
         /* Mobile Responsiveness */
         @media (max-width: 768px) {

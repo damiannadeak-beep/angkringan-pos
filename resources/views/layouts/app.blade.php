@@ -97,6 +97,13 @@
             </div>
         </nav>
 
+        @if(isset($isStoreOpen) && !$isStoreOpen && (!auth()->check() || auth()->user()->hasRole('konsumen')))
+            <div class="alert alert-warning text-center rounded-0 mb-0 border-0 shadow-sm px-3" style="z-index: 1040; position: relative;">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <strong>Perhatian:</strong> Warung saat ini belum buka. Anda tetap dapat melihat menu & memesan, namun pesanan Anda akan diproses setelah kasir kami tiba.
+            </div>
+        @endif
+
         <main class="py-0">
             @yield('content')
         </main>
@@ -104,6 +111,8 @@
     
     @yield('scripts')
     @include('components.webpush')
+
+
 </body>
 </html>
 

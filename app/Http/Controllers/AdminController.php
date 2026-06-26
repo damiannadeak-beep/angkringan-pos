@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
@@ -686,5 +687,53 @@ class AdminController extends Controller
     {
         $logs = \App\Models\ActivityLog::with('user')->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.activity_logs', compact('logs'));
+    }
+
+    public function aiSalesAnalysis()
+    {
+        $apiKey = Setting::getVal('gemini_api_key');
+        if (!$apiKey) {
+            return response()->json(['error' => 'API Key Gemini belum dikonfigurasi.'], 400);
+        }
+
+        // Ambil data penjualan 7 hari terakhir
+        $startDate = Carbon::now()->subDays(6)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        $data = $this->getReportsData($startDate->toDateString(), $endDate->toDateString());
+
+        // Siapkan summary untuk AI
+        $totalPendapatanStr = "Rp " . number_format($data['totalPendapatan'], 0, ',', '.');
+        $labaBersihStr = "Rp " . number_format($data['labaBersih'], 0, ',', '.');
+        
+        $topMenus = collect($data['bestSeller'])->map(function($m) {
+            return "- {$m->nama_menu} ({$m->total_terjual} porsi)";
+        })->implode("\n");
+
+        $prompt = "Berikut adalah data ringkasan penjualan angkringan saya selama 7 hari terakhir:\n";
+        $prompt .= "- Total Pendapatan Kotor: {$totalPendapatanStr}\n";
+        $prompt .= "- Laba Bersih: {$labaBersihStr}\n";
+        $prompt .= "- Menu Paling Laris:\n{$topMenus}\n\n";
+        $prompt .= "Sebagai asisten restoran AI (namamu: Gemini), tolong buatkan paragraf singkat (maksimal 3 paragraf) dalam bahasa Indonesia santai (bahasa bos dan asisten) yang berisi: 1. Kesimpulan apakah minggu ini bagus. 2. Sorotan produk apa yang paling laris. 3. Saran bisnis praktis untuk besok/minggu depan (misalnya stok atau promo). Jangan gunakan format markdown (seperti bintang tebal dll), cukup teks paragraf biasa.";
+
+        try {
+            $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" . $apiKey, [
+                'contents' => [
+                    ['parts' => [['text' => $prompt]]]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $text = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                // Mengganti newline ganda menjadi <br><br> agar rapi di HTML
+                $htmlText = nl2br(trim($text));
+                return response()->json(['analysis' => $htmlText]);
+            }
+
+            return response()->json(['error' => 'Gagal mendapatkan analisis dari AI.'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Terjadi kesalahan sistem.'], 500);
+        }
     }
 }

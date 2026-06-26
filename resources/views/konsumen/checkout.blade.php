@@ -60,21 +60,7 @@
                                     <p class="small text-muted mb-3">Scan kode QR di bawah ini dengan aplikasi DANA, OVO, Gopay, atau M-Banking Anda.</p>
                                     <img src="{{ asset('storage/'.$qrisImage) }}" alt="QRIS Warung" class="img-fluid rounded border border-3 border-info mb-3" style="max-height: 250px;">
                                     
-                                    @if(\App\Models\Setting::getVal('gemini_api_key'))
-                                        <p class="small text-danger fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Upload bukti transfer Anda di bawah ini agar pesanan langsung lunas otomatis!</p>
-                                        <hr>
-                                        <p class="small fw-bold text-success mb-2">Validasi Cepat:</p>
-                                        <div class="mb-3 text-start">
-                                            <label for="receipt_image" class="form-label small">Screenshot Bukti Transfer</label>
-                                            <input type="file" class="form-control form-control-sm mb-2" id="receipt_image" accept="image/*">
-                                            <button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm" id="btn-verify-ai" onclick="verifyPaymentWithAi()">
-                                                <i class="bi bi-check2-circle"></i> Konfirmasi Pembayaran
-                                            </button>
-                                            <div class="form-text small" style="font-size: 10px;">Sistem akan memvalidasi bukti transfer Anda secara otomatis (3-5 detik).</div>
-                                        </div>
-                                    @else
-                                        <p class="small text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> Setelah transfer, wajib tunjukkan bukti transfer ke Kasir!</p>
-                                    @endif
+                                    <p class="small text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> Setelah transfer, wajib tunjukkan bukti transfer ke Kasir untuk konfirmasi pesanan!</p>
                                 </div>
                             </div>
                         </div>
@@ -101,47 +87,6 @@
 
 
 <script type="text/javascript">
-    function verifyPaymentWithAi() {
-        let fileInput = document.getElementById('receipt_image');
-        if (fileInput.files.length === 0) {
-            alert('Silakan pilih gambar bukti transfer terlebih dahulu.');
-            return;
-        }
-
-        let formData = new FormData();
-        formData.append('receipt_image', fileInput.files[0]);
-
-        let btn = document.getElementById('btn-verify-ai');
-        let originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memvalidasi...';
-        btn.disabled = true;
-
-        fetch(`/konsumen/checkout/{{ $pesanan->id }}/verify-ai`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            
-            if (data.error) {
-                alert(data.error);
-            } else if (data.success) {
-                alert(data.message);
-                window.location.href = "/konsumen/profil";
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            alert("Terjadi kesalahan saat memproses gambar.");
-        });
-    }
 
     function cancelOrder(id) {
         if (!confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) return;
