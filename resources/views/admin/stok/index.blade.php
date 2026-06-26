@@ -42,14 +42,20 @@
                                 <td>{{ $bahan->nama_bahan }}</td>
                                 <td>{{ $bahan->stok }}</td>
                                 <td>{{ $bahan->satuan }}</td>
-                                <td>Rp {{ number_format($bahan->harga_beli, 0, ',', '.') }} / {{ $bahan->satuan }}</td>
+                                <td class="text-nowrap">Rp {{ number_format($bahan->harga_beli, 0, ',', '.') }} / {{ $bahan->satuan }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBahanModal{{ $bahan->id }}">Edit</button>
-                                    <form class="d-inline" action="{{ route('admin.stok.destroy', $bahan->id) }}" method="POST" onsubmit="return confirm('Hapus bahan ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
-                                    </form>
+                                    <div class="d-flex justify-content-start gap-1 flex-wrap flex-md-nowrap">
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBahanModal{{ $bahan->id }}" title="Edit">
+                                            <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Edit</span>
+                                        </button>
+                                        <form action="{{ route('admin.stok.destroy', $bahan->id) }}" method="POST" onsubmit="return confirm('Hapus bahan ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
 
