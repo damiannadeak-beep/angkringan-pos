@@ -63,23 +63,31 @@
                                 </td>
                                 <td>{{ $m->nama_menu }}</td>
                                 <td>{{ ucfirst($m->kategori) }}</td>
-                                <td>Rp {{ number_format($m->harga,0,',','.') }}</td>
+                                <td class="text-nowrap">Rp {{ number_format($m->harga,0,',','.') }}</td>
                                 <td>
-                                    {{ $m->stok }}
-                                    <form class="d-inline ms-2" action="{{ route('admin.menu.stock', $m->id) }}" method="POST">
-                                        @csrf
-                                        <input type="number" name="stok" value="{{ $m->stok }}" min="0" style="width:80px; display:inline-block">
-                                        <button class="btn btn-sm btn-outline-secondary">Update</button>
-                                    </form>
+                                    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+                                        <span class="fw-bold">{{ $m->stok }}</span>
+                                        <form class="d-flex gap-1" action="{{ route('admin.menu.stock', $m->id) }}" method="POST">
+                                            @csrf
+                                            <input type="number" name="stok" value="{{ $m->stok }}" min="0" class="form-control form-control-sm text-center" style="width:65px;">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Update"><i class="bi bi-check-lg"></i> <span class="d-none d-xl-inline">Update</span></button>
+                                        </form>
+                                    </div>
                                 </td>
                                 <td>{{ $m->is_available ? 'Ya' : 'Tidak' }}</td>
                                 <td>
-                                    <a href="{{ route('admin.menu.edit', $m->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <form class="d-inline" action="{{ route('admin.menu.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
-                                    </form>
+                                    <div class="d-flex justify-content-start gap-1 flex-wrap flex-md-nowrap">
+                                        <a href="{{ route('admin.menu.edit', $m->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Edit</span>
+                                        </a>
+                                        <form action="{{ route('admin.menu.destroy', $m->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
