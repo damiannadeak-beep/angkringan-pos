@@ -105,14 +105,7 @@
     </div>
 </div>
 
-@role('konsumen')
-<!-- Floating Action Button Mobile -->
-<div class="position-fixed bottom-0 start-50 translate-middle-x w-100 p-3 d-md-none" style="z-index: 1050;">
-    <a href="/konsumen/pilih-tipe" class="btn btn-primary fw-bold w-100 rounded-pill shadow-lg py-3 fs-5 text-white" style="background: linear-gradient(135deg, #0d6efd, #0b5ed7); border: none;">
-        <i class="bi bi-cart-plus me-2"></i> Mulai Pesan Sekarang
-    </a>
-</div>
-@endrole
+
 
 <style>
     .hover-lift {
