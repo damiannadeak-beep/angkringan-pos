@@ -49,11 +49,11 @@
                 <div class="position-relative">
                     <!-- Gambar -->
                     @if($menu->image)
-                        <div class="bg-white text-center" style="height: 140px;">
-                            <img src="{{ asset('storage/'.$menu->image) }}" onerror="this.onerror=null; this.src='https://placehold.co/400x300/e9ecef/6c757d?text=Gambar+Menu';" alt="{{ $menu->nama_menu }}" style="object-fit: cover; width: 100%; height: 100%;">
+                        <div class="bg-white text-center w-100" style="aspect-ratio: 4/3;">
+                            <img src="{{ asset('storage/'.$menu->image) }}" onerror="this.onerror=null; this.src='https://placehold.co/600x450/e9ecef/6c757d?text=Belum+Ada+Foto';" alt="{{ $menu->nama_menu }}" style="object-fit: cover; width: 100%; height: 100%;">
                         </div>
                     @else
-                        <div class="bg-light d-flex align-items-center justify-content-center text-secondary" style="height: 140px;">
+                        <div class="bg-light d-flex align-items-center justify-content-center text-secondary w-100" style="aspect-ratio: 4/3;">
                             <div class="text-center w-100">
                                 <i class="bi bi-image fs-1 opacity-50"></i>
                             </div>
@@ -61,31 +61,31 @@
                     @endif
                     
                     <!-- Overlay Kategori -->
-                    <div class="position-absolute top-0 start-0 m-2">
+                    <div class="position-absolute top-0 start-0 m-2 m-md-3">
                         @if(strtolower($menu->kategori) === 'minuman')
-                            <span class="badge bg-info bg-opacity-75 text-white backdrop-blur rounded-pill border border-info border-opacity-25 px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-cup-straw"></i> Minuman</span>
+                            <span class="badge bg-info bg-opacity-75 text-white backdrop-blur rounded-pill border border-info border-opacity-25 px-2 py-1"><i class="bi bi-cup-straw"></i> <span class="d-none d-md-inline">Minuman</span></span>
                         @else
-                            <span class="badge bg-warning bg-opacity-75 text-dark backdrop-blur rounded-pill border border-warning border-opacity-25 px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-egg-fried"></i> Makanan</span>
+                            <span class="badge bg-warning bg-opacity-75 text-dark backdrop-blur rounded-pill border border-warning border-opacity-25 px-2 py-1"><i class="bi bi-egg-fried"></i> <span class="d-none d-md-inline">Makanan</span></span>
                         @endif
                     </div>
                 </div>
                 
-                <div class="card-body p-2 p-md-3 d-flex flex-column">
-                    <h5 class="fw-bold mb-1 text-dark fs-6 fs-md-5" style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;" title="{{ $menu->nama_menu }}">{{ $menu->nama_menu }}</h5>
-                    <div class="mb-1">
-                        <span class="text-primary fw-bold" style="font-size: 0.95rem;">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
+                <div class="card-body p-3 p-md-4 d-flex flex-column">
+                    <h5 class="fw-bold mb-1 mb-md-2 text-dark fs-6 fs-md-5" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ $menu->nama_menu }}">{{ $menu->nama_menu }}</h5>
+                    <div class="mb-2 mb-md-3">
+                        <span class="text-primary fw-bold fs-6 fs-md-5">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
                     </div>
-                    <p class="text-muted flex-grow-1 mb-2" style="font-size: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                        {{ $menu->deskripsi ?? 'Hidangan lezat.' }}
+                    <p class="text-muted flex-grow-1 mb-3 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ $menu->deskripsi ?? 'Hidangan lezat khas angkringan yang siap memanjakan lidah Anda.' }}
                     </p>
                     
                     <div class="mt-auto">
                         @if($menu->stok > 0)
-                            <div class="bg-success bg-opacity-10 text-success text-center py-1 rounded-3 fw-bold" style="font-size: 0.7rem;">
-                                <i class="bi bi-check-circle"></i> Sisa: {{ $menu->stok }}
+                            <div class="bg-success bg-opacity-10 text-success text-center py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">
+                                <i class="bi bi-check-circle"></i> <span class="d-none d-md-inline">Tersedia</span> (Sisa: {{ $menu->stok }})
                             </div>
                         @else
-                            <div class="bg-danger bg-opacity-10 text-danger text-center py-1 rounded-3 fw-bold" style="font-size: 0.7rem;">
+                            <div class="bg-danger bg-opacity-10 text-danger text-center py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">
                                 <i class="bi bi-x-circle"></i> Habis
                             </div>
                         @endif
