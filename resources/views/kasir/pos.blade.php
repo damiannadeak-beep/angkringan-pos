@@ -270,7 +270,7 @@
             const habisOverlay = textOverlay !== '' ? `<div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.5); z-index: 5;"><h4 class="text-white fw-bold border border-2 border-white p-2 rounded">${textOverlay}</h4></div>` : '';
 
             const html = `
-                <div class="col-xl-3 col-lg-4 col-sm-6">
+                <div class="col-6 col-sm-6 col-md-4 col-lg-3">
                     <div class="menu-card card h-100 position-relative overflow-hidden ${(menu.is_available && !isHabis) ? 'hover-lift' : ''} ${stockAlertClass}" 
                          onclick="${(menu.is_available && !isHabis) ? `openVariantModal(${menu.id})` : ''}"
                          style="${disabledStyle}">
@@ -278,10 +278,10 @@
                         ${badgeCat}
                         ${stockBadge}
                         ${imageHtml}
-                        <div class="card-body text-center p-3">
-                            <h6 class="fw-bold mb-1 text-truncate" title="${menu.nama_menu}">${menu.nama_menu}</h6>
-                            <p class="price mb-0 fs-5 font-sans">Rp ${parseFloat(menu.harga).toLocaleString('id-ID')}</p>
-                            <small class="text-muted d-block mt-1">Sisa Stok: ${menu.stok}</small>
+                        <div class="card-body text-center p-2 p-md-3">
+                            <h6 class="fw-bold mb-1 text-truncate" style="font-size: 0.9rem;" title="${menu.nama_menu}">${menu.nama_menu}</h6>
+                            <p class="price mb-0 fw-bold text-primary font-sans" style="font-size: 0.9rem;">Rp ${parseFloat(menu.harga).toLocaleString('id-ID')}</p>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Sisa: ${menu.stok}</small>
                         </div>
                     </div>
                 </div>
@@ -418,24 +418,24 @@
 
             html += `
                 <div class="cart-item d-flex flex-column bg-white p-2 rounded mb-2 shadow-sm border">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <div style="flex: 1; padding-right: 10px;">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-1 gap-2">
+                        <div style="flex: 1; width: 100%;">
                             <span class="d-block fw-bold text-accent">${item.nama}</span>
                             ${variantsHtml}
                             <small class="text-muted font-sans">Rp ${item.harga.toLocaleString('id-ID')}</small>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex justify-content-between align-items-center w-100" style="max-width: 220px;">
                             <div class="input-group input-group-sm" style="width: 90px;">
                                 <button class="btn btn-outline-secondary px-2" type="button" onclick="updateQty(${index}, ${item.jumlah - 1})">-</button>
                                 <input type="number" class="form-control text-center px-0 border-secondary fw-bold font-sans" value="${item.jumlah}" min="0" readonly>
                                 <button class="btn btn-outline-secondary px-2" type="button" onclick="updateQty(${index}, ${item.jumlah + 1})">+</button>
                             </div>
-                            <div class="text-end" style="width: 75px;">
+                            <div class="text-end">
                                 <span class="small fw-bold price font-sans">Rp ${subtotal.toLocaleString('id-ID')}</span>
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div class="mt-1">
                         <input type="text" class="form-control form-control-sm border-0 bg-light rounded-pill px-3" style="font-size: 0.8rem;" placeholder="Catatan: misal pedas, setengah matang..." value="${item.catatan || ''}" onchange="updateCatatan(${index}, this.value)">
                     </div>
                 </div>
