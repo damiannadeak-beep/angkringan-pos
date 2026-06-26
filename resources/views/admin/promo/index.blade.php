@@ -56,12 +56,18 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.promo.edit', $p->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <form class="d-inline" action="{{ route('admin.promo.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus promo?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
-                                    </form>
+                                    <div class="d-flex justify-content-start gap-1 flex-wrap flex-md-nowrap">
+                                        <a href="{{ route('admin.promo.edit', $p->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Edit</span>
+                                        </a>
+                                        <form action="{{ route('admin.promo.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus promo?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

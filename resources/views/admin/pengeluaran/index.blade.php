@@ -77,7 +77,7 @@
                                             <span class="text-muted small">Sistem / Admin</span>
                                         @endif
                                     </td>
-                                    <td class="text-end text-danger fw-bold">Rp {{ number_format($p->nominal, 0, ',', '.') }}</td>
+                                    <td class="text-end text-danger fw-bold text-nowrap">Rp {{ number_format($p->nominal, 0, ',', '.') }}</td>
                                     <td class="text-center">
                                         <form action="{{ route('admin.pengeluaran.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus data pengeluaran ini?');">
                                             @csrf
