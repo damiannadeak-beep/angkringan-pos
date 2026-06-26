@@ -29,6 +29,12 @@ Route::get('/katalog', [PublicController::class, 'katalog']);
 Route::get('/lokasi', [PublicController::class, 'lokasi']);
 Route::get('/kontak', [PublicController::class, 'kontak']);
 
+// Route Bantuan (Clear Cache tanpa Terminal)
+Route::get('/clear-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    return 'Cache Laravel berhasil dibersihkan! Silakan kembali dan coba lagi.';
+});
+
 // Route Socialite (Google Login)
 Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
