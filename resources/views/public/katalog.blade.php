@@ -42,10 +42,10 @@
     </div>
 
     <!-- Daftar Menu -->
-    <div class="row g-4" id="menu-container">
+    <div class="row g-4 align-items-start" id="menu-container">
         @forelse($menus as $menu)
         <div class="col-6 col-md-4 col-lg-3 menu-item" data-kategori="{{ strtolower($menu->kategori ?? 'makanan') }}">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-lift bg-white">
+            <div class="card h-auto shadow-sm border-0 rounded-4 overflow-hidden hover-lift bg-white">
                 <div class="position-relative">
                     <!-- Gambar -->
                     @if($menu->image)
@@ -75,7 +75,7 @@
                     <div class="mb-2 mb-md-3">
                         <span class="text-primary fw-bold fs-6 fs-md-5">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
                     </div>
-                    <p class="text-muted flex-grow-1 mb-3 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer;" onclick="showMenuDetail('{{ addslashes($menu->nama_menu) }}', '{{ addslashes($menu->deskripsi ?? 'Hidangan lezat khas angkringan yang siap memanjakan lidah Anda.') }}', 'Rp {{ number_format($menu->harga, 0, ',', '.') }}', '{{ $menu->image ? asset('storage/'.$menu->image) : '' }}')" title="Klik untuk membaca selengkapnya">
+                    <p class="text-muted flex-grow-1 mb-3 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '3' || this.style.webkitLineClamp === '' ? 'unset' : '3';" title="Klik untuk membaca selengkapnya">
                         {{ $menu->deskripsi ?? 'Hidangan lezat khas angkringan yang siap memanjakan lidah Anda.' }}
                     </p>
                     
@@ -127,44 +127,7 @@
     }
 </style>
 
-<!-- Modal Detail Menu -->
-<div class="modal fade" id="menuDetailModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow">
-      <div class="modal-header border-0 pb-0">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center pt-0 px-4 pb-4">
-        <div id="modalMenuImageContainer" class="mb-3 d-none">
-            <img id="modalMenuImage" src="" alt="" class="img-fluid rounded-3" style="max-height: 200px; object-fit: contain;">
-        </div>
-        <h4 class="fw-bold mb-2" id="modalMenuTitle">Nama Menu</h4>
-        <div class="text-primary fw-bold fs-5 mb-3" id="modalMenuPrice">Rp 0</div>
-        <p class="text-muted mb-0" id="modalMenuDesc" style="text-align: justify;">Deskripsi</p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-    function showMenuDetail(title, desc, price, image) {
-        document.getElementById('modalMenuTitle').innerText = title;
-        document.getElementById('modalMenuDesc').innerText = desc;
-        document.getElementById('modalMenuPrice').innerText = price;
-        
-        const imgEl = document.getElementById('modalMenuImage');
-        const imgContainer = document.getElementById('modalMenuImageContainer');
-        if(image) {
-            imgEl.src = image;
-            imgContainer.classList.remove('d-none');
-        } else {
-            imgContainer.classList.add('d-none');
-        }
-        
-        const modal = new bootstrap.Modal(document.getElementById('menuDetailModal'));
-        modal.show();
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         const filterBtns = document.querySelectorAll('.filter-btn');
         const menuItems = document.querySelectorAll('.menu-item');
