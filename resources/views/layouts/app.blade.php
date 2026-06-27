@@ -8,7 +8,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
@@ -100,9 +100,9 @@
         </nav>
 
         @if(isset($isStoreOpen) && !$isStoreOpen && (!auth()->check() || auth()->user()->hasRole('konsumen')))
-            <div class="alert text-center rounded-0 mb-0 border-0 shadow-sm px-3 d-flex align-items-center justify-content-center gap-2 py-2" style="z-index: 1040; position: relative; background-color: #FFF3E0; color: #B05923;">
-                <i class="bi bi-shop fs-5"></i>
-                <span class="fs-6"><strong>Tutup Sementara.</strong> Anda tetap bisa pesan, kami proses saat buka.</span>
+            <div class="alert alert-warning text-center rounded-0 mb-0 border-0 shadow-sm px-3" style="z-index: 1040; position: relative;">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <strong>Perhatian:</strong> Warung saat ini belum buka. Anda tetap dapat melihat menu & memesan, namun pesanan Anda akan diproses setelah kasir kami tiba.
             </div>
         @endif
 
