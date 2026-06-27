@@ -13,7 +13,15 @@ class PublicController extends Controller
     public function katalog() {
         // Menampilkan semua menu yang tersedia (Read-only)
         $menus = Menu::where('is_available', true)->get();
-        return view('public.katalog', compact('menus'));
+        $promos = \App\Models\Promo::where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+            })
+            ->get();
+        return view('public.katalog', compact('menus', 'promos'));
     }
 
     public function lokasi() {

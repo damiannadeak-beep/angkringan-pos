@@ -14,6 +14,27 @@
         <i class="bi bi-shop fs-1 text-primary opacity-50"></i>
     </div>
 
+    @if(isset($promos) && count($promos) > 0)
+    <div class="alert border-0 shadow-sm rounded-4 mt-3 mb-1" style="background: linear-gradient(135deg, #fff3cd, #ffe69c); color: #664d03;">
+        <h6 class="fw-bold mb-2"><i class="bi bi-tags-fill text-danger me-1"></i> Promo Spesial Hari Ini!</h6>
+        <ul class="mb-0 ps-3">
+            @foreach($promos as $promo)
+                <li class="mb-1">
+                    <strong>{{ $promo->title }}</strong> 
+                    @if($promo->type == 'discount')
+                        <span class="badge bg-danger rounded-pill ms-1">
+                        Diskon {{ $promo->discount_type == 'percentage' ? $promo->value.'%' : 'Rp '.number_format($promo->value,0,',','.') }}
+                        </span>
+                    @endif
+                    @if($promo->description)
+                        <small class="d-block mt-1" style="opacity: 0.85;">{{ $promo->description }}</small>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mt-4 mb-3 gap-2">
         <h5 class="fw-bold mb-0">Menu Tersedia</h5>
         <div class="btn-group shadow-sm" role="group">

@@ -32,6 +32,27 @@
 
 <div class="container mb-5 pb-5">
     
+    @if(isset($promos) && count($promos) > 0)
+    <div class="alert border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #fff3cd, #ffe69c); color: #664d03;">
+        <h6 class="fw-bold mb-2"><i class="bi bi-tags-fill text-danger me-1"></i> Promo Spesial Hari Ini!</h6>
+        <ul class="mb-0 ps-3">
+            @foreach($promos as $promo)
+                <li class="mb-1">
+                    <strong>{{ $promo->title }}</strong> 
+                    @if($promo->type == 'discount')
+                        <span class="badge bg-danger rounded-pill ms-1">
+                        Diskon {{ $promo->discount_type == 'percentage' ? $promo->value.'%' : 'Rp '.number_format($promo->value,0,',','.') }}
+                        </span>
+                    @endif
+                    @if($promo->description)
+                        <small class="d-block mt-1" style="opacity: 0.85;">{{ $promo->description }}</small>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <!-- Filter Kategori -->
     <div class="d-flex justify-content-center mb-5">
         <div class="bg-light rounded-pill p-1 shadow-sm border d-inline-flex" role="group">
