@@ -45,6 +45,7 @@
                         </span>
                     @elseif($promo->type == 'package')
                         <span class="badge bg-angkringan rounded-pill ms-1">Paket Khusus</span>
+                        <span class="badge bg-warning text-dark rounded-pill ms-1 shadow-sm"><i class="bi bi-tag-fill"></i> Cukup Bayar Rp {{ number_format($promo->value,0,',','.') }}</span>
                         <div class="mt-1 small">
                             <strong>Termasuk:</strong> 
                             @foreach($promo->menus as $pm)
@@ -160,19 +161,6 @@
     }
     .backdrop-blur {
         backdrop-filter: blur(4px);
-    }
-    .btn-angkringan {
-        background-color: #5d4037 !important;
-        border-color: #5d4037 !important;
-        color: white !important;
-    }
-    .btn-angkringan:hover {
-        background-color: #4e342e !important;
-        border-color: #4e342e !important;
-        color: white !important;
-    }
-    .text-angkringan {
-        color: #5d4037 !important;
     }
 </style>
 

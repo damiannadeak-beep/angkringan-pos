@@ -23,6 +23,7 @@
                         </span>
                     @elseif($promo->type == 'package')
                         <span class="badge bg-angkringan rounded-pill ms-1">Paket Khusus</span>
+                        <span class="badge bg-warning text-dark rounded-pill ms-1 shadow-sm"><i class="bi bi-tag-fill"></i> Cukup Bayar Rp {{ number_format($promo->value,0,',','.') }}</span>
                         <div class="mt-1 small">
                             <strong>Termasuk:</strong> 
                             @foreach($promo->menus as $pm)

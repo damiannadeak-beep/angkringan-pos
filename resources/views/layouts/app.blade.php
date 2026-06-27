@@ -12,6 +12,24 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <style>
+        .btn-angkringan {
+            background-color: #5d4037 !important;
+            color: #ffffff !important;
+            border: none;
+        }
+        .btn-angkringan:hover {
+            background-color: #4e342e !important;
+            color: #ffffff !important;
+        }
+        .text-angkringan {
+            color: #5d4037 !important;
+        }
+        .bg-angkringan {
+            background-color: #5d4037 !important;
+            color: #ffffff !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div id="app">
