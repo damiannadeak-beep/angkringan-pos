@@ -43,6 +43,14 @@
                         <span class="badge bg-danger rounded-pill ms-1">
                         Diskon {{ $promo->discount_type == 'percentage' ? $promo->value.'%' : 'Rp '.number_format($promo->value,0,',','.') }}
                         </span>
+                    @elseif($promo->type == 'package')
+                        <span class="badge bg-success rounded-pill ms-1">Paket Khusus</span>
+                        <div class="mt-1 small">
+                            <strong>Termasuk:</strong> 
+                            @foreach($promo->menus as $pm)
+                                <span class="badge bg-light text-dark border">{{ $pm->nama_menu }}</span>
+                            @endforeach
+                        </div>
                     @endif
                     @if($promo->description)
                         <small class="d-block mt-1" style="opacity: 0.85;">{{ $promo->description }}</small>
@@ -89,6 +97,13 @@
                             <span class="badge bg-warning bg-opacity-75 text-dark backdrop-blur rounded-pill border border-warning border-opacity-25 px-2 py-1"><i class="bi bi-egg-fried"></i> <span class="d-none d-md-inline">Makanan</span></span>
                         @endif
                     </div>
+
+                    <!-- Promo Badge -->
+                    @if(isset($promoMenuIds) && in_array($menu->id, $promoMenuIds))
+                    <div class="position-absolute top-0 end-0 m-2 m-md-3" style="z-index: 2;">
+                        <span class="badge bg-danger shadow-sm px-2 py-1 rounded-pill"><i class="bi bi-tag-fill me-1"></i> Promo</span>
+                    </div>
+                    @endif
                 </div>
                 
                 <div class="card-body p-3 p-md-4 d-flex flex-column">

@@ -21,6 +21,14 @@
                         <span class="badge bg-danger rounded-pill ms-1">
                         Diskon {{ $promo->discount_type == 'percentage' ? $promo->value.'%' : 'Rp '.number_format($promo->value,0,',','.') }}
                         </span>
+                    @elseif($promo->type == 'package')
+                        <span class="badge bg-success rounded-pill ms-1">Paket Khusus</span>
+                        <div class="mt-1 small">
+                            <strong>Termasuk:</strong> 
+                            @foreach($promo->menus as $pm)
+                                <span class="badge bg-light text-dark border">{{ $pm->nama_menu }}</span>
+                            @endforeach
+                        </div>
                     @endif
                     @if($promo->description)
                         <small class="d-block mt-1" style="opacity: 0.85;">{{ $promo->description }}</small>
@@ -42,7 +50,13 @@
     <div class="row g-4">
         @foreach($menus as $menu)
         <div class="col-6 col-md-4 col-lg-3 menu-item" data-kategori="{{ $menu->kategori }}">
-            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white" style="transition: transform 0.2s;">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white position-relative" style="transition: transform 0.2s;">
+                <!-- Promo Badge -->
+                @if(isset($promoMenuIds) && in_array($menu->id, $promoMenuIds))
+                <div class="position-absolute top-0 end-0 m-2" style="z-index: 2;">
+                    <span class="badge bg-danger shadow-sm px-2 py-1 rounded-pill"><i class="bi bi-tag-fill me-1"></i> Promo</span>
+                </div>
+                @endif
                 @if($menu->image)
                 <div style="aspect-ratio: 1/1; max-height: 140px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                     <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="width: 100%; height: 100%; object-fit: contain;">

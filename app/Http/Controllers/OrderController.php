@@ -31,7 +31,8 @@ class OrderController extends Controller
             })->first();
 
         // Mengambil promo aktif
-        $promos = Promo::where('is_active', true)
+        // Mengambil promo aktif
+        $promos = Promo::with('menus')->where('is_active', true)
             ->where(function($q) {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
             })
@@ -40,7 +41,16 @@ class OrderController extends Controller
             })
             ->get();
 
-        return view('konsumen.menu', compact('meja', 'menus', 'pesananAktif', 'promos'));
+        $promoMenuIds = [];
+        foreach($promos as $promo) {
+            if($promo->type == 'package') {
+                foreach($promo->menus as $pm) {
+                    $promoMenuIds[] = $pm->id;
+                }
+            }
+        }
+
+        return view('konsumen.menu', compact('meja', 'menus', 'pesananAktif', 'promos', 'promoMenuIds'));
     }
 
     /**
@@ -67,7 +77,7 @@ class OrderController extends Controller
     {
         $menus = Menu::where('is_available', true)->where('stok', '>', 0)->get();
         // Mengambil promo aktif
-        $promos = Promo::where('is_active', true)
+        $promos = Promo::with('menus')->where('is_active', true)
             ->where(function($q) {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
             })
@@ -76,7 +86,16 @@ class OrderController extends Controller
             })
             ->get();
             
-        return view('konsumen.menu_takeaway', compact('menus', 'promos'));
+        $promoMenuIds = [];
+        foreach($promos as $promo) {
+            if($promo->type == 'package') {
+                foreach($promo->menus as $pm) {
+                    $promoMenuIds[] = $pm->id;
+                }
+            }
+        }
+            
+        return view('konsumen.menu_takeaway', compact('menus', 'promos', 'promoMenuIds'));
     }
 
     /**
@@ -86,7 +105,7 @@ class OrderController extends Controller
     {
         $menus = Menu::where('is_available', true)->where('stok', '>', 0)->get();
         
-        $promos = Promo::where('is_active', true)
+        $promos = Promo::with('menus')->where('is_active', true)
             ->where(function($q) {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
             })
@@ -95,7 +114,16 @@ class OrderController extends Controller
             })
             ->get();
             
-        return view('konsumen.menu_nanti', compact('menus', 'promos'));
+        $promoMenuIds = [];
+        foreach($promos as $promo) {
+            if($promo->type == 'package') {
+                foreach($promo->menus as $pm) {
+                    $promoMenuIds[] = $pm->id;
+                }
+            }
+        }
+            
+        return view('konsumen.menu_nanti', compact('menus', 'promos', 'promoMenuIds'));
     }
 
     /**
