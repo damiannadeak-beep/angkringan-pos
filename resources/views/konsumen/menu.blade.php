@@ -24,10 +24,10 @@
     </div>
     <div class="row g-4">
         @foreach($menus as $menu)
-        <div class="col-12 col-md-6 col-lg-4 menu-item" data-kategori="{{ $menu->kategori }}">
+        <div class="col-6 col-md-4 col-lg-3 menu-item" data-kategori="{{ $menu->kategori }}">
             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white" style="transition: transform 0.2s;">
                 @if($menu->image)
-                <div style="height: 180px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                <div style="aspect-ratio: 1/1; max-height: 140px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                     <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 @endif
