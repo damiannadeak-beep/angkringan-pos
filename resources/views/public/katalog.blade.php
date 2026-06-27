@@ -3,7 +3,7 @@
 @section('content')
 <!-- Header Banner -->
 <div class="bg-dark text-white pt-5 pb-4 mb-5 position-relative overflow-hidden rounded-bottom-4 shadow-sm">
-    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at top right, rgba(25,135,84,0.3) 0%, transparent 60%); pointer-events: none;"></div>
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at top right, rgba(93,64,55,0.3) 0%, transparent 60%); pointer-events: none;"></div>
     <div class="container text-center position-relative z-index-1">
         <h1 class="display-5 fw-bold mb-3">Katalog Menu Kami</h1>
         <p class="fs-5 text-light opacity-75 mx-auto mb-4" style="max-width: 600px;">
@@ -12,7 +12,7 @@
         
         @guest
             <div class="d-flex justify-content-center gap-3 mb-3">
-                <a href="/login" class="btn btn-success fw-bold px-4 rounded-pill shadow-sm">Login / Masuk</a>
+                <a href="/login" class="btn btn-angkringan fw-bold px-4 rounded-pill shadow-sm">Login / Masuk</a>
                 <a href="/register" class="btn btn-outline-light fw-bold px-4 rounded-pill">Daftar Akun</a>
             </div>
             <p class="small text-light opacity-75">
@@ -21,7 +21,7 @@
         @else
             @role('konsumen')
                 <div class="d-flex justify-content-center">
-                    <a href="/konsumen/pilih-tipe" class="btn btn-success fw-bold px-5 rounded-pill shadow-sm btn-lg">
+                    <a href="/konsumen/pilih-tipe" class="btn btn-angkringan fw-bold px-5 rounded-pill shadow-sm btn-lg">
                         <i class="bi bi-cart-plus me-2"></i> Mulai Pesan
                     </a>
                 </div>
@@ -35,7 +35,7 @@
     <!-- Filter Kategori -->
     <div class="d-flex justify-content-center mb-5">
         <div class="bg-light rounded-pill p-1 shadow-sm border d-inline-flex" role="group">
-            <button type="button" class="btn btn-success rounded-pill px-4 fw-bold filter-btn" data-filter="semua">Semua</button>
+            <button type="button" class="btn btn-angkringan rounded-pill px-4 fw-bold filter-btn" data-filter="semua">Semua</button>
             <button type="button" class="btn btn-light rounded-pill px-4 fw-bold text-muted filter-btn" data-filter="makanan">Makanan</button>
             <button type="button" class="btn btn-light rounded-pill px-4 fw-bold text-muted filter-btn" data-filter="minuman">Minuman</button>
         </div>
@@ -73,7 +73,7 @@
                 <div class="card-body p-3 p-md-4 d-flex flex-column">
                     <h5 class="fw-bold mb-1 mb-md-2 text-dark fs-6 fs-md-5" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ $menu->nama_menu }}">{{ $menu->nama_menu }}</h5>
                     <div class="mb-2 mb-md-3">
-                        <span class="text-success fw-bold fs-6 fs-md-5">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
+                        <span class="text-angkringan fw-bold fs-6 fs-md-5">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
                     </div>
                     <p class="text-muted flex-grow-1 mb-3 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '3' || this.style.webkitLineClamp === '' ? 'unset' : '3';" title="Klik untuk membaca selengkapnya">
                         {{ $menu->deskripsi ?? 'Hidangan lezat khas angkringan yang siap memanjakan lidah Anda.' }}
@@ -108,7 +108,7 @@
 @role('konsumen')
 <!-- Floating Action Button Mobile -->
 <div class="position-fixed bottom-0 start-50 translate-middle-x w-100 p-3 d-md-none" style="z-index: 1050;">
-    <a href="/konsumen/pilih-tipe" class="btn btn-success fw-bold w-100 rounded-pill shadow-lg py-3 fs-5 text-white" style="background: linear-gradient(135deg, #4A5D23, #3a4a1b); border: none;">
+    <a href="/konsumen/pilih-tipe" class="btn btn-angkringan fw-bold w-100 rounded-pill shadow-lg py-3 fs-5 text-white" style="background: linear-gradient(135deg, #5d4037, #4e342e); border: none;">
         <i class="bi bi-cart-plus me-2"></i> Mulai Pesan Sekarang
     </a>
 </div>
@@ -125,6 +125,19 @@
     .backdrop-blur {
         backdrop-filter: blur(4px);
     }
+    .btn-angkringan {
+        background-color: #5d4037 !important;
+        border-color: #5d4037 !important;
+        color: white !important;
+    }
+    .btn-angkringan:hover {
+        background-color: #4e342e !important;
+        border-color: #4e342e !important;
+        color: white !important;
+    }
+    .text-angkringan {
+        color: #5d4037 !important;
+    }
 </style>
 
 <script>
@@ -136,11 +149,11 @@
             btn.addEventListener('click', function() {
                 // Update active state of buttons
                 filterBtns.forEach(b => {
-                    b.classList.remove('btn-success');
+                    b.classList.remove('btn-angkringan');
                     b.classList.add('btn-light', 'text-muted');
                 });
                 this.classList.remove('btn-light', 'text-muted');
-                this.classList.add('btn-success');
+                this.classList.add('btn-angkringan');
 
                 // Filter items
                 const target = this.getAttribute('data-filter');
