@@ -108,7 +108,7 @@
             <select name="promo_id" id="promo_id" class="form-select form-select-sm border-success bg-success bg-opacity-10 text-success fw-bold rounded-pill px-3 py-2" onchange="updateCartUI()">
                 <option value="">🎟️ Tambah Promo (Opsional)</option>
                 @foreach($promos as $promo)
-                    <option value="{{ $promo->id }}" data-type="{{ $promo->type }}" data-value="{{ $promo->value }}">
+                    <option value="{{ $promo->id }}" data-type="{{ $promo->type }}" data-value="{{ $promo->value }}" data-menus="{{ $promo->type == 'package' ? json_encode($promo->menus->map(function($m) { return ['id' => $m->id, 'jumlah' => $m->pivot->jumlah, 'harga' => $m->harga]; })) : '[]' }}">
                         {{ $promo->title }} 
                         @if($promo->type == 'discount')
                             ({{ $promo->value <= 100 ? $promo->value.'%' : 'Rp '.number_format($promo->value,0,',','.') }})
@@ -213,6 +213,35 @@
                     discount = total * (pValue / 100);
                 } else {
                     discount = pValue;
+                }
+            } else if (pType === 'package') {
+                let packageMenus = JSON.parse(option.getAttribute('data-menus') || '[]');
+                let packageNormalPrice = 0;
+                let maxPackageCount = Infinity;
+                
+                let cartMap = {};
+                cart.forEach(item => {
+                    if (!cartMap[item.id_menu]) cartMap[item.id_menu] = 0;
+                    cartMap[item.id_menu] += item.jumlah;
+                });
+                
+                if (packageMenus.length === 0) maxPackageCount = 0;
+                
+                packageMenus.forEach(pm => {
+                    let requiredQty = pm.jumlah;
+                    let availableQty = cartMap[pm.id] || 0;
+                    if (availableQty < requiredQty) {
+                        maxPackageCount = 0;
+                    } else {
+                        maxPackageCount = Math.min(maxPackageCount, Math.floor(availableQty / requiredQty));
+                    }
+                    packageNormalPrice += (pm.harga * requiredQty);
+                });
+                
+                if (maxPackageCount > 0 && maxPackageCount !== Infinity) {
+                    let discountPerPackage = packageNormalPrice - pValue;
+                    if (discountPerPackage < 0) discountPerPackage = 0;
+                    discount = discountPerPackage * maxPackageCount;
                 }
             }
             if(discount > total) discount = total;
