@@ -312,7 +312,7 @@ class OrderController extends Controller
 
             $pesanan = Pesanan::with(['pembayaran'])->findOrFail($id_pesanan);
 
-            if ($pesanan->id_konsumen !== auth()->id()) {
+            if ($pesanan->id_konsumen != auth()->id()) {
                 throw new \Exception('Anda tidak berhak membatalkan pesanan ini.');
             }
 

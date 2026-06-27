@@ -26,7 +26,7 @@ class PaymentController extends Controller
         $pembayaran = $pesanan->pembayaran;
 
         // FIX #8: Cek ownership — pastikan pesanan milik konsumen yang login
-        if ($pesanan->id_konsumen !== auth()->id()) {
+        if ($pesanan->id_konsumen != auth()->id()) {
             abort(403, 'Anda tidak berhak mengakses pesanan ini.');
         }
 

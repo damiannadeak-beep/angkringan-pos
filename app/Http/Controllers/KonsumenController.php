@@ -72,7 +72,7 @@ class KonsumenController extends Controller
 
         // FIX #10: Validasi ownership — pastikan pesanan ini milik konsumen yang login
         $pesanan = \App\Models\Pesanan::findOrFail($request->id_pesanan);
-        if ($pesanan->id_konsumen !== auth()->id()) {
+        if ($pesanan->id_konsumen != auth()->id()) {
             return back()->withErrors(['id_pesanan' => 'Anda tidak berhak memberikan rating untuk pesanan ini.']);
         }
 
