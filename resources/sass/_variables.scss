@@ -1,11 +1,11 @@
 // Colors
 $primary: #3E2723;     // Dark roasted brown
 $secondary: #5D4037;   // Medium brown
-$success: #556B2F;     // Dark olive green
+$success: #4A5D23;     // Rich olive green
 $info: #4E5B61;        // Muted slate/steel
 $warning: #B05923;     // Burnt orange
 $danger: #8B2C2C;      // Brick red
-$light: #F0E9DD;       // Vintage cream
+$light: #F9F6F0;       // Very soft cream/off-white
 $dark: #2D1A11;        // Extra dark brown
 
 // Body
@@ -13,11 +13,12 @@ $body-bg: $light;
 $body-color: $primary;
 
 // Typography
-$font-family-sans-serif: 'Playfair Display', serif;
+$font-family-sans-serif: 'Outfit', 'Inter', sans-serif;
+$font-family-serif: 'Playfair Display', serif;
 $font-size-base: 0.95rem;
 $line-height-base: 1.6;
 
 // Components
-$border-radius: 0.75rem;       // More rounded by default
-$border-radius-lg: 1rem;
+$border-radius: 0.75rem;       
+$border-radius-lg: 1.25rem;
 $border-radius-sm: 0.5rem;

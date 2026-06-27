@@ -2,58 +2,58 @@
 
 @section('content')
 <div class="container pb-5 mb-5">
-    <div class="alert alert-success d-flex justify-content-between align-items-center shadow-sm">
+    <div class="alert alert-success d-flex justify-content-between align-items-center shadow-sm rounded-4 border-0 mb-4" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
         <div>
-            <h5 class="mb-0 fw-bold"><i class="fas fa-bag-shopping"></i> Pesanan Dibawa Pulang</h5>
-            <small>Silakan pilih menu Anda</small>
+            <h5 class="mb-0 fw-bold text-success font-serif"><i class="fas fa-bag-shopping me-2"></i> Pesanan Dibawa Pulang</h5>
+            <small class="text-success opacity-75">Silakan pilih menu Anda</small>
         </div>
-        <i class="bi bi-shop fs-1 text-success opacity-50"></i>
+        <i class="bi bi-shop fs-1 text-success opacity-25"></i>
     </div>
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mt-4 mb-3 gap-2">
-        <h5 class="fw-bold mb-0">Menu Tersedia</h5>
-        <div class="btn-group shadow-sm" role="group">
-            <button type="button" class="btn btn-outline-success active btn-filter" onclick="filterMenu('semua', this)">Semua</button>
-            <button type="button" class="btn btn-outline-success btn-filter" onclick="filterMenu('makanan', this)">Makanan</button>
-            <button type="button" class="btn btn-outline-success btn-filter" onclick="filterMenu('minuman', this)">Minuman</button>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mt-4 mb-3 gap-3">
+        <h5 class="fw-bold mb-0 font-serif text-dark">Menu Tersedia</h5>
+        <div class="segmented-control shadow-sm" role="group">
+            <button type="button" class="btn-filter active" onclick="filterMenu('semua', this)">Semua</button>
+            <button type="button" class="btn-filter" onclick="filterMenu('makanan', this)">Makanan</button>
+            <button type="button" class="btn-filter" onclick="filterMenu('minuman', this)">Minuman</button>
         </div>
     </div>
     <div class="row g-4">
         @foreach($menus as $menu)
         <div class="col-12 col-md-6 col-lg-4 menu-item" data-kategori="{{ $menu->kategori }}">
-            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white" style="transition: transform 0.2s;">
+            <div class="card h-100 border-0 glass-card rounded-4 overflow-hidden">
                 @if($menu->image)
-                <div style="height: 180px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                    <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="width: 100%; height: 100%; object-fit: contain;">
+                <div class="menu-img-container" style="height: 180px; width: 100%; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+                    <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
                 </div>
                 @endif
-                <div class="card-body d-flex flex-column p-3">
-                    <h6 class="fw-bold text-dark mb-1">{{ $menu->nama_menu }}</h6>
-                    <small class="text-muted mb-2" style="cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '2' ? 'unset' : '2'" title="Klik untuk membaca selengkapnya">{{ $menu->deskripsi ?? 'Tanpa deskripsi' }}</small>
+                <div class="card-body d-flex flex-column p-4">
+                    <h5 class="fw-bold text-dark mb-1 font-serif">{{ $menu->nama_menu }}</h5>
+                    <small class="text-muted mb-3" style="cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;" onclick="this.style.webkitLineClamp = this.style.webkitLineClamp === '2' ? 'unset' : '2'" title="Klik untuk membaca selengkapnya">{{ $menu->deskripsi ?? 'Tanpa deskripsi' }}</small>
                     
                     <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
-                        <h6 class="text-success fw-bold mb-0">Rp {{ number_format($menu->harga, 0, ',', '.') }}</h6>
-                        <small class="text-muted">Sisa: {{ $menu->stok }}</small>
+                        <h5 class="text-success fw-bold mb-0">Rp {{ number_format($menu->harga, 0, ',', '.') }}</h5>
+                        <small class="badge bg-light text-dark border px-2 py-1 rounded-pill">Sisa: {{ $menu->stok }}</small>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-outline-danger rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
+                        <div class="d-flex align-items-center gap-3 w-100 justify-content-end">
+                            <button class="btn btn-outline-danger btn-action rounded-circle p-0 d-flex justify-content-center align-items-center" 
                                     onclick="removeFromCart({{ $menu->id }})"
-                                    style="width: 32px; height: 32px; transition: all 0.2s;">
+                                    style="width: 36px; height: 36px; border-width: 2px;">
                                 <i class="bi bi-dash fs-5"></i>
                             </button>
-                            <span id="qty-{{ $menu->id }}" class="fw-bold fs-5 mb-0" style="min-width: 15px; text-align: center;">0</span>
-                            <button class="btn btn-success rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
+                            <span id="qty-{{ $menu->id }}" class="fw-bold fs-5 mb-0" style="min-width: 20px; text-align: center;">0</span>
+                            <button class="btn btn-success btn-action rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
                                     onclick="addToCart({{ $menu->id }}, '{{ $menu->nama_menu }}', {{ $menu->harga }})"
-                                    style="width: 32px; height: 32px; transition: all 0.2s;">
+                                    style="width: 36px; height: 36px;">
                                 <i class="bi bi-plus fs-5"></i>
                             </button>
                         </div>
                     </div>
                     
                     <div id="catatan-container-{{ $menu->id }}" class="mt-3" style="display: none;">
-                        <input type="text" id="catatan-input-{{ $menu->id }}" class="form-control form-control-sm border-1 bg-light rounded-3 px-3" placeholder="Tambah catatan..." onchange="updateCatatan({{ $menu->id }}, this.value)">
+                        <input type="text" id="catatan-input-{{ $menu->id }}" class="form-control form-control-sm border-0 bg-light rounded-pill px-3 py-2 shadow-sm" placeholder="📝 Tambah catatan pesanan..." onchange="updateCatatan({{ $menu->id }}, this.value)">
                     </div>
                 </div>
             </div>
@@ -64,10 +64,10 @@
 
 
 
-<div class="fixed-bottom bg-white shadow-lg" style="z-index: 1030; border-radius: 24px 24px 0 0; border-top: 1px solid #eaeaea;">
-    <div class="container px-3 py-3">
+<div class="fixed-bottom glass-panel" style="z-index: 1030; border-radius: 30px 30px 0 0; padding-bottom: env(safe-area-inset-bottom);">
+    <div class="container px-4 py-3">
         <div class="mb-3">
-            <select name="promo_id" id="promo_id" class="form-select form-select-sm border-success bg-success bg-opacity-10 text-success fw-bold rounded-pill px-3 py-2" onchange="updateCartUI()">
+            <select name="promo_id" id="promo_id" class="form-select border-0 bg-success bg-opacity-10 text-success fw-bold rounded-pill px-4 py-2 shadow-sm" onchange="updateCartUI()" style="cursor: pointer;">
                 <option value="">🎟️ Tambah Promo (Opsional)</option>
                 @foreach($promos as $promo)
                     <option value="{{ $promo->id }}" data-type="{{ $promo->type }}" data-value="{{ $promo->value }}">
@@ -79,16 +79,16 @@
                 @endforeach
             </select>
         </div>
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center mt-2">
             <div>
-                <small class="text-muted fw-bold d-block mb-0" style="font-size: 0.75rem;">Total Tagihan</small>
+                <small class="text-muted fw-bold d-block mb-0 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total Tagihan</small>
                 <div class="d-flex align-items-baseline gap-2">
-                    <h4 class="fw-bold text-dark mb-0" id="cart-total">Rp 0</h4>
-                    <span id="cart-qty" class="badge bg-success rounded-pill px-2">0 Item</span>
+                    <h3 class="fw-bold text-dark mb-0 font-serif" id="cart-total">Rp 0</h3>
+                    <span id="cart-qty" class="badge bg-success rounded-pill px-2 py-1 shadow-sm">0 Item</span>
                 </div>
             </div>
-            <button onclick="submitCustomerOrder()" class="btn btn-success px-4 py-2 fw-bold rounded-pill shadow-sm" style="transition: transform 0.2s;">
-                Pesan <i class="bi bi-cart-check-fill ms-1"></i>
+            <button onclick="submitCustomerOrder()" class="btn btn-success btn-action px-4 py-2 fw-bold rounded-pill shadow" style="font-size: 1.1rem;">
+                Pesan <i class="bi bi-cart-check-fill ms-2"></i>
             </button>
         </div>
     </div>
