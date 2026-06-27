@@ -42,9 +42,7 @@
                         </li>
                     </ul>
 
-                    <div class="text-center mt-3 small text-muted">
-            &copy; {{ date('Y') }} Warung Angkringan. Hak Cipta Dilindungi.
-        </div>                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto">
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
@@ -109,6 +107,10 @@
         <main class="py-0">
             @yield('content')
         </main>
+        
+        <footer class="text-center py-4 mt-auto w-100" style="padding-bottom: env(safe-area-inset-bottom, 120px) !important;">
+            <small class="text-muted">&copy; {{ date('Y') }} Warung Angkringan. Hak Cipta Dilindungi.</small>
+        </footer>
     </div>
     
     @yield('scripts')
