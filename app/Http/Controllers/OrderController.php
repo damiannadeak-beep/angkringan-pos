@@ -287,21 +287,57 @@ class OrderController extends Controller
             // 6. Handle Promo
             $discountAmount = 0;
             if (!empty($validated['promo_id'])) {
-                $promo = Promo::find($validated['promo_id']);
+                $promo = Promo::with('menus')->find($validated['promo_id']);
                 if ($promo && $promo->is_active) {
                     $pesanan->promo_id = $promo->id;
-                }
-            }
-            
-            if ($pesanan->promo_id) {
-                $promo = Promo::find($pesanan->promo_id);
-                if ($promo && $promo->is_active && $promo->type === 'discount') {
-                    if ($promo->discount_type === 'percentage') {
-                        $discountAmount = $pesanan->total * ($promo->value / 100);
-                    } else { // Nominal
-                        $discountAmount = $promo->value;
+                    
+                    // Filter Hari Promo
+                    $todayName = now()->format('l');
+                    $promoDays = is_string($promo->days) ? json_decode($promo->days, true) : $promo->days;
+                    if (is_array($promoDays) && count($promoDays) > 0) {
+                        if (!in_array($todayName, $promoDays)) {
+                            throw new \Exception("Promo '{$promo->title}' tidak berlaku untuk hari ini (" . now()->translatedFormat('l') . ").");
+                        }
                     }
-                    if ($discountAmount > $pesanan->total) $discountAmount = $pesanan->total;
+
+                    if ($promo->type === 'discount') {
+                        if ($promo->discount_type === 'percentage') {
+                            $discountAmount = $pesanan->total * ($promo->value / 100);
+                        } else { // Nominal
+                            $discountAmount = $promo->value;
+                        }
+                        if ($discountAmount > $pesanan->total) $discountAmount = $pesanan->total;
+                    } else if ($promo->type === 'package') {
+                        // Promo Paket Multiple
+                        $packageItems = $promo->menus;
+                        $packageNormalPrice = 0;
+                        
+                        $cartMap = [];
+                        foreach ($validated['items'] as $item) {
+                            if (!isset($cartMap[$item['id_menu']])) $cartMap[$item['id_menu']] = 0;
+                            $cartMap[$item['id_menu']] += $item['jumlah'];
+                        }
+
+                        $maxPackageCount = PHP_INT_MAX;
+                        foreach ($packageItems as $pkgMenu) {
+                            $requiredQty = $pkgMenu->pivot->jumlah;
+                            $availableQty = $cartMap[$pkgMenu->id] ?? 0;
+                            if ($availableQty < $requiredQty) {
+                                $maxPackageCount = 0;
+                                break;
+                            }
+                            $maxPackageCount = min($maxPackageCount, intdiv($availableQty, $requiredQty));
+                            $packageNormalPrice += ($pkgMenu->harga * $requiredQty);
+                        }
+
+                        if ($maxPackageCount === 0 || $maxPackageCount === PHP_INT_MAX) {
+                            throw new \Exception("Pesanan tidak memenuhi syarat menu untuk Promo Paket '{$promo->title}'.");
+                        }
+
+                        $discountPerPackage = $packageNormalPrice - $promo->value;
+                        if ($discountPerPackage < 0) $discountPerPackage = 0;
+                        $discountAmount = $discountPerPackage * $maxPackageCount;
+                    }
                 }
             }
             
