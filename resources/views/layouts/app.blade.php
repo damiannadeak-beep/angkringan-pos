@@ -6,9 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Warung Angkringan</title>
     
-    <link rel="icon" href="{{ asset('logo-polbeng.png') }}" type="image/png">
-    <link rel="shortcut icon" href="{{ asset('logo-polbeng.png') }}" type="image/png">
-    <link rel="apple-touch-icon" href="{{ asset('logo-polbeng.png') }}">
+    <link rel="icon" href="{{ asset('logo-angkringan.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ asset('logo-angkringan.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('logo-angkringan.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
