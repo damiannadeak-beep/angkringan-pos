@@ -32,7 +32,7 @@ class PermintaanBelanjaController extends Controller
             'catatan' => 'nullable|string',
         ]);
 
-        PermintaanBelanja::create([
+        $permintaan = PermintaanBelanja::create([
             'user_id' => auth()->id(),
             'nama_barang' => $request->nama_barang,
             'sisa_stok' => $request->sisa_stok,
@@ -40,6 +40,14 @@ class PermintaanBelanjaController extends Controller
             'catatan' => $request->catatan,
             'status' => 'menunggu'
         ]);
+
+        // Notify Admin
+        $admins = \App\Models\User::role('pemilik')->get();
+        \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\WebPushNotification(
+            'Permintaan Belanja Baru',
+            'Kasir meminta pembelian: ' . $permintaan->nama_barang . ' (' . $permintaan->jumlah_diminta . ')',
+            '/admin/permintaan-belanja'
+        ));
 
         return redirect()->route('kasir.permintaan.index')->with('success', 'Permintaan belanja berhasil dikirim.');
     }
@@ -67,6 +75,15 @@ class PermintaanBelanjaController extends Controller
         $permintaan = PermintaanBelanja::findOrFail($id);
         $permintaan->update(['status' => $request->status]);
 
+        // Notify Kasir
+        $kasirs = \App\Models\User::role('kasir')->get();
+        $statusText = $request->status == 'sudah_dibeli' ? 'Sudah Dibeli' : 'Ditolak';
+        \Illuminate\Support\Facades\Notification::send($kasirs, new \App\Notifications\WebPushNotification(
+            'Status Belanja Update',
+            'Permintaan ' . $permintaan->nama_barang . ' ' . $statusText . ' oleh Admin.',
+            '/kasir/permintaan-belanja'
+        ));
+
         return redirect()->back()->with('success', 'Status permintaan berhasil diperbarui.');
     }
 
@@ -92,6 +109,14 @@ class PermintaanBelanjaController extends Controller
                 'status' => 'sudah_dibeli'
             ]);
         }
+
+        // Notify Kasir
+        $kasirs = \App\Models\User::role('kasir')->get();
+        \Illuminate\Support\Facades\Notification::send($kasirs, new \App\Notifications\WebPushNotification(
+            'Admin Menambah Barang',
+            'Admin telah mencatat pembelian baru. Cek riwayat belanja.',
+            '/kasir/permintaan-belanja'
+        ));
 
         return redirect()->back()->with('success', 'Daftar belanja berhasil dicatat ke riwayat.');
     }

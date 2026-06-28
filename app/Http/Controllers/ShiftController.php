@@ -81,6 +81,15 @@ class ShiftController extends Controller
             'status' => 'closed'
         ]);
 
+        // Notify Admin
+        $admins = \App\Models\User::role('pemilik')->get();
+        $kasirName = auth()->user()->name;
+        \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\WebPushNotification(
+            'Laporan Shift Kasir',
+            "Kasir {$kasirName} telah menutup shift. Pemasukan: Rp " . number_format($totalTunai, 0, ',', '.'),
+            '/admin/kasir'
+        ));
+
         auth()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
