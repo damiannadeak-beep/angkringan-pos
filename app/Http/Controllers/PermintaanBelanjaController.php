@@ -14,8 +14,7 @@ class PermintaanBelanjaController extends Controller
     
     public function kasirIndex()
     {
-        $permintaans = PermintaanBelanja::where('user_id', auth()->id())
-                        ->orderBy('created_at', 'desc')
+        $permintaans = PermintaanBelanja::orderBy('created_at', 'desc')
                         ->paginate(10);
                         
         // Ambil daftar bahan baku untuk dropdown (opsional)
