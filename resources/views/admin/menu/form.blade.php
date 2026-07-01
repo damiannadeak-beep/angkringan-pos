@@ -174,19 +174,23 @@ document.addEventListener('DOMContentLoaded', function() {
         variants.forEach((group, gIndex) => {
             let optionsHtml = '';
             group.options.forEach((opt, oIndex) => {
+                const isFirst = oIndex === 0;
+                const isLast = oIndex === group.options.length - 1;
                 optionsHtml += `
                     <div class="row g-2 align-items-center mb-2">
-                        <div class="col-6">
+                        <div class="col-5">
                             <input type="text" class="form-control form-control-sm var-opt-name" data-g="${gIndex}" data-o="${oIndex}" value="${opt.name}" placeholder="Nama Opsi (Cth: Level 1)">
                         </div>
-                        <div class="col-5">
+                        <div class="col-4">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text">+ Rp</span>
                                 <input type="number" class="form-control var-opt-price" data-g="${gIndex}" data-o="${oIndex}" value="${opt.price}" placeholder="0" min="0">
                             </div>
                         </div>
-                        <div class="col-1 text-end">
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-opt" data-g="${gIndex}" data-o="${oIndex}"><i class="bi bi-x"></i></button>
+                        <div class="col-3 text-end d-flex gap-1 justify-content-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary move-opt-up" data-g="${gIndex}" data-o="${oIndex}" title="Geser ke Atas" ${isFirst ? 'disabled' : ''}><i class="bi bi-arrow-up"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary move-opt-down" data-g="${gIndex}" data-o="${oIndex}" title="Geser ke Bawah" ${isLast ? 'disabled' : ''}><i class="bi bi-arrow-down"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-opt" data-g="${gIndex}" data-o="${oIndex}" title="Hapus"><i class="bi bi-x"></i></button>
                         </div>
                     </div>
                 `;
@@ -253,6 +257,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = e.target.closest('.remove-opt');
             variants[btn.dataset.g].options.splice(btn.dataset.o, 1);
             renderVariants();
+        } else if(e.target.closest('.move-opt-up')) {
+            const btn = e.target.closest('.move-opt-up');
+            const g = btn.dataset.g;
+            const o = parseInt(btn.dataset.o);
+            if (o > 0) {
+                const temp = variants[g].options[o];
+                variants[g].options[o] = variants[g].options[o - 1];
+                variants[g].options[o - 1] = temp;
+                renderVariants();
+            }
+        } else if(e.target.closest('.move-opt-down')) {
+            const btn = e.target.closest('.move-opt-down');
+            const g = btn.dataset.g;
+            const o = parseInt(btn.dataset.o);
+            if (o < variants[g].options.length - 1) {
+                const temp = variants[g].options[o];
+                variants[g].options[o] = variants[g].options[o + 1];
+                variants[g].options[o + 1] = temp;
+                renderVariants();
+            }
         } else if(e.target.closest('.remove-group')) {
             variants.splice(e.target.closest('.remove-group').dataset.g, 1);
             renderVariants();
