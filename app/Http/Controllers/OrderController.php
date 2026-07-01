@@ -76,6 +76,7 @@ class OrderController extends Controller
     public function menuTakeaway()
     {
         $menus = Menu::where('is_available', true)->where('stok', '>', 0)->get();
+        dd($menus->toArray());
         // Mengambil promo aktif
         $promos = Promo::with('menus')->where('is_active', true)
             ->where(function($q) {
