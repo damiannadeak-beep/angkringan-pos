@@ -131,7 +131,7 @@
                     @endphp
                     @if(is_array($variants) && count($variants) > 0)
                         @foreach($variants as $v)
-                            <br><span style="font-size: 10px; font-weight: normal; margin-left: 5px;">- {{ $v['name'] }} {{ isset($v['price']) && $v['price'] > 0 ? '(+Rp '.number_format($v['price'],0,',','.').')' : '' }}</span>
+                            <br><span style="font-size: 10px; font-weight: normal; margin-left: 5px;">- {{ isset($v['qty']) && $v['qty'] > 1 ? $v['qty'].'x ' : '' }}{{ $v['name'] }} {{ isset($v['price']) && $v['price'] > 0 ? '(+Rp '.number_format($v['price'],0,',','.').')' : '' }}</span>
                         @endforeach
                     @endif
                 @endif

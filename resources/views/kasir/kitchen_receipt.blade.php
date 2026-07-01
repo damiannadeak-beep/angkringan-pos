@@ -61,7 +61,11 @@
                                 $variants = json_decode($item->selected_variants, true); 
                             @endphp
                             @if(is_array($variants) && count($variants) > 0)
-                                <br><small style="font-size: 11px;">- {{ implode(', ', array_column($variants, 'name')) }}</small>
+                                <br><small style="font-size: 11px;">- 
+                                    @foreach($variants as $idx => $v)
+                                        {{ isset($v['qty']) && $v['qty'] > 1 ? $v['qty'].'x ' : '' }}{{ $v['name'] }}{{ $idx < count($variants) - 1 ? ', ' : '' }}
+                                    @endforeach
+                                </small>
                             @endif
                         @endif
                         @if($item->catatan)

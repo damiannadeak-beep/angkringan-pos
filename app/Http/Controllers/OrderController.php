@@ -242,11 +242,15 @@ class OrderController extends Controller
                                 if (isset($selVar['group']) && $g['group_name'] === $selVar['group']) {
                                     foreach ($g['options'] as $opt) {
                                         if (isset($selVar['name']) && $opt['name'] === $selVar['name']) {
-                                            $hargaVarian += $opt['price'];
+                                            $qty = isset($selVar['qty']) ? (int) $selVar['qty'] : 1;
+                                            if ($qty < 1) $qty = 1;
+
+                                            $hargaVarian += ($opt['price'] * $qty);
                                             $selectedVariants[] = [
                                                 'group' => $g['group_name'],
                                                 'name' => $opt['name'],
-                                                'price' => $opt['price']
+                                                'price' => $opt['price'],
+                                                'qty' => $qty
                                             ];
                                             break 2;
                                         }

@@ -56,6 +56,18 @@
                                             <td class="text-muted" style="width: 30px; vertical-align: top;">{{ $item->jumlah }}x</td>
                                             <td class="fw-medium">
                                                 {{ $item->menu->nama_menu ?? 'Menu tidak ditemukan' }}
+                                                @if($item->selected_variants)
+                                                    @php 
+                                                        $variants = json_decode($item->selected_variants, true); 
+                                                    @endphp
+                                                    @if(is_array($variants) && count($variants) > 0)
+                                                        <div class="small text-success"><i class="bi bi-tags me-1"></i>
+                                                            @foreach($variants as $idx => $v)
+                                                                {{ isset($v['qty']) && $v['qty'] > 1 ? $v['qty'].'x ' : '' }}{{ $v['name'] }}{{ $idx < count($variants) - 1 ? ', ' : '' }}
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                @endif
                                                 @if($item->catatan)
                                                     <div class="small text-danger fst-italic"><i class="bi bi-chat-text me-1"></i>Catatan: {{ $item->catatan }}</div>
                                                 @endif

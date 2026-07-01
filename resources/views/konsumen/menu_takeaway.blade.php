@@ -204,21 +204,40 @@
                         <label class="fw-bold d-block mb-2">${group.group_name}</label>`;
             
             group.options.forEach((opt, oIndex) => {
-                const inputType = group.type === 'multiple' ? 'checkbox' : 'radio';
+                const isMultiple = group.type === 'multiple';
+                const inputType = isMultiple ? 'checkbox' : 'radio';
                 const inputName = `var_group_${gIndex}`;
                 const inputId = `var_${gIndex}_${oIndex}`;
                 const priceText = opt.price > 0 ? `(+Rp ${opt.price.toLocaleString('id-ID')})` : '';
                 
-                html += `
-                    <div class="form-check mb-1">
-                        <input class="form-check-input var-option-input" type="${inputType}" name="${inputName}" id="${inputId}" 
-                               data-gname="${group.group_name}" data-oname="${opt.name}" data-price="${opt.price}" onchange="calculateVariantPrice()">
-                        <label class="form-check-label d-flex justify-content-between" for="${inputId}">
-                            <span>${opt.name}</span>
-                            <span class="text-muted small">${priceText}</span>
-                        </label>
-                    </div>
-                `;
+                if (isMultiple) {
+                    html += `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="d-block">${opt.name}</span>
+                                <span class="text-muted small">${priceText}</span>
+                            </div>
+                            <div class="input-group input-group-sm" style="width: 100px;">
+                                <button class="btn btn-outline-secondary px-2 var-qty-btn" type="button" onclick="changeToppingQty('${inputId}', -1)">-</button>
+                                <input type="number" class="form-control text-center px-0 var-option-qty" id="${inputId}_qty" 
+                                       data-gname="${group.group_name}" data-oname="${opt.name}" data-price="${opt.price}" 
+                                       value="0" min="0" readonly>
+                                <button class="btn btn-outline-secondary px-2 var-qty-btn" type="button" onclick="changeToppingQty('${inputId}', 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="form-check mb-1">
+                            <input class="form-check-input var-option-input" type="radio" name="${inputName}" id="${inputId}" 
+                                   data-gname="${group.group_name}" data-oname="${opt.name}" data-price="${opt.price}" onchange="calculateVariantPrice()">
+                            <label class="form-check-label d-flex justify-content-between" for="${inputId}">
+                                <span>${opt.name}</span>
+                                <span class="text-muted small">${priceText}</span>
+                            </label>
+                        </div>
+                    `;
+                }
             });
             html += `</div>`;
         });
@@ -232,12 +251,28 @@
         vModal.show();
     }
 
+    function changeToppingQty(inputId, delta) {
+        const input = document.getElementById(inputId + '_qty');
+        if (!input) return;
+        let val = parseInt(input.value) + delta;
+        if (val < 0) val = 0;
+        input.value = val;
+        calculateVariantPrice();
+    }
+
     function calculateVariantPrice() {
         if (!currentSelectedMenu) return;
         let unitPrice = parseFloat(currentSelectedMenu.harga);
         
         document.querySelectorAll('.var-option-input:checked').forEach(input => {
             unitPrice += parseFloat(input.dataset.price);
+        });
+
+        document.querySelectorAll('.var-option-qty').forEach(input => {
+            let qty = parseInt(input.value);
+            if (qty > 0) {
+                unitPrice += parseFloat(input.dataset.price) * qty;
+            }
         });
 
         let total = unitPrice * currentModalQty;
@@ -253,8 +288,21 @@
             selectedVariants.push({
                 group: input.dataset.gname,
                 name: input.dataset.oname,
-                price: parseFloat(input.dataset.price)
+                price: parseFloat(input.dataset.price),
+                qty: 1
             });
+        });
+
+        document.querySelectorAll('.var-option-qty').forEach(input => {
+            let qty = parseInt(input.value);
+            if (qty > 0) {
+                selectedVariants.push({
+                    group: input.dataset.gname,
+                    name: input.dataset.oname,
+                    price: parseFloat(input.dataset.price),
+                    qty: qty
+                });
+            }
         });
 
         let variantsDef = JSON.parse(currentSelectedMenu.variants_json || '[]');
@@ -339,11 +387,14 @@
                 aggregatedVariantsHtml[item.id_menu] = '';
             }
             aggregatedQty[item.id_menu] += item.jumlah;
-
+            let variantsHtml = '';
             if (item.variants && item.variants.length > 0) {
-                const varText = item.variants.map(v => v.name).join(', ');
-                aggregatedVariantsHtml[item.id_menu] += `<div class="mb-1"><i class="bi bi-tags me-1"></i>${item.jumlah}x: ${varText}</div>`;
+                const varText = item.variants.map(v => {
+                    return (v.qty && v.qty > 1) ? `${v.qty}x ${v.name}` : v.name;
+                }).join(', ');
+                variantsHtml = `<div class="small text-success mb-1"><i class="bi bi-tags me-1"></i>${varText}</div>`;
             }
+            aggregatedVariantsHtml[item.id_menu] += `<div class="mb-1">${item.jumlah}x: ${variantsHtml}</div>`;
             
             if (item.catatan) {
                 aggregatedCatatan[item.id_menu] = item.catatan;
