@@ -130,7 +130,9 @@
                         $variants = json_decode($item->selected_variants, true); 
                     @endphp
                     @if(is_array($variants) && count($variants) > 0)
-                        <br><span style="font-size: 10px; font-weight: normal;">- {{ implode(', ', array_column($variants, 'name')) }}</span>
+                        @foreach($variants as $v)
+                            <br><span style="font-size: 10px; font-weight: normal; margin-left: 5px;">- {{ $v['name'] }} {{ isset($v['price']) && $v['price'] > 0 ? '(+Rp '.number_format($v['price'],0,',','.').')' : '' }}</span>
+                        @endforeach
                     @endif
                 @endif
                 @if($item->catatan)
