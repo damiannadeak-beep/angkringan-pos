@@ -60,7 +60,7 @@
                 @endif
                 @if($menu->image)
                 <div style="aspect-ratio: 1/1; max-height: 140px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                    <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 @endif
                 <div class="card-body d-flex flex-column p-3">
