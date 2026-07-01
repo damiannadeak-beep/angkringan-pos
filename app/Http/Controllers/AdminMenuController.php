@@ -206,9 +206,12 @@ class AdminMenuController extends Controller
                 return response()->json(['description' => trim($text)]);
             }
 
-            return response()->json(['error' => 'Gagal menghubungi server AI.'], 500);
+            $errorMsg = $response->json('error.message') ?? 'Unknown error';
+            \Illuminate\Support\Facades\Log::error('Gemini API Error: ' . $response->body());
+            return response()->json(['error' => 'Gagal menghubungi server AI. ' . $errorMsg], 500);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Terjadi kesalahan sistem.'], 500);
+            \Illuminate\Support\Facades\Log::error('Gemini API Exception: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()], 500);
         }
     }
 }

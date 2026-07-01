@@ -77,14 +77,16 @@
                             </button>
                             <span id="qty-{{ $menu->id }}" class="fw-bold fs-5 mb-0" style="min-width: 15px; text-align: center;">0</span>
                             <button class="btn btn-success rounded-circle p-0 d-flex justify-content-center align-items-center shadow-sm" 
-                                    onclick="addToCart({{ $menu->id }}, '{{ $menu->nama_menu }}', {{ $menu->harga }})"
+                                    onclick="openVariantModal({{ $menu->id }})"
                                     style="width: 32px; height: 32px; transition: all 0.2s;">
                                 <i class="bi bi-plus fs-5"></i>
                             </button>
                         </div>
                     </div>
                     
-                    <div id="catatan-container-{{ $menu->id }}" class="mt-3" style="display: none;">
+                    <div id="variants-display-{{ $menu->id }}" class="mt-3 text-success small" style="display: none;">
+                    </div>
+                    <div id="catatan-container-{{ $menu->id }}" class="mt-2" style="display: none;">
                         <input type="text" id="catatan-input-{{ $menu->id }}" class="form-control form-control-sm border-1 bg-light rounded-3 px-3" placeholder="Tambah catatan..." onchange="updateCatatan({{ $menu->id }}, this.value)">
                     </div>
                 </div>
@@ -98,6 +100,25 @@
 </div>
 
 
+
+<!-- Modal Pilih Varian -->
+<div class="modal fade" id="variantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold mb-0" id="variantModalTitle">Pilih Varian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <div id="variantModalContent"></div>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <h5 class="fw-bold mb-0 text-success" id="variantModalPrice">Rp 0</h5>
+                    <button type="button" class="btn btn-success fw-bold rounded-pill px-4" onclick="confirmVariantSelection()">Tambahkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="fixed-bottom bg-white shadow-lg" style="z-index: 1030; border-radius: 24px 24px 0 0; border-top: 1px solid #eaeaea;">
     <div class="container px-3 py-3">
@@ -130,7 +151,99 @@
 </div>
 
 <script>
+    const allMenus = @json($menus);
     let cart = [];
+    let currentSelectedMenu = null;
+
+    function openVariantModal(id) {
+        const menu = allMenus.find(m => m.id === id);
+        if (!menu) return;
+
+        let variants = [];
+        if (menu.variants_json) {
+            try { variants = JSON.parse(menu.variants_json); } catch(e) {}
+        }
+
+        if (variants.length === 0) {
+            addToCart(menu.id, menu.nama_menu, menu.harga, []);
+            return;
+        }
+
+        currentSelectedMenu = menu;
+        document.getElementById('variantModalTitle').innerText = menu.nama_menu;
+        
+        let html = '';
+        variants.forEach((group, gIndex) => {
+            html += `<div class="mb-3">
+                        <label class="fw-bold d-block mb-2">${group.group_name}</label>`;
+            
+            group.options.forEach((opt, oIndex) => {
+                const inputType = group.type === 'multiple' ? 'checkbox' : 'radio';
+                const inputName = `var_group_${gIndex}`;
+                const inputId = `var_${gIndex}_${oIndex}`;
+                const priceText = opt.price > 0 ? `(+Rp ${opt.price.toLocaleString('id-ID')})` : '';
+                
+                html += `
+                    <div class="form-check mb-1">
+                        <input class="form-check-input var-option-input" type="${inputType}" name="${inputName}" id="${inputId}" 
+                               data-gname="${group.group_name}" data-oname="${opt.name}" data-price="${opt.price}" onchange="calculateVariantPrice()">
+                        <label class="form-check-label d-flex justify-content-between" for="${inputId}">
+                            <span>${opt.name}</span>
+                            <span class="text-muted small">${priceText}</span>
+                        </label>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        });
+
+        document.getElementById('variantModalContent').innerHTML = html;
+        calculateVariantPrice();
+        
+        var vModal = new bootstrap.Modal(document.getElementById('variantModal'));
+        vModal.show();
+    }
+
+    function calculateVariantPrice() {
+        if (!currentSelectedMenu) return;
+        let total = parseFloat(currentSelectedMenu.harga);
+        
+        document.querySelectorAll('.var-option-input:checked').forEach(input => {
+            total += parseFloat(input.dataset.price);
+        });
+
+        document.getElementById('variantModalPrice').innerText = 'Rp ' + total.toLocaleString('id-ID');
+        return total;
+    }
+
+    function confirmVariantSelection() {
+        if (!currentSelectedMenu) return;
+
+        let selectedVariants = [];
+        document.querySelectorAll('.var-option-input:checked').forEach(input => {
+            selectedVariants.push({
+                group: input.dataset.gname,
+                name: input.dataset.oname,
+                price: parseFloat(input.dataset.price)
+            });
+        });
+
+        let variantsDef = JSON.parse(currentSelectedMenu.variants_json || '[]');
+        for (let i = 0; i < variantsDef.length; i++) {
+            if (variantsDef[i].type === 'single') {
+                const hasSelected = selectedVariants.find(sv => sv.group === variantsDef[i].group_name);
+                if (!hasSelected) {
+                    alert(`Silakan pilih salah satu opsi dari ${variantsDef[i].group_name}!`);
+                    return;
+                }
+            }
+        }
+
+        const finalPrice = calculateVariantPrice();
+        addToCart(currentSelectedMenu.id, currentSelectedMenu.nama_menu, finalPrice, selectedVariants);
+        
+        bootstrap.Modal.getInstance(document.getElementById('variantModal')).hide();
+    }
 
     function filterMenu(category, btn) {
         document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
@@ -145,21 +258,23 @@
         });
     }
 
-    function addToCart(id, name, price) {
-        let item = cart.find(i => i.id_menu === id);
-        if (item) {
-            item.jumlah++;
+    function addToCart(id, name, price, variants = []) {
+        const variantsString = JSON.stringify(variants);
+        let itemIndex = cart.findIndex(i => i.id_menu === id && JSON.stringify(i.variants) === variantsString);
+        if (itemIndex !== -1) {
+            cart[itemIndex].jumlah++;
         } else {
-            cart.push({ id_menu: id, nama: name, harga: price, jumlah: 1, catatan: '' });
+            cart.push({ id_menu: id, nama: name, harga: price, jumlah: 1, catatan: '', variants: variants });
         }
         updateCartUI();
     }
 
     function updateCatatan(id, val) {
-        let item = cart.find(i => i.id_menu === id);
-        if (item) {
-            item.catatan = val;
-        }
+        cart.forEach(i => {
+            if (i.id_menu === id) {
+                i.catatan = val;
+            }
+        });
     }
 
     function removeFromCart(id) {
@@ -181,20 +296,50 @@
         // Reset all qty displays to 0
         document.querySelectorAll('[id^="qty-"]').forEach(el => el.innerText = '0');
         document.querySelectorAll('[id^="catatan-container-"]').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('[id^="variants-display-"]').forEach(el => el.style.display = 'none');
+
+        let aggregatedQty = {};
+        let aggregatedVariantsHtml = {};
+        let aggregatedCatatan = {};
 
         cart.forEach(item => {
             total += (item.harga * item.jumlah);
             qty += item.jumlah;
             
-            let qtyDisplay = document.getElementById('qty-' + item.id_menu);
-            if(qtyDisplay) qtyDisplay.innerText = item.jumlah;
+            if(!aggregatedQty[item.id_menu]) {
+                aggregatedQty[item.id_menu] = 0;
+                aggregatedVariantsHtml[item.id_menu] = '';
+            }
+            aggregatedQty[item.id_menu] += item.jumlah;
 
-            let catatanContainer = document.getElementById('catatan-container-' + item.id_menu);
+            if (item.variants && item.variants.length > 0) {
+                const varText = item.variants.map(v => v.name).join(', ');
+                aggregatedVariantsHtml[item.id_menu] += `<div class="mb-1"><i class="bi bi-tags me-1"></i>${item.jumlah}x: ${varText}</div>`;
+            }
+            
+            if (item.catatan) {
+                aggregatedCatatan[item.id_menu] = item.catatan;
+            }
+        });
+
+        Object.keys(aggregatedQty).forEach(menuId => {
+            let qtyDisplay = document.getElementById('qty-' + menuId);
+            if(qtyDisplay) qtyDisplay.innerText = aggregatedQty[menuId];
+
+            let variantsDisplay = document.getElementById('variants-display-' + menuId);
+            if(variantsDisplay && aggregatedVariantsHtml[menuId] !== '') {
+                variantsDisplay.style.display = 'block';
+                variantsDisplay.innerHTML = aggregatedVariantsHtml[menuId];
+            }
+
+            let catatanContainer = document.getElementById('catatan-container-' + menuId);
             if(catatanContainer) {
                 catatanContainer.style.display = 'block';
-                let input = document.getElementById('catatan-input-' + item.id_menu);
-                if (input && input.value !== item.catatan) {
-                    input.value = item.catatan || '';
+                let input = document.getElementById('catatan-input-' + menuId);
+                if (input && aggregatedCatatan[menuId] !== undefined) {
+                    input.value = aggregatedCatatan[menuId];
+                } else if (input) {
+                    input.value = '';
                 }
             }
         });
