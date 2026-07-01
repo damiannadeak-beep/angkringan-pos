@@ -111,9 +111,11 @@
                                     <i class="bi bi-trash me-1"></i> Void
                                 </button>
                                 <div class="w-100 m-0 p-0"></div> <!-- Break line -->
+                                @if($order->detail_pesanan->sum('jumlah') > 1)
                                 <button class="btn btn-sm btn-outline-warning w-100 fw-bold mt-1" data-details="{{ json_encode($order->detail_pesanan) }}" onclick="openSplitModal({{ $order->id }}, this)">
                                     <i class="bi bi-layout-split me-1"></i> Pisah Bon (Split Bill)
                                 </button>
+                                @endif
                             @else
                                 @php $printerActive = \App\Models\Setting::getVal('printer_active') == '1'; @endphp
                                 @if($printerActive)
