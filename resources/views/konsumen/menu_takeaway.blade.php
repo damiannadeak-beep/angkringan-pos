@@ -116,19 +116,21 @@
             <div class="modal-body px-4 pb-4">
                 <div id="variantModalContent"></div>
                 <div id="variantModalAlertContainer"></div>
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <div>
-                        <small class="text-muted d-block mb-1">Total Harga</small>
-                        <h5 class="fw-bold mb-0 text-success" id="variantModalPrice">Rp 0</h5>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
+                <div class="d-flex flex-column mt-4 pt-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <small class="text-muted d-block mb-1">Total Harga</small>
+                            <h5 class="fw-bold mb-0 text-success" id="variantModalPrice">Rp 0</h5>
+                        </div>
                         <div class="d-flex align-items-center bg-light rounded-pill border px-2 py-1">
                             <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2" onclick="changeModalQty(-1)"><i class="bi bi-dash fs-5"></i></button>
                             <span id="modal-qty-display" class="fw-bold fs-5 px-2">1</span>
                             <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2" onclick="changeModalQty(1)"><i class="bi bi-plus fs-5"></i></button>
                         </div>
-                        <button type="button" class="btn btn-outline-success fw-bold rounded-pill px-3 py-2" onclick="addAnotherVariantSelection()" title="Tambah pesanan ini ke keranjang & pilih varian untuk porsi lain"><i class="bi bi-plus-circle me-1"></i>Porsi Lain</button>
-                        <button type="button" class="btn btn-success fw-bold rounded-pill px-4 py-2" onclick="confirmVariantSelection()">Tambahkan</button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-success fw-bold rounded-pill flex-fill" style="white-space: nowrap;" onclick="addAnotherVariantSelection()"><i class="bi bi-plus-circle me-1"></i>Porsi Lain</button>
+                        <button type="button" class="btn btn-success fw-bold rounded-pill flex-fill" style="white-space: nowrap;" onclick="confirmVariantSelection()">Tambahkan</button>
                     </div>
                 </div>
             </div>
@@ -219,12 +221,12 @@
                                 <span class="d-block">${opt.name}</span>
                                 <span class="text-muted small">${priceText}</span>
                             </div>
-                            <div class="input-group input-group-sm" style="width: 100px;">
-                                <button class="btn btn-outline-secondary px-2 var-qty-btn" type="button" onclick="changeToppingQty('${inputId}', -1)">-</button>
+                            <div class="input-group input-group-sm" style="width: 110px; flex-wrap: nowrap;">
+                                <button class="btn btn-outline-secondary var-qty-btn" type="button" style="width: 32px; padding: 0;" onclick="changeToppingQty('${inputId}', -1)"><i class="bi bi-dash"></i></button>
                                 <input type="number" class="form-control text-center px-0 var-option-qty" id="${inputId}_qty" 
                                        data-gname="${group.group_name}" data-oname="${opt.name}" data-price="${opt.price}" 
-                                       value="0" min="0" readonly>
-                                <button class="btn btn-outline-secondary px-2 var-qty-btn" type="button" onclick="changeToppingQty('${inputId}', 1)">+</button>
+                                       value="0" min="0" readonly style="background-color: transparent;">
+                                <button class="btn btn-outline-secondary var-qty-btn" type="button" style="width: 32px; padding: 0;" onclick="changeToppingQty('${inputId}', 1)"><i class="bi bi-plus"></i></button>
                             </div>
                         </div>
                     `;
