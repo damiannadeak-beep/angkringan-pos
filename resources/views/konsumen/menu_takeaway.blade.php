@@ -163,6 +163,8 @@
         const menu = allMenus.find(m => m.id === id);
         if (!menu) return;
 
+        alert("Debug: " + menu.nama_menu + " - Variants JSON: " + menu.variants_json);
+
         let variants = [];
         if (menu.variants_json) {
             try { variants = JSON.parse(menu.variants_json); } catch(e) {}
