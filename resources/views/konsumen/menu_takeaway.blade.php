@@ -1,3 +1,6 @@
+@php
+    file_put_contents(public_path('menus_dump.json'), $menus->toJson());
+@endphp
 @extends('layouts.app')
 
 @section('content')
