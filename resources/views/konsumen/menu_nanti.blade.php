@@ -111,17 +111,19 @@
             </div>
             <div class="modal-body px-4 pb-4">
                 <div id="variantModalContent"></div>
+                <div id="variantModalAlertContainer"></div>
                 <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                     <div>
                         <small class="text-muted d-block mb-1">Total Harga</small>
                         <h5 class="fw-bold mb-0 text-success" id="variantModalPrice">Rp 0</h5>
                     </div>
-                    <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
                         <div class="d-flex align-items-center bg-light rounded-pill border px-2 py-1">
                             <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2" onclick="changeModalQty(-1)"><i class="bi bi-dash fs-5"></i></button>
                             <span id="modal-qty-display" class="fw-bold fs-5 px-2">1</span>
                             <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2" onclick="changeModalQty(1)"><i class="bi bi-plus fs-5"></i></button>
                         </div>
+                        <button type="button" class="btn btn-outline-success fw-bold rounded-pill px-3 py-2" onclick="addAnotherVariantSelection()" title="Tambah pesanan ini ke keranjang & pilih varian untuk porsi lain"><i class="bi bi-plus-circle me-1"></i>Porsi Lain</button>
                         <button type="button" class="btn btn-success fw-bold rounded-pill px-4 py-2" onclick="confirmVariantSelection()">Tambahkan</button>
                     </div>
                 </div>
@@ -312,10 +314,72 @@
             }
         }
 
-        const finalPrice = calculateVariantPrice();
+        let finalPrice = calculateVariantPrice() / currentModalQty;
         addToCart(currentSelectedMenu.id, currentSelectedMenu.nama_menu, finalPrice, selectedVariants, currentModalQty);
         
         bootstrap.Modal.getInstance(document.getElementById('variantModal')).hide();
+    }
+
+    function addAnotherVariantSelection() {
+        if (!currentSelectedMenu) return;
+
+        let selectedVariants = [];
+        document.querySelectorAll('.var-option-input:checked').forEach(input => {
+            selectedVariants.push({
+                group: input.dataset.gname,
+                name: input.dataset.oname,
+                price: parseFloat(input.dataset.price),
+                qty: 1
+            });
+        });
+
+        document.querySelectorAll('.var-option-qty').forEach(input => {
+            let qty = parseInt(input.value);
+            if (qty > 0) {
+                selectedVariants.push({
+                    group: input.dataset.gname,
+                    name: input.dataset.oname,
+                    price: parseFloat(input.dataset.price),
+                    qty: qty
+                });
+            }
+        });
+
+        // Validasi radio (harus pilih satu jika grup bertipe single)
+        let variantsDef = JSON.parse(currentSelectedMenu.variants_json || '[]');
+        for (let i = 0; i < variantsDef.length; i++) {
+            if (variantsDef[i].type === 'single') {
+                const hasSelected = selectedVariants.find(sv => sv.group === variantsDef[i].group_name);
+                if (!hasSelected) {
+                    alert(`Silakan pilih salah satu opsi dari ${variantsDef[i].group_name}!`);
+                    return;
+                }
+            }
+        }
+
+        let finalPrice = calculateVariantPrice() / currentModalQty;
+        addToCart(currentSelectedMenu.id, currentSelectedMenu.nama_menu, finalPrice, selectedVariants, currentModalQty);
+        
+        // Reset Inputs
+        document.querySelectorAll('.var-option-input').forEach(input => {
+            if(input.type === 'radio' || input.type === 'checkbox') input.checked = false;
+        });
+        document.querySelectorAll('.var-option-qty').forEach(input => {
+            input.value = 0;
+        });
+        
+        currentModalQty = 1;
+        document.getElementById('modal-qty-display').innerText = currentModalQty;
+        calculateVariantPrice();
+
+        let alertContainer = document.getElementById('variantModalAlertContainer');
+        if(alertContainer) {
+            alertContainer.innerHTML = `<div class="alert alert-success alert-dismissible fade show p-2 mb-3" role="alert" style="font-size:0.85rem;">
+                <i class="bi bi-check-circle-fill me-1"></i> Porsi sebelumnya berhasil ditambahkan! Silakan pilih varian untuk porsi berikutnya.
+                <button type="button" class="btn-close p-2" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+            setTimeout(() => { alertContainer.innerHTML = ''; }, 3000);
+        }
     }
 
     function filterMenu(category, btn) {
