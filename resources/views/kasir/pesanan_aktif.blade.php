@@ -172,16 +172,36 @@
             <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 pt-0">
-                <h5 class="fw-bold mb-3">Scan QRIS</h5>
+            <div class="modal-body p-4 pt-3 text-center">
+                <div class="mb-3 mt-2">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 60px; height: 60px;">
+                        <i class="bi bi-qr-code-scan fs-2"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2">Pembayaran QRIS</h5>
+                <p class="text-muted small mb-4">Minta pelanggan memindai kode QR di bawah ini menggunakan aplikasi e-Wallet / M-Banking mereka.</p>
+                
                 @php $qrisImage = \App\Models\Setting::getVal('qris_image'); @endphp
-                @if($qrisImage)
-                    <img src="{{ asset('storage/'.$qrisImage) }}" alt="QRIS" class="img-fluid rounded border p-2 mb-3">
-                    <p class="small text-muted mb-3">Minta pelanggan scan barcode ini.</p>
-                    <button type="button" class="btn btn-primary w-100 fw-bold" onclick="executePayment('qris')">Sudah Dibayar & Selesai</button>
-                @else
-                    <p class="text-danger small fw-bold">Gambar QRIS belum diatur oleh Admin.</p>
-                @endif
+                <div class="bg-light p-3 rounded-4 mx-auto mb-4 border shadow-sm position-relative d-flex align-items-center justify-content-center" style="max-width: 220px; aspect-ratio: 1/1;">
+                    @if($qrisImage)
+                        <img src="{{ asset('storage/'.$qrisImage) }}" alt="QRIS Code" class="img-fluid rounded" style="max-height: 100%;" onerror="this.onerror=null; this.style.display='none'; document.getElementById('qris-fallback').style.display='block';">
+                        <div id="qris-fallback" style="display: none; width: 100%;">
+                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            <p class="small text-danger mt-2 fw-bold mb-0">Gambar QRIS Rusak/Hilang</p>
+                            <small class="text-muted" style="font-size: 10px;">Harap upload ulang di menu Admin</small>
+                        </div>
+                    @else
+                        <div style="width: 100%;">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                            <p class="small text-danger mt-2 fw-bold mb-0">QRIS Belum Diatur</p>
+                            <small class="text-muted" style="font-size: 10px;">Hubungi Admin</small>
+                        </div>
+                    @endif
+                </div>
+
+                <button type="button" class="btn btn-primary w-100 fw-bold py-3 rounded-pill shadow-sm" onclick="executePayment('qris')">
+                    <i class="bi bi-check-circle-fill me-2"></i> Sudah Dibayar & Selesai
+                </button>
             </div>
         </div>
     </div>
