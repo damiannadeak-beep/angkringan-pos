@@ -152,9 +152,19 @@
             </div>
             <div class="modal-body px-4 pb-4">
                 <div id="variantModalContent"></div>
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <h5 class="fw-bold mb-0 text-accent" id="variantModalPrice">Rp 0</h5>
-                    <button type="button" class="btn btn-primary fw-bold rounded-pill px-4" onclick="confirmVariantSelection()">Tambahkan ke Pesanan</button>
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <div>
+                        <small class="text-muted d-block mb-1">Total Harga</small>
+                        <h5 class="fw-bold mb-0 text-accent" id="variantModalPrice">Rp 0</h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center bg-light rounded-pill border px-2 py-1">
+                            <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2" onclick="changeModalQty(-1)"><i class="bi bi-dash fs-5"></i></button>
+                            <span id="modal-qty-display" class="fw-bold fs-5 px-2">1</span>
+                            <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2" onclick="changeModalQty(1)"><i class="bi bi-plus fs-5"></i></button>
+                        </div>
+                        <button type="button" class="btn btn-primary fw-bold rounded-pill px-4 py-2" onclick="confirmVariantSelection()">Tambahkan ke Pesanan</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -292,6 +302,14 @@
 
     // --- LOGIKA CART (KERANJANG) ---
     let currentSelectedMenu = null;
+    let currentModalQty = 1;
+
+    function changeModalQty(delta) {
+        currentModalQty += delta;
+        if (currentModalQty < 1) currentModalQty = 1;
+        document.getElementById('modal-qty-display').innerText = currentModalQty;
+        calculateVariantPrice();
+    }
 
     function openVariantModal(id) {
         const menu = allMenus.find(m => m.id === id);
@@ -337,6 +355,8 @@
         });
 
         document.getElementById('variantModalContent').innerHTML = html;
+        currentModalQty = 1;
+        document.getElementById('modal-qty-display').innerText = currentModalQty;
         calculateVariantPrice();
         
         var vModal = new bootstrap.Modal(document.getElementById('variantModal'));
@@ -345,14 +365,15 @@
 
     function calculateVariantPrice() {
         if (!currentSelectedMenu) return;
-        let total = parseFloat(currentSelectedMenu.harga);
+        let unitPrice = parseFloat(currentSelectedMenu.harga);
         
         document.querySelectorAll('.var-option-input:checked').forEach(input => {
-            total += parseFloat(input.dataset.price);
+            unitPrice += parseFloat(input.dataset.price);
         });
 
+        let total = unitPrice * currentModalQty;
         document.getElementById('variantModalPrice').innerText = 'Rp ' + total.toLocaleString('id-ID');
-        return total;
+        return unitPrice;
     }
 
     function confirmVariantSelection() {
@@ -380,20 +401,20 @@
         }
 
         const finalPrice = calculateVariantPrice();
-        addToCart(currentSelectedMenu.id, currentSelectedMenu.nama_menu, finalPrice, selectedVariants);
+        addToCart(currentSelectedMenu.id, currentSelectedMenu.nama_menu, finalPrice, selectedVariants, currentModalQty);
         
         bootstrap.Modal.getInstance(document.getElementById('variantModal')).hide();
     }
 
-    function addToCart(id, name, price, variants = []) {
+    function addToCart(id, name, price, variants = [], qty = 1) {
         // Cek apakah item dengan menu_id dan varian yang SAMA persis sudah ada
         const variantsString = JSON.stringify(variants);
         let itemIndex = cart.findIndex(i => i.id_menu === id && JSON.stringify(i.variants) === variantsString);
         
         if (itemIndex !== -1) {
-            cart[itemIndex].jumlah++;
+            cart[itemIndex].jumlah += qty;
         } else {
-            cart.push({ id_menu: id, nama: name, harga: price, jumlah: 1, catatan: '', variants: variants });
+            cart.push({ id_menu: id, nama: name, harga: price, jumlah: qty, catatan: '', variants: variants });
         }
         saveCart();
     }
