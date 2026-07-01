@@ -1,7 +1,9 @@
 <?php
-$env = parse_ini_file(__DIR__.'/../.env');
+require __DIR__.'/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../');
+$dotenv->load();
 try {
-    $pdo = new PDO('mysql:host='.$env['DB_HOST'].';dbname='.$env['DB_DATABASE'], $env['DB_USERNAME'], $env['DB_PASSWORD']);
+    $pdo = new PDO('mysql:host='.$_ENV['DB_HOST'].';dbname='.$_ENV['DB_DATABASE'], $_ENV['DB_USERNAME'], $_ENV['DB_PASSWORD']);
     $stmt = $pdo->query('SELECT id, nama_menu, variants_json, stok FROM menu WHERE is_available = 1');
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     header('Content-Type: application/json');
