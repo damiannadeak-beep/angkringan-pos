@@ -220,3 +220,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/rating/store', [KonsumenController::class, 'storeRating']);
     });
 });
+
+Route::get('/debug-menu', function() {
+    return App\Models\Menu::all();
+});
