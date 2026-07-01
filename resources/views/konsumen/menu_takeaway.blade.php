@@ -1,6 +1,3 @@
-@php
-    file_put_contents(public_path('menus_dump.json'), $menus->toJson());
-@endphp
 @extends('layouts.app')
 
 @section('content')
@@ -166,11 +163,13 @@
         const menu = allMenus.find(m => m.id === id);
         if (!menu) return;
 
-        alert("Debug: " + menu.nama_menu + " - Variants JSON: " + menu.variants_json);
-
         let variants = [];
         if (menu.variants_json) {
-            try { variants = JSON.parse(menu.variants_json); } catch(e) {}
+            if (typeof menu.variants_json === 'string') {
+                try { variants = JSON.parse(menu.variants_json); } catch(e) {}
+            } else if (Array.isArray(menu.variants_json)) {
+                variants = menu.variants_json;
+            }
         }
 
         if (variants.length === 0) {
