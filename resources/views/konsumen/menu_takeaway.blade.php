@@ -2,6 +2,8 @@
 
 @section('content')
 <div class="container pb-5 mb-5">
+    <textarea style="width:100%; height:150px; background: #000; color: #0f0; font-family: monospace; font-size: 10px;" readonly>DEBUG DATA: {{ $menus->toJson() }}</textarea>
+
     <div class="alert alert-success d-flex justify-content-between align-items-center shadow-sm">
         <div>
             <h5 class="mb-0 fw-bold"><i class="fas fa-bag-shopping"></i> Pesanan Dibawa Pulang</h5>
