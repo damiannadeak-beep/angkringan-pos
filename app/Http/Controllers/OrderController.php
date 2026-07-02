@@ -173,6 +173,11 @@ class OrderController extends Controller
                     'id_pesanan' => $pesanan->id,
                     'status' => 'unpaid'
                 ]);
+
+                // Otomatis matikan ketersediaan meja jika ini pesanan dine-in
+                if ($id_meja && $tipe_pesanan === 'dine_in') {
+                    \App\Models\Meja::where('id', $id_meja)->update(['is_available' => false]);
+                }
             }
 
             // =====================================================================

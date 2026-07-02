@@ -114,6 +114,11 @@ class PosController extends Controller
                 'promo_id' => $validated['promo_id'] ?? null
             ]);
 
+            // Otomatis matikan ketersediaan meja jika ini pesanan dine-in
+            if ($validated['id_meja'] && $validated['tipe_pesanan'] === 'dine_in') {
+                \App\Models\Meja::where('id', $validated['id_meja'])->update(['is_available' => false]);
+            }
+
             $totalSemua = 0;
             $total_hpp = 0;
 
