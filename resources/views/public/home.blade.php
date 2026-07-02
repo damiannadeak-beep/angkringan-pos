@@ -229,7 +229,7 @@
             <div class="col-lg-5 mb-5 mb-lg-0 position-relative fade-up">
                 <!-- Image Placeholder with Actual Image -->
                 <div class="rounded-4 overflow-hidden shadow-lg position-relative" style="aspect-ratio: 4/5;">
-                    <img src="{{ asset('storage/images/angkringan_story.png') }}" alt="Angkringan Story" class="w-100 h-100" style="object-fit: cover;">
+                    <img src="/storage/images/angkringan_story.png" alt="Angkringan Story" class="w-100 h-100" style="object-fit: cover;">
                     <!-- Overlay glass box -->
                     <div class="position-absolute bottom-0 start-0 m-4 p-4 rounded-4" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); width: calc(100% - 2rem);">
                         <p class="mb-0 fw-bold text-primary fst-italic">"Lebih dari sekadar makan, ini tentang titik temu manusia."</p>
