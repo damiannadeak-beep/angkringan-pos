@@ -227,12 +227,24 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-5 mb-5 mb-lg-0 position-relative fade-up">
-                <!-- Image Placeholder with Actual Image -->
-                <div class="rounded-4 overflow-hidden shadow-lg position-relative" style="aspect-ratio: 4/5;">
-                    <img src="{{ asset('assets/img/angkringan_story.jpg') }}" alt="Angkringan Story" class="w-100 h-100" style="object-fit: cover;">
+                <!-- Pure CSS Attractive Design (No Image Required) -->
+                <div class="rounded-4 overflow-hidden shadow-lg position-relative d-flex align-items-center justify-content-center" style="aspect-ratio: 4/5; background: linear-gradient(-45deg, #5d4037, #8d6e63, #d49b78, #bcaaa4); background-size: 400% 400%; animation: gradientBG 15s ease infinite;">
+                    
+                    <!-- Decorative Floating Elements -->
+                    <div class="position-absolute rounded-circle" style="width: 150px; height: 150px; background: rgba(255,255,255,0.1); top: 10%; left: 10%; animation: float 6s ease-in-out infinite;"></div>
+                    <div class="position-absolute rounded-circle" style="width: 200px; height: 200px; background: rgba(255,255,255,0.15); bottom: 20%; right: -10%; animation: float 8s ease-in-out infinite reverse;"></div>
+                    
+                    <!-- Center Icon -->
+                    <div class="text-center position-relative z-1">
+                        <div class="d-inline-flex p-4 rounded-circle mb-3" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                            <i class="bi bi-shop text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));"></i>
+                        </div>
+                        <h3 class="text-white fw-bold" style="font-family: 'Playfair Display', serif; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Ruang Hangat</h3>
+                    </div>
+
                     <!-- Overlay glass box -->
-                    <div class="position-absolute bottom-0 start-0 m-4 p-4 rounded-4" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); width: calc(100% - 2rem);">
-                        <p class="mb-0 fw-bold text-primary fst-italic">"Lebih dari sekadar makan, ini tentang titik temu manusia."</p>
+                    <div class="position-absolute bottom-0 start-0 m-4 p-4 rounded-4" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); width: calc(100% - 2rem); border: 1px solid rgba(255,255,255,0.4); border-top: 2px solid rgba(255,255,255,0.8);">
+                        <p class="mb-0 fw-bold text-primary fst-italic text-center" style="font-size: 1.1rem;">"Lebih dari sekadar makan, ini tentang titik temu manusia."</p>
                     </div>
                 </div>
             </div>
