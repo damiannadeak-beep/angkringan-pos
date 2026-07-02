@@ -250,14 +250,14 @@
             </div>
             <div class="col-lg-6 offset-lg-1 fade-up delay-2">
                 <h2 class="section-title mb-5 display-5">Awal Perjalanan Kami</h2>
-                <p class="text-muted lh-lg mb-4 fs-5" style="text-align: justify;">
+                <p class="text-muted lh-lg mb-4 fs-5" style="text-align: justify; font-family: 'Inter', sans-serif;">
                     Berada di lingkungan yang padat, kami menyadari hiruk-pikuk rutinitas sering membuat lelah. Angkringan ini hadir sebagai pelarian manis untuk meredakan penat.
                 </p>
-                <p class="text-muted lh-lg mb-4" style="text-align: justify;">
+                <p class="text-muted lh-lg mb-4 fs-5" style="text-align: justify; font-family: 'Inter', sans-serif;">
                     Sebuah gerobak sederhana yang kami ubah menjadi <strong>"titik temu"</strong>. Jabatan dan status sosial menguap di sini, tergantikan oleh tawa ringan dan cerita keseharian ditemani kepulan kopi jahe dan nikmatnya nasi kucing.
                 </p>
                 <div class="d-flex align-items-center gap-3 mt-4">
-                    <a href="/lokasi" class="text-decoration-none fw-bold" style="color: var(--color-accent);">
+                    <a href="/lokasi" class="text-decoration-none fw-bold" style="color: var(--color-accent); font-family: 'Inter', sans-serif;">
                         Lihat Lokasi Kami <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
