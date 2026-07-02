@@ -78,8 +78,10 @@
                                         <div>
                                             @if($pesanan->status === 'pending')
                                                 <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Menunggu Diproses</span>
-                                            @else
+                                            @elseif($pesanan->status === 'processing')
                                                 <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-fire me-1"></i> Sedang Dimasak</span>
+                                            @elseif($pesanan->status === 'completed')
+                                                <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check2-all me-1"></i> Selesai Dimasak</span>
                                             @endif
                                         </div>
                                     </div>
