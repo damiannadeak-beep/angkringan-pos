@@ -17,7 +17,7 @@
                     <p class="fw-bold mb-3">Apakah Anda berada di rombongan yang sama dengan pemesan sebelumnya?</p>
                     
                     <div class="d-grid gap-3">
-                        <a href="{{ url('/konsumen/menu/' . $meja->id . '?confirm=1') }}" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                        <a href="{{ URL::signedRoute('konsumen.menu.meja', ['id_meja' => $meja->id, 'confirm' => 1]) }}" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
                             <i class="bi bi-check-circle me-2"></i> Ya, Kami Satu Rombongan
                         </a>
                         <a href="{{ url('/konsumen/menu') }}" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold">
