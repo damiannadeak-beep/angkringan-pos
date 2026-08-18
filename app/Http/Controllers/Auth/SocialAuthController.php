@@ -70,7 +70,17 @@ class SocialAuthController extends Controller
                 }
             }
 
-            return redirect()->intended('/home');
+            $loggedInUser = Auth::user();
+            if ($loggedInUser) {
+                if ($loggedInUser->hasRole('pemilik')) {
+                    return redirect()->route('admin.dashboard');
+                }
+                if ($loggedInUser->hasRole('kasir')) {
+                    return redirect()->route('kasir.pos');
+                }
+            }
+
+            return redirect('/');
             
         } catch (Exception $e) {
             return redirect('/login')->with('error', 'Gagal login menggunakan Google. Silakan coba lagi.');
