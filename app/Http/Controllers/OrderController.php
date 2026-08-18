@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\{Pesanan, DetailPesanan, Pembayaran, Menu, Meja, Promo, Setting};
-use App\Services\OrderService;
-use Illuminate\Support\Facades\Http;
+use App\Http\Requests\Konsumen\{TambahPesananRequest, CallBellRequest};
 
 class OrderController extends Controller
 {
@@ -77,18 +76,9 @@ class OrderController extends Controller
     /**
      * Menambahkan item ke pesanan aktif atau membuat pesanan baru (Open Bill)
      */
-    public function tambahPesanan(Request $request, OrderService $orderService)
+    public function tambahPesanan(TambahPesananRequest $request, OrderService $orderService)
     {
-        $validated = $request->validate([
-            'id_meja' => 'nullable|integer',
-            'tipe_pesanan' => 'nullable|in:dine_in,takeaway',
-            'items' => 'required|array',
-            'items.*.id_menu' => 'required|exists:menu,id',
-            'items.*.jumlah' => 'required|integer|min:1',
-            'items.*.catatan' => 'nullable|string|max:255',
-            'items.*.variants' => 'nullable|array',
-            'promo_id' => 'nullable|exists:promos,id'
-        ]);
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -192,11 +182,9 @@ class OrderController extends Controller
     /**
      * Memanggil Pelayan (Call Bell) dari meja.
      */
-    public function callBell(Request $request)
+    public function callBell(CallBellRequest $request)
     {
-        $validated = $request->validate([
-            'id_meja' => 'required|exists:meja,id'
-        ]);
+        $validated = $request->validated();
 
         $meja = Meja::findOrFail($validated['id_meja']);
 

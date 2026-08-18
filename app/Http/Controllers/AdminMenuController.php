@@ -5,33 +5,34 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Menu;
 use App\Models\Setting;
-use Illuminate\Support\Facades\Storage;
+use App\Services\MenuService;
+use App\Http\Requests\Admin\{StoreMenuRequest, UpdateMenuRequest};
 use Illuminate\Support\Facades\Http;
-use App\Traits\HandlesImageUpload;
+use Illuminate\Support\Facades\Log;
 
 class AdminMenuController extends Controller
 {
-    use HandlesImageUpload;
-    public function index()
+    public function index(Request $request, MenuService $menuService)
     {
-        return $this->menuList('Manajemen Menu', false);
+        $menus = $menuService->getPaginatedMenus(
+            $request->query('filter'),
+            $request->query('category')
+        );
+        $pageTitle = 'Manajemen Menu';
+        $showStockPage = false;
+
+        return view('admin.menu.index', compact('menus', 'pageTitle', 'showStockPage'));
     }
 
-    public function stok()
+    public function stok(Request $request, MenuService $menuService)
     {
-        return $this->menuList('Manajemen Stok', true);
-    }
+        $menus = $menuService->getPaginatedMenus(
+            $request->query('filter'),
+            $request->query('category')
+        );
+        $pageTitle = 'Manajemen Stok';
+        $showStockPage = true;
 
-    private function menuList(string $pageTitle, bool $showStockPage)
-    {
-        $query = Menu::query();
-        if (request()->query('filter') == 'low') {
-            $query->where('stok', '<', 10);
-        }
-        if (request()->query('category')) {
-            $query->where('kategori', request()->query('category'));
-        }
-        $menus = $query->orderBy('nama_menu')->paginate(10)->withQueryString();
         return view('admin.menu.index', compact('menus', 'pageTitle', 'showStockPage'));
     }
 
@@ -41,38 +42,9 @@ class AdminMenuController extends Controller
         return view('admin.menu.form', ['menu' => new Menu(), 'bahans' => $bahans]);
     }
 
-    public function store(Request $request)
+    public function store(StoreMenuRequest $request, MenuService $menuService)
     {
-        $data = $request->validate([
-            'nama_menu' => 'required|string|max:255',
-            'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
-            'kategori' => 'required|in:makanan,minuman',
-            'is_available' => 'nullable|boolean',
-            'deskripsi' => 'nullable|string',
-            'variants_json' => 'nullable|json',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:6000',
-        ]);
-        $data['is_available'] = $request->has('is_available');
-
-        if ($request->hasFile('image')) {
-            $data['image'] = $this->processImageUpload($request->file('image'));
-        }
-
-        $menu = Menu::create($data);
-
-        // Sync Bahans (Recipe)
-        if ($request->has('bahans')) {
-            $syncData = [];
-            foreach ($request->bahans as $index => $bahanId) {
-                if (!empty($bahanId)) {
-                    $qty = $request->jumlah_dibutuhkan[$index] ?? 1;
-                    $syncData[$bahanId] = ['jumlah_dibutuhkan' => $qty];
-                }
-            }
-            $menu->bahans()->sync($syncData);
-        }
-
+        $menuService->createMenu($request->validated(), $request->all());
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil ditambahkan.');
     }
 
@@ -83,42 +55,10 @@ class AdminMenuController extends Controller
         return view('admin.menu.form', compact('menu', 'bahans'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateMenuRequest $request, $id, MenuService $menuService)
     {
         $menu = Menu::findOrFail($id);
-        $data = $request->validate([
-            'nama_menu' => 'required|string|max:255',
-            'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
-            'kategori' => 'required|in:makanan,minuman',
-            'is_available' => 'nullable|boolean',
-            'deskripsi' => 'nullable|string',
-            'variants_json' => 'nullable|json',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:6000',
-        ]);
-        $data['is_available'] = $request->has('is_available');
-
-        if ($request->hasFile('image')) {
-            $this->deleteOldImage($menu->image);
-            $data['image'] = $this->processImageUpload($request->file('image'));
-        }
-
-        $menu->update($data);
-
-        // Sync Bahans (Recipe)
-        if ($request->has('bahans')) {
-            $syncData = [];
-            foreach ($request->bahans as $index => $bahanId) {
-                if (!empty($bahanId)) {
-                    $qty = $request->jumlah_dibutuhkan[$index] ?? 1;
-                    $syncData[$bahanId] = ['jumlah_dibutuhkan' => $qty];
-                }
-            }
-            $menu->bahans()->sync($syncData);
-        } else {
-            $menu->bahans()->detach();
-        }
-
+        $menuService->updateMenu($menu, $request->validated(), $request->all());
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil diperbarui.');
     }
 
@@ -136,13 +76,11 @@ class AdminMenuController extends Controller
         }
     }
 
-    // Update stock endpoint (AJAX or form)
-    public function updateStock(Request $request, $id)
+    public function updateStock(Request $request, $id, MenuService $menuService)
     {
-        $menu = Menu::findOrFail($id);
         $data = $request->validate(['stok' => 'required|integer|min:0']);
-        $menu->stok = $data['stok'];
-        $menu->save();
+        $menu = Menu::findOrFail($id);
+        $menuService->updateStock($menu, (int) $data['stok']);
         return back()->with('success', 'Stok berhasil diperbarui.');
     }
 
@@ -172,10 +110,10 @@ class AdminMenuController extends Controller
             }
 
             $errorMsg = $response->json('error.message') ?? 'Unknown error';
-            \Illuminate\Support\Facades\Log::error('Gemini API Error: ' . $response->body());
+            Log::error('Gemini API Error: ' . $response->body());
             return response()->json(['error' => 'Gagal menghubungi server AI. ' . $errorMsg], 500);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Gemini API Exception: ' . $e->getMessage());
+            Log::error('Gemini API Exception: ' . $e->getMessage());
             return response()->json(['error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()], 500);
         }
     }

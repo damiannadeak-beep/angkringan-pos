@@ -2,36 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Services\KasirService;
+use App\Http\Requests\Admin\{StoreKasirRequest, UpdateKasirRequest};
 
 class AdminKasirController extends Controller
 {
-    public function index()
+    public function index(KasirService $kasirService)
     {
-        $kasirs = User::whereHas('roles', function($q){ $q->where('name','kasir'); })->paginate(20);
+        $kasirs = $kasirService->getPaginatedKasirs();
         return view('admin.kasir.index', compact('kasirs'));
     }
 
-    public function store(Request $request)
+    public function store(StoreKasirRequest $request, KasirService $kasirService)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'shift' => 'required|in:pagi,malam',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'shift' => $data['shift'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        $user->assignRole('kasir');
-
+        $kasirService->createKasir($request->validated());
         return redirect()->route('admin.kasir.index')->with('success', 'Akun kasir berhasil dibuat.');
     }
 
@@ -41,43 +26,21 @@ class AdminKasirController extends Controller
         return view('admin.kasir.edit', compact('kasir'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateKasirRequest $request, $id, KasirService $kasirService)
     {
         $kasir = User::findOrFail($id);
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$kasir->id,
-            'no_hp' => 'nullable|string|max:15',
-            'shift' => 'required|in:pagi,malam',
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
-
-        if (!empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
-        }
-
-        $kasir->fill($data)->save();
-
-        return redirect()->route('admin.kasir.index')->with('success','Akun kasir diperbarui.');
+        $kasirService->updateKasir($kasir, $request->validated());
+        return redirect()->route('admin.kasir.index')->with('success', 'Akun kasir diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy($id, KasirService $kasirService)
     {
         $kasir = User::findOrFail($id);
-
-        // Cegah hapus kasir yang masih punya shift aktif
-        $hasOpenShift = \App\Models\KasirShift::where('user_id', $kasir->id)
-            ->where('status', 'open')->exists();
-
-        if ($hasOpenShift) {
-            return redirect()->route('admin.kasir.index')
-                ->with('error', 'Kasir ini masih memiliki shift aktif. Tutup shift terlebih dahulu.');
+        try {
+            $kasirService->deleteKasir($kasir);
+            return redirect()->route('admin.kasir.index')->with('success', 'Akun kasir dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.kasir.index')->with('error', $e->getMessage());
         }
-
-        $kasir->removeRole('kasir');
-        $kasir->delete();
-        return redirect()->route('admin.kasir.index')->with('success','Akun kasir dihapus.');
     }
 }

@@ -15,6 +15,8 @@ use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\Printer;
 use Illuminate\Support\Facades\Hash;
 
+use App\Http\Requests\Pos\{StoreManualOrderRequest, VoidOrderRequest, SplitOrderRequest};
+
 class PosController extends Controller
 {
     /**
@@ -22,13 +24,8 @@ class PosController extends Controller
      */
     public function index()
     {
-        // Mengambil menu yang tersedia, termasuk yang stok habis agar kasir tetap bisa melihatnya
         $menus = Menu::where('is_available', true)->get();
-        
-        // Mengambil semua meja
         $mejas = Meja::all();
-
-        // Mengambil promo aktif
         $promos = Promo::active()->get();
 
         return view('kasir.pos', compact('menus', 'mejas', 'promos'));
@@ -39,7 +36,6 @@ class PosController extends Controller
      */
     public function pesananAktif()
     {
-        // Menampilkan pesanan konsumen yang belum selesai ke kasir
         $orders = Pesanan::with(['meja', 'detail_pesanan.menu', 'pembayaran', 'konsumen'])
             ->where(function ($query) {
                 $query->whereIn('status', ['pending', 'processing'])
@@ -77,21 +73,9 @@ class PosController extends Controller
     /**
      * Memproses pesanan manual dari Kasir
      */
-    public function storeManualOrder(Request $request, OrderService $orderService)
+    public function storeManualOrder(StoreManualOrderRequest $request, OrderService $orderService)
     {
-        // 1. Validasi Input Kasir
-        $validated = $request->validate([
-            'id_meja' => 'required|exists:meja,id',
-            'tipe_pesanan' => 'required|in:dine_in,takeaway',
-            'pembayaran_langsung' => 'required|boolean',
-            'metode_pembayaran' => 'nullable|in:cash,qris,pending',
-            'items' => 'required|array',
-            'items.*.id_menu' => 'required|exists:menu,id',
-            'items.*.jumlah' => 'required|integer|min:1',
-            'items.*.catatan' => 'nullable|string|max:255',
-            'items.*.variants' => 'nullable|array',
-            'promo_id' => 'nullable|exists:promos,id'
-        ]);
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -369,7 +353,7 @@ class PosController extends Controller
     /**
      * Membatalkan pesanan dari kasir (Void).
      */
-    public function voidOrder(Request $request, $id_pesanan)
+    public function voidOrder(VoidOrderRequest $request, $id_pesanan)
     {
         try {
             DB::beginTransaction();
@@ -493,7 +477,7 @@ class PosController extends Controller
     /**
      * Memisahkan pesanan (Split Bill)
      */
-    public function splitOrder(Request $request, $id_pesanan)
+    public function splitOrder(SplitOrderRequest $request, $id_pesanan)
     {
         $validated = $request->validate([
             'split_items' => 'required|array',
