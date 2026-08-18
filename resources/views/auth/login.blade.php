@@ -161,8 +161,7 @@
         </form>
         
         <div class="text-center mt-4 pt-3 border-top">
-            <p class="text-muted small mb-1">Belum punya akun konsumen? <a href="{{ route('register') }}" class="fw-bold text-decoration-none text-primary">Daftar Sekarang</a></p>
-            <p class="text-muted small mb-0 mt-2"><i class="bi bi-shield-lock me-1"></i> Staf Kasir / Pemilik? <a href="{{ route('staff.login') }}" class="fw-bold text-decoration-none text-dark">Login Portal Staf</a></p>
+            <p class="text-muted small mb-0">Belum punya akun konsumen? <a href="{{ route('register') }}" class="fw-bold text-decoration-none text-primary">Daftar Sekarang</a></p>
         </div>
     </div>
 </div>
