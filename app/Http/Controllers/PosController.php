@@ -483,34 +483,51 @@ class PosController extends Controller
             $data = $this->getShiftReportData();
             $shift = $data['shift'];
             $hariIni = $shift->waktu_buka->format('Y-m-d');
-            $filename = 'Laporan_Shift_Kasir_' . $hariIni . '_' . now()->format('His') . '.xls';
+            $filename = 'laporan_shift_kasir_' . $hariIni . '.xls';
 
             $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
             $html .= '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Shift Kasir</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
-            $html .= '<body style="font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #2d1a11;">';
-            $html .= '<table border="1" cellpadding="6" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif; font-size: 10pt; border-collapse: collapse; border: 1px solid #d0c7bc;">';
+            $html .= '<body style="font-family: Arial, sans-serif; font-size: 10pt;">';
+            $html .= '<table border="1" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 10pt; border-collapse: collapse; border: 1px solid #000000;">';
 
             // Title Bar
-            $html .= '<tr><td colspan="4" style="background-color: #2d1a11; color: #ffffff; font-size: 14pt; font-weight: bold; text-align: center; height: 38px; vertical-align: middle;">LAPORAN TUTUP SHIFT KASIR</td></tr>';
-            $html .= '<tr><td colspan="4" style="background-color: #f5f2ec; color: #5d4037; font-size: 10pt; font-weight: bold; text-align: center; height: 24px; vertical-align: middle; border-bottom: 2px solid #2d1a11;">Staf Kasir: ' . auth()->user()->name . ' | Waktu: ' . $shift->waktu_buka->format('d/m/Y H:i') . ' s/d ' . ($shift->waktu_tutup ? $shift->waktu_tutup->format('d/m/Y H:i') : 'Sekarang') . '</td></tr>';
-            $html .= '<tr><td colspan="4" style="height: 12px; border: none;"></td></tr>';
+            $html .= '<tr><td colspan="5" style="font-size: 11pt; font-weight: bold; text-align: center; height: 30px; vertical-align: middle; border: 1px solid #000000;">LAPORAN SHIFT KASIR - ' . strtoupper(auth()->user()->name) . ' (' . $shift->waktu_buka->format('d/m/Y') . ')</td></tr>';
 
-            // Rekap Penjualan Menu
-            $html .= '<tr><td colspan="4" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">1. REKAP PENJUALAN ITEM MENU SHIFT INI</td></tr>';
-            $html .= '<tr style="font-weight: bold; background-color: #f5f2ec; text-align: center;"><td>No</td><td colspan="2">Nama Menu / Item</td><td>Subtotal (Rp)</td></tr>';
-            $no = 1;
-            foreach ($data['rekapMenu'] as $nama => $item) {
-                $bgColor = ($no % 2 == 0) ? '#faf8f5' : '#ffffff';
-                $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td colspan="2">' . $nama . ' (' . $item['jumlah'] . ' Porsi)</td><td style="text-align: right; font-weight: bold;">Rp ' . number_format($item['subtotal'], 0, ',', '.') . '</td></tr>';
+            // Table Column Headers
+            $html .= '<tr style="font-weight: bold; text-align: center; background-color: #ffffff;">';
+            $html .= '<td style="border: 1px solid #000000;">No. Invoice</td>';
+            $html .= '<td style="border: 1px solid #000000;">Tanggal / Waktu</td>';
+            $html .= '<td style="border: 1px solid #000000;">Tipe Pesanan</td>';
+            $html .= '<td style="border: 1px solid #000000;">Metode Bayar</td>';
+            $html .= '<td style="border: 1px solid #000000;">Total Tagihan (Rp)</td>';
+            $html .= '</tr>';
+
+            $totalShiftSum = 0;
+            foreach ($data['pembayarans'] as $p) {
+                $invoiceNo = 'INV/' . ($p->tanggal ? \Carbon\Carbon::parse($p->tanggal)->format('Ymd') : now()->format('Ymd')) . '/' . str_pad($p->id_pesanan, 5, '0', STR_PAD_LEFT);
+                $waktu = $p->tanggal ? \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y H.i') : '-';
+                $tipe = ucfirst(str_replace('_', ' ', $p->pesanan->tipe_pesanan ?? 'Dine In'));
+                $metode = strtoupper($p->metode ?? 'CASH');
+                if ($metode === 'QRIS') {
+                    $metode = 'TRANSFER_BANK_QRIS';
+                }
+                $total = (float) $p->total_bayar;
+                $totalShiftSum += $total;
+
+                $html .= '<tr>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $invoiceNo . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0; text-align: center;">' . $waktu . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $tipe . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $metode . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($total, 0, ',', '.') . '</td>';
+                $html .= '</tr>';
             }
-            $html .= '<tr style="font-weight: bold; background-color: #f5f2ec;"><td style="text-align: center;">-</td><td colspan="2">TOTAL ITEM TERJUAL: ' . $data['totalItemTerjual'] . ' Porsi</td><td style="text-align: right; color: #1b5e20; font-size: 10pt;">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
-            $html .= '<tr><td colspan="4" style="height: 16px; border: none;"></td></tr>';
 
-            // Rekonsiliasi Pembayaran
-            $html .= '<tr><td colspan="4" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">2. REKONSILIASI KAS & METODE PEMBAYARAN</td></tr>';
-            $html .= '<tr><td style="text-align: center;">1</td><td colspan="2">Pendapatan Tunai (Cash in Drawer)</td><td style="text-align: right; font-weight: bold; color: #1b5e20;">Rp ' . number_format($data['totalCash'], 0, ',', '.') . '</td></tr>';
-            $html .= '<tr><td style="text-align: center;">2</td><td colspan="2">Pendapatan QRIS (Non-Tunai)</td><td style="text-align: right; font-weight: bold; color: #0d47a1;">Rp ' . number_format($data['totalQris'], 0, ',', '.') . '</td></tr>';
-            $html .= '<tr style="background-color: #2d1a11; color: #ffffff; font-weight: bold;"><td style="text-align: center; color: #ffffff;">3</td><td colspan="2" style="color: #ffffff;">TOTAL OMZET PENJUALAN SHIFT INI</td><td style="text-align: right; color: #ffd54f; font-size: 11pt;">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
+            // Summary Total
+            $html .= '<tr style="font-weight: bold;">';
+            $html .= '<td colspan="4" style="text-align: right; border: none;">TOTAL PENJUALAN SHIFT</td>';
+            $html .= '<td style="text-align: right; border: 1px solid #000000;">' . number_format($totalShiftSum, 0, ',', '.') . '</td>';
+            $html .= '</tr>';
 
             $html .= '</table></body></html>';
 
