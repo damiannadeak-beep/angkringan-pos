@@ -1,22 +1,23 @@
-const CACHE_NAME = 'angkringan-pos-v2';
+const CACHE_NAME = 'angkringan-pos-v3';
 const STATIC_ASSETS = [
   '/',
-  '/kasir/pos',
   '/manifest.json',
   '/logo-angkringan.png',
-  '/js/pwa-offline.js',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'
+  '/js/pwa-offline.js'
 ];
 
-// Install Event: Pre-cache core static assets immediately
+// Install Event: Cache core static assets
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('PWA Cache addAll partial failure:', err);
-      });
+      return Promise.all(
+        STATIC_ASSETS.map((url) => {
+          return cache.add(url).catch((err) => {
+            console.warn(`PWA pre-cache warning for ${url}:`, err);
+          });
+        })
+      );
     })
   );
 });
@@ -36,34 +37,64 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event: Network-First with robust Cache Fallback
+// Fetch Event: Cache-First for static assets & Stale-While-Revalidate / Cache-Fallback for HTML pages
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') {
     return;
   }
 
+  // Handle HTML navigation requests
+  if (event.request.mode === 'navigate' || (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          // Return any cached HTML page match when offline
+          const cachedMatch = await caches.match(event.request, { ignoreSearch: true });
+          if (cachedMatch) {
+            return cachedMatch;
+          }
+          // Fallback to any cached HTML in cache
+          const cache = await caches.open(CACHE_NAME);
+          const keys = await cache.keys();
+          for (const req of keys) {
+            if (req.url.includes('/kasir/pos')) {
+              return cache.match(req);
+            }
+          }
+          return caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // Handle static assets (CSS, JS, Images, Fonts)
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        // Fetch background update
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+          }
+        }).catch(() => {});
+        return cachedResponse;
+      }
+      return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return networkResponse;
-      })
-      .catch(() => {
-        // Fallback to cache when network is offline
-        return caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // If HTML page request fails and not in exact cache, return pre-cached POS page
-          if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('/kasir/pos');
-          }
-        });
-      })
+      });
+    })
   );
 });
