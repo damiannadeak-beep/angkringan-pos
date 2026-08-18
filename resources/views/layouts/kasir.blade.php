@@ -10,10 +10,7 @@
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet"></noscript>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></noscript>
     <link rel="manifest" href="/manifest.json">
@@ -25,10 +22,10 @@
         button, a, input, select, textarea {
             touch-action: manipulation;
         }
-        button, a, input, select, textarea {
-            touch-action: manipulation;
+        body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, .nav-link, .navbar-brand {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
-        body { background: transparent; color: #3e2723; font-family: 'Playfair Display', serif !important; }
+        body { background: transparent; color: #3e2723; }
         .kasir-navbar { 
             background: linear-gradient(135deg, #3e2723 0%, #2d1a11 100%) !important; 
             border-bottom: 1px solid rgba(255,255,255,0.08); 
