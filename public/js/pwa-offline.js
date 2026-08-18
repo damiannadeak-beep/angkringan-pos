@@ -11,10 +11,51 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// 2. Network Status Indicator Banner
+// 2. Network Status Indicator Banner Engine
+let isCurrentlyOffline = false;
+
+function showOfflineBanner() {
+    const banner = document.getElementById('pwa-network-banner');
+    const alert = document.getElementById('pwa-network-alert');
+    const icon = document.getElementById('pwa-network-icon');
+    const text = document.getElementById('pwa-network-text');
+
+    if (!banner || !alert) return;
+
+    alert.className = 'alert bg-danger d-flex align-items-center shadow-lg px-4 py-2 rounded-pill text-white fw-bold small';
+    icon.className = 'bi bi-wifi-off me-2 fs-5';
+    text.textContent = 'Koneksi Terputus! Modus Offline PWA Aktif (Pesanan Tersimpan Lokal)';
+    banner.classList.remove('d-none');
+    isCurrentlyOffline = true;
+}
+
+function showOnlineBanner() {
+    const banner = document.getElementById('pwa-network-banner');
+    const alert = document.getElementById('pwa-network-alert');
+    const icon = document.getElementById('pwa-network-icon');
+    const text = document.getElementById('pwa-network-text');
+
+    if (!banner || !alert) return;
+
+    if (isCurrentlyOffline) {
+        alert.className = 'alert bg-success d-flex align-items-center shadow-lg px-4 py-2 rounded-pill text-white fw-bold small';
+        icon.className = 'bi bi-wifi me-2 fs-5';
+        text.textContent = 'Koneksi Terhubug Kembali. Sinkronisasi Data...';
+        banner.classList.remove('d-none');
+
+        // Auto sync offline orders
+        syncOfflineOrders();
+
+        setTimeout(() => {
+            banner.classList.add('d-none');
+            isCurrentlyOffline = false;
+        }, 3000);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const bannerHtml = `
-        <div id="pwa-network-banner" class="position-fixed top-0 start-50 translate-middle-x mt-2 z-3 d-none" style="z-index: 9999;">
+        <div id="pwa-network-banner" class="position-fixed top-0 start-50 translate-middle-x mt-2 d-none" style="z-index: 999999;">
             <div id="pwa-network-alert" class="alert d-flex align-items-center shadow-lg px-4 py-2 rounded-pill text-white fw-bold small">
                 <i id="pwa-network-icon" class="bi bi-wifi-off me-2 fs-5"></i>
                 <span id="pwa-network-text">Modus Offline PWA Aktif</span>
@@ -23,42 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.insertAdjacentHTML('afterbegin', bannerHtml);
 
-    function updateNetworkStatus() {
-        const banner = document.getElementById('pwa-network-banner');
-        const alert = document.getElementById('pwa-network-alert');
-        const icon = document.getElementById('pwa-network-icon');
-        const text = document.getElementById('pwa-network-text');
-
-        if (!banner || !alert) return;
-
-        if (navigator.onLine) {
-            alert.className = 'alert bg-success d-flex align-items-center shadow-lg px-4 py-2 rounded-pill text-white fw-bold small';
-            icon.className = 'bi bi-wifi me-2 fs-5';
-            text.textContent = 'Koneksi Terhubung Kembali. Sinkronisasi Data...';
-            banner.classList.remove('d-none');
-            
-            // Auto sync offline orders
-            syncOfflineOrders();
-
-            setTimeout(() => {
-                banner.classList.add('d-none');
-            }, 3000);
-        } else {
-            alert.className = 'alert bg-danger d-flex align-items-center shadow-lg px-4 py-2 rounded-pill text-white fw-bold small';
-            icon.className = 'bi bi-wifi-off me-2 fs-5';
-            text.textContent = 'Koneksi Terputus! Modus Offline PWA Aktif (Pesanan Tersimpan Lokal)';
-            banner.classList.remove('d-none');
-        }
-    }
-
-    window.addEventListener('online', updateNetworkStatus);
-    window.addEventListener('offline', updateNetworkStatus);
-    setInterval(updateNetworkStatus, 2000);
+    window.addEventListener('online', showOnlineBanner);
+    window.addEventListener('offline', showOfflineBanner);
 
     if (!navigator.onLine) {
-        updateNetworkStatus();
+        showOfflineBanner();
     }
 });
+
+// Intercept global fetch failures to detect DevTools Throttling Offline immediately
+const originalFetch = window.fetch;
+window.fetch = async function(...args) {
+    try {
+        const response = await originalFetch(...args);
+        if (isCurrentlyOffline && response.ok) {
+            showOnlineBanner();
+        }
+        return response;
+    } catch (error) {
+        showOfflineBanner();
+        throw error;
+    }
+};
 
 // 3. IndexedDB Storage Engine for Offline Queue
 const DB_NAME = 'AngkringanPosOfflineDB';
@@ -115,7 +142,7 @@ async function syncOfflineOrders() {
 
             for (const item of orders) {
                 try {
-                    const res = await fetch('/kasir/pos/manual-order', {
+                    const res = await originalFetch('/kasir/pos/manual-order', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -126,7 +153,6 @@ async function syncOfflineOrders() {
                     });
 
                     if (res.ok) {
-                        // Hapus dari antrean lokal jika sukses
                         const delTx = db.transaction(STORE_NAME, 'readwrite');
                         delTx.objectStore(STORE_NAME).delete(item.id);
                     }
