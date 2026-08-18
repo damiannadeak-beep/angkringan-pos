@@ -487,30 +487,30 @@ class PosController extends Controller
 
             $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
             $html .= '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Shift Kasir</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
-            $html .= '<body style="font-family: Arial, sans-serif;">';
-            $html .= '<table border="1" cellpadding="6" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 11pt; border-collapse: collapse; border: 1px solid #d7ccc8;">';
+            $html .= '<body style="font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #2d1a11;">';
+            $html .= '<table border="1" cellpadding="6" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif; font-size: 10pt; border-collapse: collapse; border: 1px solid #d0c7bc;">';
 
             // Title Bar
-            $html .= '<tr><td colspan="4" style="background-color: #3E2723; color: #FFFFFF; font-size: 15pt; font-weight: bold; text-align: center; height: 42px; vertical-align: middle;">LAPORAN TUTUP SHIFT KASIR</td></tr>';
-            $html .= '<tr><td colspan="4" style="background-color: #5D4037; color: #F0E9DD; font-size: 10pt; font-weight: bold; text-align: center; height: 26px; vertical-align: middle;">Staf Kasir: ' . auth()->user()->name . ' | Waktu Shift: ' . $shift->waktu_buka->format('d/m/Y H:i') . ' s/d ' . ($shift->waktu_tutup ? $shift->waktu_tutup->format('d/m/Y H:i') : 'Sekarang') . '</td></tr>';
-            $html .= '<tr><td colspan="4" style="height: 12px;"></td></tr>';
+            $html .= '<tr><td colspan="4" style="background-color: #2d1a11; color: #ffffff; font-size: 14pt; font-weight: bold; text-align: center; height: 38px; vertical-align: middle;">LAPORAN TUTUP SHIFT KASIR</td></tr>';
+            $html .= '<tr><td colspan="4" style="background-color: #f5f2ec; color: #5d4037; font-size: 10pt; font-weight: bold; text-align: center; height: 24px; vertical-align: middle; border-bottom: 2px solid #2d1a11;">Staf Kasir: ' . auth()->user()->name . ' | Waktu: ' . $shift->waktu_buka->format('d/m/Y H:i') . ' s/d ' . ($shift->waktu_tutup ? $shift->waktu_tutup->format('d/m/Y H:i') : 'Sekarang') . '</td></tr>';
+            $html .= '<tr><td colspan="4" style="height: 12px; border: none;"></td></tr>';
 
             // Rekap Penjualan Menu
-            $html .= '<tr><td colspan="4" style="background-color: #F0E9DD; color: #3E2723; font-weight: bold; font-size: 11pt; height: 30px; vertical-align: middle;">📋 REKAP PENJUALAN ITEM MENU SHIFT INI</td></tr>';
-            $html .= '<tr style="font-weight: bold; background-color: #E6DDCF; text-align: center;"><td>No</td><td colspan="2">Nama Menu / Item</td><td>Subtotal Penjualan</td></tr>';
+            $html .= '<tr><td colspan="4" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">1. REKAP PENJUALAN ITEM MENU SHIFT INI</td></tr>';
+            $html .= '<tr style="font-weight: bold; background-color: #f5f2ec; text-align: center;"><td>No</td><td colspan="2">Nama Menu / Item</td><td>Subtotal (Rp)</td></tr>';
             $no = 1;
             foreach ($data['rekapMenu'] as $nama => $item) {
-                $bgColor = ($no % 2 == 0) ? '#FAF6F0' : '#FFFFFF';
+                $bgColor = ($no % 2 == 0) ? '#faf8f5' : '#ffffff';
                 $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td colspan="2">' . $nama . ' (' . $item['jumlah'] . ' Porsi)</td><td style="text-align: right; font-weight: bold;">Rp ' . number_format($item['subtotal'], 0, ',', '.') . '</td></tr>';
             }
-            $html .= '<tr style="font-weight: bold; background-color: #E6DDCF;"><td style="text-align: center;">-</td><td colspan="2">TOTAL ITEM TERJUAL: ' . $data['totalItemTerjual'] . ' Porsi</td><td style="text-align: right; color: #2e7d32; font-size: 11pt;">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
-            $html .= '<tr><td colspan="4" style="height: 15px;"></td></tr>';
+            $html .= '<tr style="font-weight: bold; background-color: #f5f2ec;"><td style="text-align: center;">-</td><td colspan="2">TOTAL ITEM TERJUAL: ' . $data['totalItemTerjual'] . ' Porsi</td><td style="text-align: right; color: #1b5e20; font-size: 10pt;">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr><td colspan="4" style="height: 16px; border: none;"></td></tr>';
 
             // Rekonsiliasi Pembayaran
-            $html .= '<tr><td colspan="4" style="background-color: #F0E9DD; color: #3E2723; font-weight: bold; font-size: 11pt; height: 30px; vertical-align: middle;">💰 REKONSILIASI KAS & METODE PEMBAYARAN</td></tr>';
-            $html .= '<tr><td style="text-align: center;">1</td><td colspan="2">Pendapatan Tunai (Cash in Drawer)</td><td style="text-align: right; font-weight: bold; color: #2e7d32;">Rp ' . number_format($data['totalCash'], 0, ',', '.') . '</td></tr>';
-            $html .= '<tr><td style="text-align: center;">2</td><td colspan="2">Pendapatan QRIS (Non-Tunai)</td><td style="text-align: right; font-weight: bold; color: #1565c0;">Rp ' . number_format($data['totalQris'], 0, ',', '.') . '</td></tr>';
-            $html .= '<tr style="background-color: #3E2723; color: #FFFFFF; font-weight: bold;"><td style="text-align: center; color: #FFFFFF;">3</td><td colspan="2" style="color: #FFFFFF;">TOTAL OMZET PENJUALAN SHIFT INI</td><td style="text-align: right; color: #FFD54F; font-size: 12pt;">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr><td colspan="4" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">2. REKONSILIASI KAS & METODE PEMBAYARAN</td></tr>';
+            $html .= '<tr><td style="text-align: center;">1</td><td colspan="2">Pendapatan Tunai (Cash in Drawer)</td><td style="text-align: right; font-weight: bold; color: #1b5e20;">Rp ' . number_format($data['totalCash'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr><td style="text-align: center;">2</td><td colspan="2">Pendapatan QRIS (Non-Tunai)</td><td style="text-align: right; font-weight: bold; color: #0d47a1;">Rp ' . number_format($data['totalQris'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr style="background-color: #2d1a11; color: #ffffff; font-weight: bold;"><td style="text-align: center; color: #ffffff;">3</td><td colspan="2" style="color: #ffffff;">TOTAL OMZET PENJUALAN SHIFT INI</td><td style="text-align: right; color: #ffd54f; font-size: 11pt;">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
 
             $html .= '</table></body></html>';
 

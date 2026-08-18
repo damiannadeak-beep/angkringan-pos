@@ -169,55 +169,55 @@ class ReportService
         $totalPengeluaran = $reportsData['totalPengeluaran'];
         $labaBersih = $reportsData['labaBersih'];
 
-        $filename = 'Laporan_Keuangan_Lengkap_' . now()->format('Ymd_His') . '.xls';
+        $filename = 'Laporan_Keuangan_' . now()->format('Ymd_His') . '.xls';
 
         $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
         $html .= '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Keuangan</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
-        $html .= '<body style="font-family: Arial, sans-serif;">';
-        $html .= '<table border="1" cellpadding="6" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 11pt; border-collapse: collapse; border: 1px solid #d7ccc8;">';
+        $html .= '<body style="font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #2d1a11;">';
+        $html .= '<table border="1" cellpadding="6" cellspacing="0" style="font-family: Arial, Helvetica, sans-serif; font-size: 10pt; border-collapse: collapse; border: 1px solid #d0c7bc;">';
 
-        // Title Header Bar
-        $html .= '<tr><td colspan="5" style="background-color: #3E2723; color: #FFFFFF; font-size: 16pt; font-weight: bold; text-align: center; height: 45px; vertical-align: middle;">LAPORAN KEUANGAN & BISNIS ANGKRINGAN POS</td></tr>';
-        $html .= '<tr><td colspan="5" style="background-color: #5D4037; color: #F0E9DD; font-size: 11pt; font-weight: bold; text-align: center; height: 28px; vertical-align: middle;">Periode Laporan: ' . Carbon::parse($startDate)->translatedFormat('d F Y') . ' s/d ' . Carbon::parse($endDate)->translatedFormat('d F Y') . '</td></tr>';
-        $html .= '<tr><td colspan="5" style="height: 15px;"></td></tr>';
+        // 1. Header Utama Minimalis
+        $html .= '<tr><td colspan="5" style="background-color: #2d1a11; color: #ffffff; font-size: 14pt; font-weight: bold; text-align: center; height: 38px; vertical-align: middle;">LAPORAN KEUANGAN & BISNIS ANGKRINGAN POS</td></tr>';
+        $html .= '<tr><td colspan="5" style="background-color: #f5f2ec; color: #5d4037; font-size: 10pt; font-weight: bold; text-align: center; height: 24px; vertical-align: middle; border-bottom: 2px solid #2d1a11;">Periode: ' . Carbon::parse($startDate)->format('d/m/Y') . ' s/d ' . Carbon::parse($endDate)->format('d/m/Y') . '</td></tr>';
+        $html .= '<tr><td colspan="5" style="height: 12px; border: none;"></td></tr>';
 
-        // 1. RINGKASAN FINANSIAL
-        $html .= '<tr><td colspan="5" style="background-color: #F0E9DD; color: #3E2723; font-weight: bold; font-size: 12pt; height: 32px; vertical-align: middle; border-bottom: 2px solid #3E2723;">📊 I. RINGKASAN KEUANGAN & LABA RUGI</td></tr>';
-        $html .= '<tr style="font-weight: bold; background-color: #E6DDCF; text-align: center;"><td>No</td><td colspan="2">Keterangan Finansial</td><td colspan="2">Jumlah Nominal (Rp)</td></tr>';
-        $html .= '<tr><td style="text-align: center;">1</td><td colspan="2">Total Pendapatan Penjualan</td><td colspan="2" style="text-align: right; font-weight: bold; color: #2e7d32;">Rp ' . number_format($totalPendapatan, 0, ',', '.') . '</td></tr>';
-        $html .= '<tr><td style="text-align: center;">2</td><td colspan="2">Total HPP (Modal Bahan Utama)</td><td colspan="2" style="text-align: right; color: #c62828;">- Rp ' . number_format($totalHpp, 0, ',', '.') . '</td></tr>';
-        $html .= '<tr style="background-color: #faf6f0; font-weight: bold;"><td style="text-align: center;">3</td><td colspan="2">Laba Kotor (Gross Profit)</td><td colspan="2" style="text-align: right; color: #1565c0;">Rp ' . number_format($labaKotor, 0, ',', '.') . '</td></tr>';
-        $html .= '<tr><td style="text-align: center;">4</td><td colspan="2">Total Pengeluaran Operasional</td><td colspan="2" style="text-align: right; color: #c62828;">- Rp ' . number_format($totalPengeluaran, 0, ',', '.') . '</td></tr>';
-        $html .= '<tr style="background-color: #3E2723; color: #FFFFFF; font-weight: bold; font-size: 11pt;"><td style="text-align: center; color: #FFFFFF;">5</td><td colspan="2" style="color: #FFFFFF;">LABA BERSIH MURNI (NET PROFIT)</td><td colspan="2" style="text-align: right; color: #FFD54F; font-size: 12pt;">Rp ' . number_format($labaBersih, 0, ',', '.') . '</td></tr>';
-        $html .= '<tr><td colspan="5" style="height: 20px;"></td></tr>';
+        // 2. Ringkasan Keuangan & Laba Rugi
+        $html .= '<tr><td colspan="5" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">1. RINGKASAN KEUANGAN & LABA RUGI</td></tr>';
+        $html .= '<tr style="font-weight: bold; background-color: #f5f2ec; text-align: center;"><td>No</td><td colspan="3">Keterangan Finansial</td><td>Nominal (Rp)</td></tr>';
+        $html .= '<tr><td style="text-align: center;">1</td><td colspan="3">Total Pendapatan Penjualan</td><td style="text-align: right; font-weight: bold; color: #1b5e20;">Rp ' . number_format($totalPendapatan, 0, ',', '.') . '</td></tr>';
+        $html .= '<tr><td style="text-align: center;">2</td><td colspan="3">Total HPP (Modal Bahan Utama)</td><td style="text-align: right; color: #b71c1c;">- Rp ' . number_format($totalHpp, 0, ',', '.') . '</td></tr>';
+        $html .= '<tr style="background-color: #faf8f5; font-weight: bold;"><td style="text-align: center;">3</td><td colspan="3">Laba Kotor (Gross Profit)</td><td style="text-align: right; color: #0d47a1;">Rp ' . number_format($labaKotor, 0, ',', '.') . '</td></tr>';
+        $html .= '<tr><td style="text-align: center;">4</td><td colspan="3">Total Pengeluaran Operasional</td><td style="text-align: right; color: #b71c1c;">- Rp ' . number_format($totalPengeluaran, 0, ',', '.') . '</td></tr>';
+        $html .= '<tr style="background-color: #2d1a11; color: #ffffff; font-weight: bold;"><td style="text-align: center; color: #ffffff;">5</td><td colspan="3" style="color: #ffffff;">LABA BERSIH MURNI (NET PROFIT)</td><td style="text-align: right; color: #ffd54f; font-weight: bold; font-size: 11pt;">Rp ' . number_format($labaBersih, 0, ',', '.') . '</td></tr>';
+        $html .= '<tr><td colspan="5" style="height: 16px; border: none;"></td></tr>';
 
-        // 2. MENU TERLARIS
-        $html .= '<tr><td colspan="5" style="background-color: #F0E9DD; color: #3E2723; font-weight: bold; font-size: 12pt; height: 32px; vertical-align: middle; border-bottom: 2px solid #3E2723;">🏆 II. REKAP MENU TERLARIS (TOP 10)</td></tr>';
-        $html .= '<tr style="font-weight: bold; background-color: #E6DDCF; text-align: center;"><td>Peringkat</td><td colspan="3">Nama Menu / Produk</td><td>Total Terjual (Porsi)</td></tr>';
+        // 3. Menu Terlaris
+        $html .= '<tr><td colspan="5" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">2. MENU TERLARIS (TOP 10)</td></tr>';
+        $html .= '<tr style="font-weight: bold; background-color: #f5f2ec; text-align: center;"><td>No</td><td colspan="3">Nama Menu / Produk</td><td>Total Terjual</td></tr>';
         $no = 1;
         foreach ($bestSeller as $item) {
-            $bgColor = ($no % 2 == 0) ? '#FAF6F0' : '#FFFFFF';
-            $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td colspan="3">' . $item->nama_menu . '</td><td style="text-align: center; font-weight: bold;">' . number_format($item->total_terjual, 0, ',', '.') . ' Porsi</td></tr>';
+            $bgColor = ($no % 2 == 0) ? '#faf8f5' : '#ffffff';
+            $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td colspan="3">' . $item->nama_menu . '</td><td style="text-align: right; font-weight: bold;">' . number_format($item->total_terjual, 0, ',', '.') . ' Porsi</td></tr>';
         }
-        $html .= '<tr><td colspan="5" style="height: 20px;"></td></tr>';
+        $html .= '<tr><td colspan="5" style="height: 16px; border: none;"></td></tr>';
 
-        // 3. KINERJA KASIR
-        $html .= '<tr><td colspan="5" style="background-color: #F0E9DD; color: #3E2723; font-weight: bold; font-size: 12pt; height: 32px; vertical-align: middle; border-bottom: 2px solid #3E2723;">👤 III. KINERJA & PENJUALAN STAF KASIR</td></tr>';
-        $html .= '<tr style="font-weight: bold; background-color: #E6DDCF; text-align: center;"><td>No</td><td>Nama Kasir</td><td>Shift Kerja</td><td>Total Transaksi</td><td>Total Pendapatan (Rp)</td></tr>';
+        // 4. Kinerja Kasir
+        $html .= '<tr><td colspan="5" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">3. KINERJA & PENJUALAN STAF KASIR</td></tr>';
+        $html .= '<tr style="font-weight: bold; background-color: #f5f2ec; text-align: center;"><td>No</td><td>Nama Kasir</td><td>Shift Kerja</td><td>Total Transaksi</td><td>Pendapatan (Rp)</td></tr>';
         $no = 1;
         foreach ($kasirPerformance as $kasir) {
-            $bgColor = ($no % 2 == 0) ? '#FAF6F0' : '#FFFFFF';
-            $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td>' . $kasir->name . '</td><td style="text-align: center;">' . ucfirst($kasir->shift) . '</td><td style="text-align: center;">' . $kasir->total_transaksi . ' Transaksi</td><td style="text-align: right; font-weight: bold; color: #2e7d32;">Rp ' . number_format($kasir->total_pendapatan, 0, ',', '.') . '</td></tr>';
+            $bgColor = ($no % 2 == 0) ? '#faf8f5' : '#ffffff';
+            $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td>' . $kasir->name . '</td><td style="text-align: center;">' . ucfirst($kasir->shift) . '</td><td style="text-align: center;">' . $kasir->total_transaksi . ' Transaksi</td><td style="text-align: right; font-weight: bold; color: #1b5e20;">Rp ' . number_format($kasir->total_pendapatan, 0, ',', '.') . '</td></tr>';
         }
-        $html .= '<tr><td colspan="5" style="height: 20px;"></td></tr>';
+        $html .= '<tr><td colspan="5" style="height: 16px; border: none;"></td></tr>';
 
-        // 4. PENGGUNAAN STOK BAHAN BAKU
-        $html .= '<tr><td colspan="5" style="background-color: #F0E9DD; color: #3E2723; font-weight: bold; font-size: 12pt; height: 32px; vertical-align: middle; border-bottom: 2px solid #3E2723;">📦 IV. REKAP PENGGUNAAN STOK BAHAN BAKU</td></tr>';
-        $html .= '<tr style="font-weight: bold; background-color: #E6DDCF; text-align: center;"><td>No</td><td colspan="3">Nama Bahan Baku</td><td>Total Terpakai</td></tr>';
+        // 5. Penggunaan Stok
+        $html .= '<tr><td colspan="5" style="background-color: #ebe6dd; color: #2d1a11; font-weight: bold; font-size: 11pt; height: 28px; vertical-align: middle;">4. PENGGUNAAN STOK BAHAN BAKU</td></tr>';
+        $html .= '<tr style="font-weight: bold; background-color: #f5f2ec; text-align: center;"><td>No</td><td colspan="3">Nama Bahan Baku</td><td>Total Terpakai</td></tr>';
         $no = 1;
         foreach ($stockUsage as $stok) {
-            $bgColor = ($no % 2 == 0) ? '#FAF6F0' : '#FFFFFF';
-            $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td colspan="3">' . $stok->nama_bahan . '</td><td style="text-align: center; font-weight: bold;">' . $stok->total_penggunaan . ' ' . $stok->satuan . '</td></tr>';
+            $bgColor = ($no % 2 == 0) ? '#faf8f5' : '#ffffff';
+            $html .= '<tr style="background-color: ' . $bgColor . ';"><td style="text-align: center;">' . $no++ . '</td><td colspan="3">' . $stok->nama_bahan . '</td><td style="text-align: right; font-weight: bold;">' . $stok->total_penggunaan . ' ' . $stok->satuan . '</td></tr>';
         }
 
         $html .= '</table></body></html>';
