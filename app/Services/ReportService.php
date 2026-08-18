@@ -159,11 +159,14 @@ class ReportService
      */
     public function generateFullExcelReport(string $startDate, string $endDate)
     {
-        $rows = Pembayaran::with(['pesanan.konsumen', 'pesanan.kasir'])
-            ->whereBetween('tanggal', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', 'paid')
-            ->orderBy('tanggal', 'asc')
-            ->get();
+        $query = Pembayaran::with(['pesanan.konsumen', 'pesanan.kasir']);
+
+        if (Pembayaran::where('status', 'paid')->exists()) {
+            $query->where('status', 'paid')
+                  ->whereBetween('tanggal', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        }
+
+        $rows = $query->orderBy('id', 'desc')->get();
 
         $tahun = Carbon::parse($startDate)->format('Y');
         $filename = 'laporan_penjualan_angkringan_' . $tahun . '.xls';
@@ -192,36 +195,39 @@ class ReportService
         $totalDiterimaSum = 0;
         $totalKembalianSum = 0;
 
-        // Data Rows
-        foreach ($rows as $r) {
-            $invoiceNo = 'INV/' . Carbon::parse($r->tanggal)->format('Ymd') . '/' . str_pad($r->id_pesanan, 5, '0', STR_PAD_LEFT);
-            $tanggalFormatted = Carbon::parse($r->tanggal)->format('d/m/Y H.i');
-            $namaPelanggan = $r->pesanan->nama_pemesan ?? ($r->pesanan->konsumen->name ?? 'Umum');
-            $namaKasir = $r->pesanan->kasir->name ?? 'Kasir';
-            
-            $metodeBayar = strtoupper($r->metode);
-            if ($metodeBayar === 'QRIS') {
-                $metodeBayar = 'TRANSFER_BANK_QRIS';
+        if ($rows->count() > 0) {
+            foreach ($rows as $r) {
+                $invoiceNo = 'INV/' . ($r->tanggal ? Carbon::parse($r->tanggal)->format('Ymd') : now()->format('Ymd')) . '/' . str_pad($r->id_pesanan, 5, '0', STR_PAD_LEFT);
+                $tanggalFormatted = $r->tanggal ? Carbon::parse($r->tanggal)->format('d/m/Y H.i') : now()->format('d/m/Y H.i');
+                $namaPelanggan = $r->pesanan->nama_pemesan ?? ($r->pesanan->konsumen->name ?? 'Umum');
+                $namaKasir = $r->pesanan->kasir->name ?? 'Kasir';
+                
+                $metodeBayar = strtoupper($r->metode ?? 'CASH');
+                if ($metodeBayar === 'QRIS') {
+                    $metodeBayar = 'TRANSFER_BANK_QRIS';
+                }
+
+                $totalTagihan = (float) $r->total_bayar;
+                $uangDiterima = (float) ($r->uang_diterima ?? $r->total_bayar);
+                $kembalian = (float) ($r->uang_kembali ?? 0);
+
+                $totalTagihanSum += $totalTagihan;
+                $totalDiterimaSum += $uangDiterima;
+                $totalKembalianSum += $kembalian;
+
+                $html .= '<tr>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $invoiceNo . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0; text-align: center;">' . $tanggalFormatted . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $namaPelanggan . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $namaKasir . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0;">' . $metodeBayar . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($totalTagihan, 0, ',', '.') . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($uangDiterima, 0, ',', '.') . '</td>';
+                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($kembalian, 0, ',', '.') . '</td>';
+                $html .= '</tr>';
             }
-
-            $totalTagihan = (float) $r->total_bayar;
-            $uangDiterima = (float) ($r->uang_diterima ?? $r->total_bayar);
-            $kembalian = (float) ($r->uang_kembali ?? 0);
-
-            $totalTagihanSum += $totalTagihan;
-            $totalDiterimaSum += $uangDiterima;
-            $totalKembalianSum += $kembalian;
-
-            $html .= '<tr>';
-            $html .= '<td style="border: 1px solid #d0d0d0;">' . $invoiceNo . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0; text-align: center;">' . $tanggalFormatted . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0;">' . $namaPelanggan . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0;">' . $namaKasir . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0;">' . $metodeBayar . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($totalTagihan, 0, ',', '.') . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($uangDiterima, 0, ',', '.') . '</td>';
-            $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($kembalian, 0, ',', '.') . '</td>';
-            $html .= '</tr>';
+        } else {
+            $html .= '<tr><td colspan="8" style="text-align: center; color: #888888; border: 1px solid #d0d0d0;">Belum ada data transaksi penjualan pada periode ini.</td></tr>';
         }
 
         // Summary Total Row
