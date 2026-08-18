@@ -1,5 +1,6 @@
 // Fonts
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 // Variables
 @import 'variables';
@@ -7,16 +8,76 @@
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
 
-// Vintage Theme Overrides
+// Custom Scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(62, 39, 35, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(93, 64, 55, 0.3);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(62, 39, 35, 0.6);
+}
+
+// Global Theme Overrides
 body {
     background-color: $light;
     background-image: 
-        linear-gradient(rgba(62, 39, 35, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(62, 39, 35, 0.05) 1px, transparent 1px);
-    background-size: 30px 30px;
+        linear-gradient(rgba(62, 39, 35, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(62, 39, 35, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
     background-position: center center;
+    color: $primary;
 }
 
+// Glassmorphism Utilities
+.glass-card {
+    background: rgba(253, 251, 247, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(62, 39, 35, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(62, 39, 35, 0.05);
+    border-radius: 1.25rem;
+}
+
+.glass-navbar {
+    background: rgba(62, 39, 35, 0.95) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// Micro-animations & Interactive Effects
+.hover-lift {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    &:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: 0 16px 32px rgba(62, 39, 35, 0.1) !important;
+    }
+}
+
+.btn-animated {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    &:active {
+        transform: scale(0.97) !important;
+    }
+}
+
+// Typography Classes
+.font-sans {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+.font-serif {
+    font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+// Vintage Retro Card Accent
 .box-retro {
     background-color: $primary;
     color: white;
@@ -24,7 +85,6 @@ body {
     border-radius: $border-radius;
     position: relative;
     
-    // Corner accents to look like the poster
     &::before, &::after {
         content: '';
         position: absolute;

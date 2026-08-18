@@ -25,24 +25,44 @@
         button, a, input, select, textarea {
             touch-action: manipulation;
         }
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+        }
         body { background: transparent; color: #3e2723; font-family: 'Playfair Display', serif !important; }
-        .kasir-navbar { background: #3e2723; border-bottom: none; position: relative; z-index: 1050; }
-        .kasir-navbar .navbar-brand { color: #f0e9dd; font-weight: 700; }
-        .kasir-navbar .navbar-text, .kasir-navbar .nav-link { color: #f0e9dd; }
-        .kasir-navbar .nav-link.active { color: #d49b78 !important; }
-        .kasir-navbar .nav-link:hover { color: #d7ccc8; }
+        .kasir-navbar { 
+            background: linear-gradient(135deg, #3e2723 0%, #2d1a11 100%) !important; 
+            border-bottom: 1px solid rgba(255,255,255,0.08); 
+            position: relative; 
+            z-index: 1050; 
+            box-shadow: 0 4px 20px rgba(45, 26, 17, 0.25);
+        }
+        .kasir-navbar .navbar-brand { color: #f0e9dd; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
+        .kasir-navbar .navbar-text, .kasir-navbar .nav-link { color: #f0e9dd; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .kasir-navbar .nav-link.active { color: #d49b78 !important; font-weight: 700; }
+        .kasir-navbar .nav-link:hover { color: #d7ccc8; transform: translateY(-1px); }
         .kasir-navbar .navbar-toggler-icon { filter: invert(1); }
-        .kasir-main { padding: 1.5rem 1.25rem; }
-        .kasir-container { max-width: 1300px; margin: 0 auto; }
-        .kasir-header { background: rgba(253, 251, 247, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(62,39,35,0.1); border-radius: 1.5rem; }
+        .kasir-main { padding: 1.75rem 1.25rem; }
+        .kasir-container { max-width: 1350px; margin: 0 auto; }
+        .kasir-header { background: rgba(253, 251, 247, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(62,39,35,0.1); border-radius: 1.5rem; }
         .kasir-header h5 { color: #3e2723; }
-        .kasir-card { border-radius: 1.5rem; border: 1px solid rgba(62, 39, 35, 0.1); background: rgba(253, 251, 247, 0.85) !important; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(62, 39, 35, .05); }
-        .kasir-card .card-body { padding: 1.75rem; }
-        .menu-card { border: 1px solid rgba(62, 39, 35, 0.05); border-radius: 1.25rem; background: rgba(255, 255, 255, 0.7) !important; backdrop-filter: blur(5px); transition: transform .2s ease, box-shadow .2s ease; }
-        .menu-card:hover { transform: translateY(-4px); box-shadow: 0 18px 32px rgba(62, 39, 35, 0.08); background: rgba(255, 255, 255, 0.95) !important; }
+        .kasir-card { border-radius: 1.5rem; border: 1px solid rgba(62, 39, 35, 0.1); background: rgba(253, 251, 247, 0.88) !important; backdrop-filter: blur(12px); box-shadow: 0 12px 36px rgba(62, 39, 35, .06); }
+        .kasir-card .card-body { padding: 1.85rem; }
+        .menu-card { 
+            border: 1px solid rgba(62, 39, 35, 0.08); 
+            border-radius: 1.25rem; 
+            background: rgba(255, 255, 255, 0.8) !important; 
+            backdrop-filter: blur(8px); 
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease; 
+        }
+        .menu-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 20px 40px rgba(62, 39, 35, 0.12); 
+            background: rgba(255, 255, 255, 0.98) !important; 
+        }
         .menu-card .price { color: #5d4037; font-weight: 700; }
-        .btn-soft { background: #f0e9dd; border: 1px solid #d7ccc8; color: #3e2723; }
-        .btn-soft:hover { background: #e6ddcf; }
+        .btn-soft { background: #f0e9dd; border: 1px solid #d7ccc8; color: #3e2723; font-weight: 600; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-soft:hover { background: #e6ddcf; transform: translateY(-1px); }
+        .btn-soft.active { background: #3e2723 !important; color: #ffffff !important; border-color: #3e2723 !important; box-shadow: 0 4px 12px rgba(62, 39, 35, 0.2); }
         .payment-pill.active { background: #5d4037; color: #fff; border-color: #5d4037; }
         input.form-control, select.form-control, .form-select, .input-group, .input-group-text { border-radius: 999px; }
         textarea.form-control { border-radius: 1rem; }
