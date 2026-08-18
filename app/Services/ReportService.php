@@ -174,21 +174,21 @@ class ReportService
         $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
         $html .= '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Penjualan</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
         $html .= '<body style="font-family: Arial, sans-serif; font-size: 10pt;">';
-        $html .= '<table border="1" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 10pt; border-collapse: collapse; border: 1px solid #000000;">';
+        $html .= '<table border="0" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 10pt; border-collapse: collapse;">';
 
         // Row 1: Title Header (Merged A1:H1)
-        $html .= '<tr><td colspan="8" style="font-size: 11pt; font-weight: bold; text-align: center; height: 30px; vertical-align: middle; border: 1px solid #000000;">LAPORAN PENJUALAN ANGKRINGAN - TAHUN ' . $tahun . '</td></tr>';
+        $html .= '<tr><td colspan="8" style="font-size: 11pt; font-weight: bold; text-align: center; height: 28px; vertical-align: middle; border: 0.5pt solid #000000; background-color: #ffffff;">LAPORAN PENJUALAN ANGKRINGAN - TAHUN ' . $tahun . '</td></tr>';
 
         // Row 2: Table Column Headers (A2:H2)
         $html .= '<tr style="font-weight: bold; text-align: center; background-color: #ffffff;">';
-        $html .= '<td style="border: 1px solid #000000;">No. Invoice</td>';
-        $html .= '<td style="border: 1px solid #000000;">Tanggal</td>';
-        $html .= '<td style="border: 1px solid #000000;">Nama Pelanggan</td>';
-        $html .= '<td style="border: 1px solid #000000;">Kasir</td>';
-        $html .= '<td style="border: 1px solid #000000;">Metode Bayar</td>';
-        $html .= '<td style="border: 1px solid #000000;">Total Tagihan (Rp)</td>';
-        $html .= '<td style="border: 1px solid #000000;">Uang Diterima (Rp)</td>';
-        $html .= '<td style="border: 1px solid #000000;">Kembalian (Rp)</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">No. Invoice</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Tanggal</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Nama Pelanggan</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Kasir</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Metode Bayar</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Total Tagihan (Rp)</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Uang Diterima (Rp)</td>';
+        $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Kembalian (Rp)</td>';
         $html .= '</tr>';
 
         $totalTagihanSum = 0;
@@ -216,26 +216,26 @@ class ReportService
                 $totalKembalianSum += $kembalian;
 
                 $html .= '<tr>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $invoiceNo . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0; text-align: center;">' . $tanggalFormatted . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $namaPelanggan . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $namaKasir . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $metodeBayar . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($totalTagihan, 0, ',', '.') . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($uangDiterima, 0, ',', '.') . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($kembalian, 0, ',', '.') . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $invoiceNo . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0; text-align: center;">' . $tanggalFormatted . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $namaPelanggan . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $namaKasir . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $metodeBayar . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0; text-align: right;">' . number_format($totalTagihan, 0, ',', '.') . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0; text-align: right;">' . number_format($uangDiterima, 0, ',', '.') . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0; text-align: right;">' . number_format($kembalian, 0, ',', '.') . '</td>';
                 $html .= '</tr>';
             }
         } else {
-            $html .= '<tr><td colspan="8" style="text-align: center; color: #888888; border: 1px solid #d0d0d0;">Belum ada data transaksi penjualan pada periode ini.</td></tr>';
+            $html .= '<tr><td colspan="8" style="text-align: center; color: #888888; border: 0.5pt solid #b0b0b0;">Belum ada data transaksi penjualan pada periode ini.</td></tr>';
         }
 
-        // Summary Total Row
+        // Summary Total Row (Classic Accounting Double Bottom Border)
         $html .= '<tr style="font-weight: bold;">';
-        $html .= '<td colspan="5" style="text-align: right; border: none;">TOTAL</td>';
-        $html .= '<td style="text-align: right; border: 1px solid #000000;">' . number_format($totalTagihanSum, 0, ',', '.') . '</td>';
-        $html .= '<td style="text-align: right; border: 1px solid #000000;">' . number_format($totalDiterimaSum, 0, ',', '.') . '</td>';
-        $html .= '<td style="text-align: right; border: 1px solid #000000;">' . number_format($totalKembalianSum, 0, ',', '.') . '</td>';
+        $html .= '<td colspan="5" style="text-align: right; border-top: 1pt solid #000000; border-bottom: 2.25pt double #000000; border-left: 0.5pt solid #000000; font-weight: bold;">TOTAL</td>';
+        $html .= '<td style="text-align: right; border-top: 1pt solid #000000; border-bottom: 2.25pt double #000000; border-right: 0.5pt solid #000000; font-weight: bold;">' . number_format($totalTagihanSum, 0, ',', '.') . '</td>';
+        $html .= '<td style="text-align: right; border-top: 1pt solid #000000; border-bottom: 2.25pt double #000000; border-right: 0.5pt solid #000000; font-weight: bold;">' . number_format($totalDiterimaSum, 0, ',', '.') . '</td>';
+        $html .= '<td style="text-align: right; border-top: 1pt solid #000000; border-bottom: 2.25pt double #000000; border-right: 0.5pt solid #000000; font-weight: bold;">' . number_format($totalKembalianSum, 0, ',', '.') . '</td>';
         $html .= '</tr>';
 
         $html .= '</table></body></html>';

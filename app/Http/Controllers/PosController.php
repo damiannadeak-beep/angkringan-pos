@@ -488,18 +488,18 @@ class PosController extends Controller
             $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
             $html .= '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Shift Kasir</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
             $html .= '<body style="font-family: Arial, sans-serif; font-size: 10pt;">';
-            $html .= '<table border="1" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 10pt; border-collapse: collapse; border: 1px solid #000000;">';
+            $html .= '<table border="0" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 10pt; border-collapse: collapse;">';
 
             // Title Bar
-            $html .= '<tr><td colspan="5" style="font-size: 11pt; font-weight: bold; text-align: center; height: 30px; vertical-align: middle; border: 1px solid #000000;">LAPORAN SHIFT KASIR - ' . strtoupper(auth()->user()->name) . ' (' . $shift->waktu_buka->format('d/m/Y') . ')</td></tr>';
+            $html .= '<tr><td colspan="5" style="font-size: 11pt; font-weight: bold; text-align: center; height: 28px; vertical-align: middle; border: 0.5pt solid #000000; background-color: #ffffff;">LAPORAN SHIFT KASIR - ' . strtoupper(auth()->user()->name) . ' (' . $shift->waktu_buka->format('d/m/Y') . ')</td></tr>';
 
             // Table Column Headers
             $html .= '<tr style="font-weight: bold; text-align: center; background-color: #ffffff;">';
-            $html .= '<td style="border: 1px solid #000000;">No. Invoice</td>';
-            $html .= '<td style="border: 1px solid #000000;">Tanggal / Waktu</td>';
-            $html .= '<td style="border: 1px solid #000000;">Tipe Pesanan</td>';
-            $html .= '<td style="border: 1px solid #000000;">Metode Bayar</td>';
-            $html .= '<td style="border: 1px solid #000000;">Total Tagihan (Rp)</td>';
+            $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">No. Invoice</td>';
+            $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Tanggal / Waktu</td>';
+            $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Tipe Pesanan</td>';
+            $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Metode Bayar</td>';
+            $html .= '<td style="border: 0.5pt solid #000000; font-weight: bold;">Total Tagihan (Rp)</td>';
             $html .= '</tr>';
 
             $totalShiftSum = 0;
@@ -515,18 +515,18 @@ class PosController extends Controller
                 $totalShiftSum += $total;
 
                 $html .= '<tr>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $invoiceNo . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0; text-align: center;">' . $waktu . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $tipe . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0;">' . $metode . '</td>';
-                $html .= '<td style="border: 1px solid #d0d0d0; text-align: right;">' . number_format($total, 0, ',', '.') . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $invoiceNo . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0; text-align: center;">' . $waktu . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $tipe . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0;">' . $metode . '</td>';
+                $html .= '<td style="border: 0.5pt solid #b0b0b0; text-align: right;">' . number_format($total, 0, ',', '.') . '</td>';
                 $html .= '</tr>';
             }
 
-            // Summary Total
+            // Summary Total Row (Accounting Double Line)
             $html .= '<tr style="font-weight: bold;">';
-            $html .= '<td colspan="4" style="text-align: right; border: none;">TOTAL PENJUALAN SHIFT</td>';
-            $html .= '<td style="text-align: right; border: 1px solid #000000;">' . number_format($totalShiftSum, 0, ',', '.') . '</td>';
+            $html .= '<td colspan="4" style="text-align: right; border-top: 1pt solid #000000; border-bottom: 2.25pt double #000000; border-left: 0.5pt solid #000000; font-weight: bold;">TOTAL PENJUALAN SHIFT</td>';
+            $html .= '<td style="text-align: right; border-top: 1pt solid #000000; border-bottom: 2.25pt double #000000; border-right: 0.5pt solid #000000; font-weight: bold;">' . number_format($totalShiftSum, 0, ',', '.') . '</td>';
             $html .= '</tr>';
 
             $html .= '</table></body></html>';
