@@ -122,10 +122,7 @@ class PosBusinessLogicTest extends TestCase
             'password' => 'password' // password default user factory
         ]);
 
-        if ($response->status() !== 200) {
-            dump($response->json());
-        }
-        $response->assertStatus(200);
+        $response->assertStatus(200, 'Void order failed: ' . json_encode($response->json()));
 
         // Stok kembali ke 500
         $this->assertDatabaseHas('bahans', [

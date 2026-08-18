@@ -9,8 +9,8 @@ use App\Models\VoidLog;
 use App\Mail\ReceiptMail;
 use Illuminate\Support\Facades\Mail;
 use Exception;
-// PASTIKAN MODEL 'Meja' DITAMBAHKAN DI SINI
 use App\Models\{Pesanan, DetailPesanan, Pembayaran, Menu, Meja, Promo, Setting};
+use App\Services\OrderService;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\Printer;
 use Illuminate\Support\Facades\Hash;
@@ -29,14 +29,7 @@ class PosController extends Controller
         $mejas = Meja::all();
 
         // Mengambil promo aktif
-        $promos = Promo::where('is_active', true)
-            ->where(function($q) {
-                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
-            })
-            ->where(function($q) {
-                $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
-            })
-            ->get();
+        $promos = Promo::active()->get();
 
         return view('kasir.pos', compact('menus', 'mejas', 'promos'));
     }
@@ -68,14 +61,15 @@ class PosController extends Controller
      */
     public function activeOrdersCount()
     {
-        $count = Pesanan::whereIn('status', ['pending', 'processing'])
-            ->orWhere(function ($q) {
-                $q->where('status', 'completed')
-                  ->whereHas('pembayaran', function ($p) {
-                      $p->where('status', '!=', 'paid');
+        $count = Pesanan::where(function ($query) {
+            $query->whereIn('status', ['pending', 'processing'])
+                  ->orWhere(function ($q) {
+                      $q->where('status', 'completed')
+                        ->whereHas('pembayaran', function ($p) {
+                            $p->where('status', '!=', 'paid');
+                        });
                   });
-            })
-            ->count();
+        })->count();
 
         return response()->json(['count' => $count]);
     }
@@ -83,13 +77,13 @@ class PosController extends Controller
     /**
      * Memproses pesanan manual dari Kasir
      */
-    public function storeManualOrder(Request $request)
+    public function storeManualOrder(Request $request, OrderService $orderService)
     {
         // 1. Validasi Input Kasir
         $validated = $request->validate([
             'id_meja' => 'required|exists:meja,id',
             'tipe_pesanan' => 'required|in:dine_in,takeaway',
-            'pembayaran_langsung' => 'required|boolean', // true = Cash/QRIS langsung, false = Open Bill
+            'pembayaran_langsung' => 'required|boolean',
             'metode_pembayaran' => 'nullable|in:cash,qris,pending',
             'items' => 'required|array',
             'items.*.id_menu' => 'required|exists:menu,id',
@@ -104,188 +98,31 @@ class PosController extends Controller
 
             // 2. Buat Data Pesanan Baru
             $pesanan = Pesanan::create([
-                'id_konsumen' => null, // Null karena walk-in tanpa akun
+                'id_konsumen' => null,
                 'id_meja' => $validated['id_meja'],
                 'id_kasir' => auth()->id(),
                 'tipe_pesanan' => $validated['tipe_pesanan'],
                 'tanggal' => now(),
-                // Selalu pending agar muncul di pesanan aktif untuk diproses dapur meskipun sudah dibayar
                 'status' => 'pending',
                 'promo_id' => $validated['promo_id'] ?? null
             ]);
 
             // Otomatis matikan ketersediaan meja jika ini pesanan dine-in
             if ($validated['id_meja'] && $validated['tipe_pesanan'] === 'dine_in') {
-                \App\Models\Meja::where('id', $validated['id_meja'])->update(['is_available' => false]);
+                Meja::where('id', $validated['id_meja'])->update(['is_available' => false]);
             }
 
-            $totalSemua = 0;
-            $total_hpp = 0;
+            // 3. Proses item pesanan via OrderService (lock stok, kurangi bahan, buat detail)
+            $result = $orderService->processOrderItems($pesanan, $validated['items']);
+            $totalSemua = $result['total'];
+            $total_hpp = $result['total_hpp'];
 
-            // =====================================================================
-            // FIX #1 (Deadlock Prevention): Lock semua row dalam urutan ID ascending
-            // FIX #2 (N+1 Query): Batch-load semua menu & bahan sekaligus di luar loop
-            // =====================================================================
-
-            // 3a. Kumpulkan semua menu IDs, sort ascending
-            $menuIds = collect($validated['items'])->pluck('id_menu')->unique()->sort()->values()->all();
-
-            // 3b. Lock & load semua menu sekaligus
-            $menus = Menu::with('bahans')->whereIn('id', $menuIds)
-                ->where('is_available', true)
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('id');
-
-            foreach ($menuIds as $menuId) {
-                if (!$menus->has($menuId)) {
-                    throw new \Exception("Gagal: Menu ID {$menuId} tidak tersedia.");
-                }
-            }
-
-            // 3c. Kumpulkan & lock semua bahan baku sekaligus
-            $allBahanIds = collect();
-            foreach ($menus as $menu) {
-                foreach ($menu->bahans as $bahan) {
-                    $allBahanIds->push($bahan->id);
-                }
-            }
-            $allBahanIds = $allBahanIds->unique()->sort()->values()->all();
-
-            $bahans = \App\Models\Bahan::whereIn('id', $allBahanIds)
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('id');
-
-            // 3d. Masukkan Detail Pesanan & Kurangi Stok (dari collection, tanpa query tambahan)
-            foreach ($validated['items'] as $item) {
-                $menu = $menus->get($item['id_menu']);
-
-                // Cek dan kurangi stok bahan baku
-                foreach ($menu->bahans as $bahanItem) {
-                    $bahan = $bahans->get($bahanItem->id);
-                    $dibutuhkan = $bahanItem->pivot->jumlah_dibutuhkan * $item['jumlah'];
-                    if ($bahan->stok < $dibutuhkan) {
-                        throw new \Exception("Gagal: Stok bahan {$bahan->nama_bahan} tidak mencukupi untuk menu {$menu->nama_menu}.");
-                    }
-                    $bahan->decrement('stok', $dibutuhkan);
-                    $bahan->stok -= $dibutuhkan; // Sync in-memory
-                    $total_hpp += $bahan->harga_beli * $dibutuhkan;
-                }
-
-                $hargaBase = $menu->harga;
-                $hargaVarian = 0;
-                $selectedVariants = [];
-
-                if (!empty($item['variants']) && is_array($item['variants']) && $menu->variants_json) {
-                    $menuVariants = json_decode($menu->variants_json, true);
-                    if (is_array($menuVariants)) {
-                        foreach ($item['variants'] as $selVar) {
-                            // Validasi harga dari backend
-                            foreach ($menuVariants as $g) {
-                                if (isset($selVar['group']) && $g['group_name'] === $selVar['group']) {
-                                    foreach ($g['options'] as $opt) {
-                                        if (isset($selVar['name']) && $opt['name'] === $selVar['name']) {
-                                            $qty = isset($selVar['qty']) ? (int) $selVar['qty'] : 1;
-                                            if ($qty < 1) $qty = 1;
-
-                                            $hargaVarian += ($opt['price'] * $qty);
-                                            $selectedVariants[] = [
-                                                'group' => $g['group_name'],
-                                                'name' => $opt['name'],
-                                                'price' => $opt['price'],
-                                                'qty' => $qty
-                                            ];
-                                            break 2;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                $hargaTotalPerItem = $hargaBase + $hargaVarian;
-                $subtotal = $hargaTotalPerItem * $item['jumlah'];
-                $totalSemua += $subtotal;
-
-                DetailPesanan::create([
-                    'id_pesanan' => $pesanan->id,
-                    'id_menu' => $menu->id,
-                    'jumlah' => $item['jumlah'],
-                    'subtotal' => $subtotal,
-                    'catatan' => $item['catatan'] ?? null,
-                    'selected_variants' => !empty($selectedVariants) ? json_encode($selectedVariants) : null
-                ]);
-
-                // Tetap kurangi stok menu (jika digunakan sebagai kuota/stok harian produk jadi)
-                if ($menu->stok >= $item['jumlah']) {
-                    $menu->decrement('stok', $item['jumlah']);
-                    $menu->stok -= $item['jumlah']; // Sync in-memory
-                } else {
-                     throw new \Exception("Gagal: Stok produk {$menu->nama_menu} tidak mencukupi.");
-                }
-            }
-
-            // 3.5. Hitung Diskon jika ada promo
-            $discountAmount = 0;
-            if (!empty($validated['promo_id'])) {
-                $promo = Promo::find($validated['promo_id']);
-                if ($promo && $promo->is_active) {
-                    
-                    // Filter Hari Promo
-                    $todayName = now()->format('l');
-                    $promoDays = is_string($promo->days) ? json_decode($promo->days, true) : $promo->days;
-                    if (is_array($promoDays) && count($promoDays) > 0) {
-                        if (!in_array($todayName, $promoDays)) {
-                            throw new \Exception("Promo '{$promo->title}' tidak berlaku untuk hari ini (" . now()->translatedFormat('l') . ").");
-                        }
-                    }
-
-                    if ($promo->type === 'discount') {
-                        if ($promo->discount_type === 'percentage') {
-                            $discountAmount = $totalSemua * ($promo->value / 100);
-                        } else { // Nominal
-                            $discountAmount = $promo->value;
-                        }
-                        if ($discountAmount > $totalSemua) $discountAmount = $totalSemua; // Jangan sampai diskon melebihi tagihan
-                    } else if ($promo->type === 'package') {
-                        // =====================================================================
-                        // FIX #5: Promo Paket Multiple — hitung berapa kali paket terpenuhi
-                        // =====================================================================
-                        $packageItems = $promo->menus;
-                        $packageNormalPrice = 0;
-                        
-                        $cartMap = [];
-                        foreach ($validated['items'] as $item) {
-                            if (!isset($cartMap[$item['id_menu']])) $cartMap[$item['id_menu']] = 0;
-                            $cartMap[$item['id_menu']] += $item['jumlah'];
-                        }
-
-                        // Hitung berapa kali paket bisa dipenuhi
-                        $maxPackageCount = PHP_INT_MAX;
-                        foreach ($packageItems as $pkgMenu) {
-                            $requiredQty = $pkgMenu->pivot->jumlah;
-                            $availableQty = $cartMap[$pkgMenu->id] ?? 0;
-                            if ($availableQty < $requiredQty) {
-                                $maxPackageCount = 0;
-                                break;
-                            }
-                            $maxPackageCount = min($maxPackageCount, intdiv($availableQty, $requiredQty));
-                            $packageNormalPrice += ($pkgMenu->harga * $requiredQty);
-                        }
-
-                        if ($maxPackageCount === 0 || $maxPackageCount === PHP_INT_MAX) {
-                            throw new \Exception("Pesanan tidak memenuhi syarat menu untuk Promo Paket '{$promo->title}'.");
-                        }
-
-                        // Diskon per paket x jumlah paket yang terpenuhi
-                        $discountPerPackage = $packageNormalPrice - $promo->value;
-                        if ($discountPerPackage < 0) $discountPerPackage = 0;
-                        $discountAmount = $discountPerPackage * $maxPackageCount;
-                    }
-                }
-            }
+            // 4. Hitung diskon via OrderService
+            $discountAmount = $orderService->calculateDiscount(
+                $totalSemua,
+                $validated['promo_id'] ?? null,
+                $validated['items']
+            );
 
             $totalBayar = $totalSemua - $discountAmount;
 
@@ -296,7 +133,7 @@ class PosController extends Controller
                 'total_hpp' => $total_hpp
             ]);
 
-            // 4. Proses Status Pembayaran
+            // 5. Proses Status Pembayaran
             $statusBayar = $validated['pembayaran_langsung'] ? 'paid' : 'unpaid';
             $metodeBayar = $validated['pembayaran_langsung'] ? ($validated['metode_pembayaran'] ?? 'cash') : null;
 
@@ -577,63 +414,15 @@ class PosController extends Controller
     }
 
     /**
-     * Menampilkan laporan tutup shift kasir
+     * Data internal untuk laporan shift (menghilangkan duplikasi).
      */
-    public function shiftReport()
+    private function getShiftReportData(): array
     {
         $kasir_id = auth()->id();
         
         $shift = \App\Models\KasirShift::where('user_id', $kasir_id)->latest('id')->first();
         if (!$shift) {
-            return redirect()->back()->with('error', 'Tidak ada data shift ditemukan.');
-        }
-
-        $query = Pembayaran::with('pesanan')
-            ->whereHas('pesanan', function($q) use ($kasir_id) {
-                $q->where('id_kasir', $kasir_id);
-            })
-            ->where('status', 'paid')
-            ->where('updated_at', '>=', $shift->waktu_buka);
-
-        if ($shift->waktu_tutup) {
-            $query->where('updated_at', '<=', $shift->waktu_tutup);
-        }
-        
-        $pembayarans = $query->get();
-
-        $totalCash = $pembayarans->where('metode', 'cash')->sum('total_bayar');
-        $totalQris = $pembayarans->where('metode', 'qris')->sum('total_bayar');
-        $totalSemua = $totalCash + $totalQris;
-
-        // Hitung rekap menu terjual
-        $rekapMenu = [];
-        $totalItemTerjual = 0;
-        foreach ($pembayarans as $pay) {
-            if ($pay->pesanan) {
-                foreach ($pay->pesanan->detail_pesanan as $detail) {
-                    if ($detail->menu) {
-                        $nama = $detail->menu->nama_menu;
-                        if (!isset($rekapMenu[$nama])) {
-                            $rekapMenu[$nama] = ['jumlah' => 0, 'subtotal' => 0];
-                        }
-                        $rekapMenu[$nama]['jumlah'] += $detail->jumlah;
-                        $rekapMenu[$nama]['subtotal'] += $detail->subtotal;
-                        $totalItemTerjual += $detail->jumlah;
-                    }
-                }
-            }
-        }
-
-        return view('kasir.shift_report', compact('totalCash', 'totalQris', 'totalSemua', 'pembayarans', 'shift', 'rekapMenu', 'totalItemTerjual'));
-    }
-
-    public function exportShiftReportPdf()
-    {
-        $kasir_id = auth()->id();
-        
-        $shift = \App\Models\KasirShift::where('user_id', $kasir_id)->latest('id')->first();
-        if (!$shift) {
-            return redirect()->back()->with('error', 'Tidak ada data shift ditemukan.');
+            throw new \Exception('Tidak ada data shift ditemukan.');
         }
 
         $query = Pembayaran::with('pesanan.detail_pesanan.menu')
@@ -646,7 +435,7 @@ class PosController extends Controller
         if ($shift->waktu_tutup) {
             $query->where('updated_at', '<=', $shift->waktu_tutup);
         }
-
+        
         $pembayarans = $query->get();
 
         $totalCash = $pembayarans->where('metode', 'cash')->sum('total_bayar');
@@ -672,10 +461,33 @@ class PosController extends Controller
             }
         }
 
-        $hariIni = $shift->waktu_buka->format('Y-m-d');
+        return compact('totalCash', 'totalQris', 'totalSemua', 'pembayarans', 'shift', 'rekapMenu', 'totalItemTerjual');
+    }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('kasir.shift_report_pdf', compact('totalCash', 'totalQris', 'totalSemua', 'pembayarans', 'hariIni', 'shift', 'rekapMenu', 'totalItemTerjual'));
-        return $pdf->download('Laporan_Shift_' . $hariIni . '.pdf');
+    /**
+     * Menampilkan laporan tutup shift kasir
+     */
+    public function shiftReport()
+    {
+        try {
+            $data = $this->getShiftReportData();
+            return view('kasir.shift_report', $data);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function exportShiftReportPdf()
+    {
+        try {
+            $data = $this->getShiftReportData();
+            $data['hariIni'] = $data['shift']->waktu_buka->format('Y-m-d');
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('kasir.shift_report_pdf', $data);
+            return $pdf->download('Laporan_Shift_' . $data['hariIni'] . '.pdf');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**

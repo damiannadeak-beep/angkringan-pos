@@ -29,11 +29,7 @@ Route::get('/katalog', [PublicController::class, 'katalog']);
 Route::get('/lokasi', [PublicController::class, 'lokasi']);
 Route::get('/kontak', [PublicController::class, 'kontak']);
 
-// Route Bantuan (Clear Cache tanpa Terminal)
-Route::get('/clear-cache', function() {
-    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-    return 'Cache Laravel berhasil dibersihkan! Silakan kembali dan coba lagi.';
-});
+
 
 // Route Socialite (Google Login)
 Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->name('google.login');
@@ -94,6 +90,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/reviews/{id}/reply', [AdminController::class, 'replyReview'])->name('reviews.reply');
         
         Route::get('/backup', [AdminController::class, 'backupDatabase'])->name('backup');
+
+        // Route Bantuan (Clear Cache — hanya pemilik yang boleh)
+        Route::get('/clear-cache', function() {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            return redirect()->back()->with('success', 'Cache berhasil dibersihkan.');
+        })->name('clear_cache');
         
         // Laporan Absensi
         Route::get('/absensi', [AdminController::class, 'absensiReport'])->name('absensi.index');
@@ -105,9 +107,16 @@ Route::middleware(['auth'])->group(function () {
         // Log Aktivitas
         Route::get('/activity-logs', [AdminController::class, 'activityLogs'])->name('activity_logs.index');
 
-        // Menu management
+        // Menu management (dikelompokkan)
         Route::get('/menu', [AdminMenuController::class, 'index'])->name('menu.index');
-        
+        Route::get('/menu/create', [AdminMenuController::class, 'create'])->name('menu.create');
+        Route::post('/menu', [AdminMenuController::class, 'store'])->name('menu.store');
+        Route::get('/menu/{id}/edit', [AdminMenuController::class, 'edit'])->name('menu.edit');
+        Route::put('/menu/{id}', [AdminMenuController::class, 'update'])->name('menu.update');
+        Route::delete('/menu/{id}', [AdminMenuController::class, 'destroy'])->name('menu.destroy');
+        Route::post('/menu/{id}/stock', [AdminMenuController::class, 'updateStock'])->name('menu.stock');
+        Route::post('/menu/ai-description', [AdminMenuController::class, 'generateAiDescription'])->name('menu.ai_description');
+
         // Stok Bahan Baku
         Route::get('/stok', [AdminBahanController::class, 'index'])->name('stok.index');
         Route::post('/stok', [AdminBahanController::class, 'store'])->name('stok.store');
@@ -126,16 +135,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/meja/{id}', [AdminMejaController::class, 'destroy'])->name('meja.destroy');
         Route::get('/meja/{id}/qr', [AdminMejaController::class, 'printQr'])->name('meja.print_qr');
 
-        Route::get('/menu/create', [AdminMenuController::class, 'create'])->name('menu.create');
-        Route::post('/menu', [AdminMenuController::class, 'store'])->name('menu.store');
-        Route::get('/menu/{id}/edit', [AdminMenuController::class, 'edit'])->name('menu.edit');
-        Route::put('/menu/{id}', [AdminMenuController::class, 'update'])->name('menu.update');
-        Route::delete('/menu/{id}', [AdminMenuController::class, 'destroy'])->name('menu.destroy');
-        Route::post('/menu/{id}/stock', [AdminMenuController::class, 'updateStock'])->name('menu.stock');
-        Route::post('/menu/ai-description', [AdminMenuController::class, 'generateAiDescription'])->name('menu.ai_description');
-
         // Kasir management
         Route::get('/kasir/manage', [AdminKasirController::class, 'index'])->name('kasir.index');
+        Route::post('/kasir', [AdminKasirController::class, 'store'])->name('kasir.store');
         Route::get('/kasir/{id}/edit', [AdminKasirController::class, 'edit'])->name('kasir.edit');
         Route::put('/kasir/{id}', [AdminKasirController::class, 'update'])->name('kasir.update');
         Route::delete('/kasir/{id}', [AdminKasirController::class, 'destroy'])->name('kasir.destroy');
@@ -147,7 +149,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/promo/{id}/edit', [AdminPromoController::class, 'edit'])->name('promo.edit');
         Route::put('/promo/{id}', [AdminPromoController::class, 'update'])->name('promo.update');
         Route::delete('/promo/{id}', [AdminPromoController::class, 'destroy'])->name('promo.destroy');
-        Route::post('/kasir', [AdminController::class, 'storeKasir'])->name('kasir.store');
         // User management
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         // Permintaan Belanja (Admin)
@@ -219,8 +220,4 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/profil/update', [KonsumenController::class, 'updateProfil']);
         Route::post('/rating/store', [KonsumenController::class, 'storeRating']);
     });
-});
-
-Route::get('/debug-menu', function() {
-    return App\Models\Menu::all();
 });

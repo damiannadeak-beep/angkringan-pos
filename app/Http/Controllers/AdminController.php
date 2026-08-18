@@ -279,52 +279,41 @@ class AdminController extends Controller
         $filename = 'backup_angkringan_' . date('Y_m_d_His') . '.sql';
         $filepath = storage_path('app/' . $filename);
 
-        $dbHost = env('DB_HOST', '127.0.0.1');
-        $dbPort = env('DB_PORT', '3306');
-        $dbUser = env('DB_USERNAME', 'root');
-        $dbPass = env('DB_PASSWORD', '');
-        $dbName = env('DB_DATABASE', 'angkringan_pos');
+        // Gunakan config() bukan env() — aman di cached config
+        $dbHost = config('database.connections.mysql.host', '127.0.0.1');
+        $dbPort = (string) config('database.connections.mysql.port', '3306');
+        $dbUser = config('database.connections.mysql.username', 'root');
+        $dbPass = config('database.connections.mysql.password', '');
+        $dbName = config('database.connections.mysql.database', 'angkringan_pos');
 
         $mysqldumpPath = 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
         if (!file_exists($mysqldumpPath)) {
             $mysqldumpPath = 'mysqldump';
         }
 
-        $passwordParam = empty($dbPass) ? '' : "-p" . escapeshellarg($dbPass);
-        
-        $command = escapeshellarg($mysqldumpPath) . " -h " . escapeshellarg($dbHost) . " -P " . escapeshellarg($dbPort) . " -u " . escapeshellarg($dbUser) . " {$passwordParam} " . escapeshellarg($dbName) . " > " . escapeshellarg($filepath);
-        
-        $output = [];
-        $returnVar = NULL;
-        exec($command, $output, $returnVar);
+        // Gunakan Symfony Process untuk menghindari shell injection
+        $command = array_filter([
+            $mysqldumpPath,
+            '-h', $dbHost,
+            '-P', $dbPort,
+            '-u', $dbUser,
+            $dbPass ? '-p' . $dbPass : null,
+            '--result-file=' . $filepath,
+            $dbName,
+        ]);
 
-        if ($returnVar === 0 && file_exists($filepath)) {
+        $process = new \Symfony\Component\Process\Process($command);
+        $process->setTimeout(120);
+        $process->run();
+
+        if ($process->isSuccessful() && file_exists($filepath)) {
             return response()->download($filepath)->deleteFileAfterSend(true);
         }
 
-        return back()->withErrors(['msg' => 'Gagal membuat backup database. Pastikan mysqldump tersedia di ' . $mysqldumpPath]);
+        return back()->withErrors(['msg' => 'Gagal membuat backup database. Error: ' . $process->getErrorOutput()]);
     }
 
-    public function storeKasir(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'shift' => 'required|in:pagi,malam',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'shift' => $data['shift'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        $user->assignRole('kasir');
-
-        return redirect()->route('admin.kasir.index')->with('success', 'Akun kasir berhasil dibuat.');
-    }
 
     public function getReportsData($startDate, $endDate)
     {

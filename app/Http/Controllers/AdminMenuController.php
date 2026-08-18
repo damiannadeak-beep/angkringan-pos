@@ -7,36 +7,32 @@ use App\Models\Menu;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
-use Intervention\Image\ImageManager;
+use App\Traits\HandlesImageUpload;
 
 class AdminMenuController extends Controller
 {
+    use HandlesImageUpload;
     public function index()
     {
-        $query = Menu::query();
-        // filter stok rendah
-        if(request()->query('filter') == 'low'){
-            $query->where('stok', '<', 10);
-        }
-        // filter kategori
-        if(request()->query('category')){
-            $query->where('kategori', request()->query('category'));
-        }
-        $menus = $query->orderBy('nama_menu')->paginate(10)->withQueryString();
-        return view('admin.menu.index', compact('menus'))->with([ 'pageTitle' => 'Manajemen Menu', 'showStockPage' => false ]);
+        return $this->menuList('Manajemen Menu', false);
     }
 
     public function stok()
     {
+        return $this->menuList('Manajemen Stok', true);
+    }
+
+    private function menuList(string $pageTitle, bool $showStockPage)
+    {
         $query = Menu::query();
-        if(request()->query('filter') == 'low'){
+        if (request()->query('filter') == 'low') {
             $query->where('stok', '<', 10);
         }
-        if(request()->query('category')){
+        if (request()->query('category')) {
             $query->where('kategori', request()->query('category'));
         }
         $menus = $query->orderBy('nama_menu')->paginate(10)->withQueryString();
-        return view('admin.menu.index', compact('menus'))->with([ 'pageTitle' => 'Manajemen Stok', 'showStockPage' => true ]);
+        return view('admin.menu.index', compact('menus', 'pageTitle', 'showStockPage'));
     }
 
     public function create()
@@ -60,21 +56,7 @@ class AdminMenuController extends Controller
         $data['is_available'] = $request->has('is_available');
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $extension = strtolower($file->extension() ?: 'jpg');
-            $filename = time() . '_' . uniqid() . '.' . $extension;
-            $path = 'menus/' . $filename;
-
-            if (extension_loaded('gd') || extension_loaded('imagick')) {
-                $manager = extension_loaded('gd') ? ImageManager::gd() : ImageManager::imagick();
-                $img = $manager->read($file)->scaleDown(800)->toJpeg(80);
-
-                Storage::disk('public')->put($path, (string) $img);
-            } else {
-                Storage::disk('public')->putFileAs('menus', $file, $filename);
-            }
-
-            $data['image'] = $path;
+            $data['image'] = $this->processImageUpload($request->file('image'));
         }
 
         $menu = Menu::create($data);
@@ -117,25 +99,8 @@ class AdminMenuController extends Controller
         $data['is_available'] = $request->has('is_available');
 
         if ($request->hasFile('image')) {
-            // delete old image if exists
-            if ($menu->image && Storage::disk('public')->exists($menu->image)) {
-                Storage::disk('public')->delete($menu->image);
-            }
-            $file = $request->file('image');
-            $extension = strtolower($file->extension() ?: 'jpg');
-            $filename = time() . '_' . uniqid() . '.' . $extension;
-            $path = 'menus/' . $filename;
-
-            if (extension_loaded('gd') || extension_loaded('imagick')) {
-                $manager = extension_loaded('gd') ? ImageManager::gd() : ImageManager::imagick();
-                $img = $manager->read($file)->scaleDown(800)->toJpeg(80);
-
-                Storage::disk('public')->put($path, (string) $img);
-            } else {
-                Storage::disk('public')->putFileAs('menus', $file, $filename);
-            }
-
-            $data['image'] = $path;
+            $this->deleteOldImage($menu->image);
+            $data['image'] = $this->processImageUpload($request->file('image'));
         }
 
         $menu->update($data);
