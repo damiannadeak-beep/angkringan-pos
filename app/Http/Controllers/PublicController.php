@@ -7,7 +7,8 @@ use App\Models\Menu;
 class PublicController extends Controller
 {
     public function home() {
-        return view('public.home'); // Buat view landing page sederhana nanti
+        $featuredMenus = Menu::where('is_available', true)->take(3)->get();
+        return view('public.home', compact('featuredMenus'));
     }
 
     public function katalog() {

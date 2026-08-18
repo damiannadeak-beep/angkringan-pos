@@ -370,25 +370,46 @@
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-5 position-relative fade-up">
-                <div class="rounded-4 overflow-hidden shadow-lg position-relative d-flex align-items-center justify-content-center p-4" style="aspect-ratio: 4/5; background: linear-gradient(135deg, #5d4037 0%, #3e2723 50%, #2d1a11 100%);">
-                    
-                    <!-- Floating Ambient Circles -->
-                    <div class="position-absolute rounded-circle" style="width: 180px; height: 180px; background: rgba(212, 155, 120, 0.15); top: 8%; left: 8%; animation: blobFloat 7s ease-in-out infinite;"></div>
-                    <div class="position-absolute rounded-circle" style="width: 220px; height: 220px; background: rgba(176, 89, 35, 0.12); bottom: 12%; right: -5%; animation: blobFloat 9s ease-in-out infinite reverse;"></div>
-                    
-                    <!-- Center Badge Icon -->
-                    <div class="text-center position-relative z-1">
-                        <div class="d-inline-flex p-4 rounded-circle mb-3" style="background: rgba(255,255,255,0.12); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 12px 36px rgba(0,0,0,0.25);">
-                            <i class="bi bi-shop text-white" style="font-size: 3.8rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                <!-- Featured Menu Showcase Card Grid -->
+                <div class="glass-feature-card p-4 p-md-4 rounded-4 shadow-lg position-relative border">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                        <div>
+                            <span class="badge bg-warning text-dark font-sans fw-bold rounded-pill px-3 py-1 mb-1">Favorit Pelanggan</span>
+                            <h5 class="fw-bold mb-0 text-primary" style="font-family: 'Playfair Display', serif;">Menu Terpopuler</h5>
                         </div>
-                        <h3 class="text-white fw-bold mt-2" style="font-family: 'Playfair Display', serif; text-shadow: 0 2px 4px rgba(0,0,0,0.4);">Ruang Hangat Malam</h3>
+                        <i class="bi bi-star-fill text-warning fs-4"></i>
                     </div>
 
-                    <!-- Overlay Glass Quote Card -->
-                    <div class="position-absolute bottom-0 start-0 m-4 p-4 rounded-4" style="background: rgba(255,255,255,0.88); backdrop-filter: blur(14px); width: calc(100% - 2rem); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                        <p class="mb-0 fw-bold text-primary fst-italic text-center" style="font-size: 1.05rem; font-family: 'Playfair Display', serif;">
-                            "Lebih dari sekadar makan, ini tentang titik temu & cerita manusia."
-                        </p>
+                    @if(isset($featuredMenus) && count($featuredMenus) > 0)
+                        <div class="d-flex flex-column gap-3">
+                            @foreach($featuredMenus as $menu)
+                                <div class="d-flex align-items-center p-2.5 rounded-3 bg-white shadow-sm border border-opacity-10 hover-lift">
+                                    @if($menu->image)
+                                        <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}" class="rounded-3 me-3" style="width: 64px; height: 64px; object-fit: cover;">
+                                    @else
+                                        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center me-3" style="width: 64px; height: 64px;">
+                                            <i class="bi bi-cup-hot text-muted fs-4"></i>
+                                        </div>
+                                    @endif
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-primary font-sans" style="font-size: 0.95rem;">{{ $menu->nama_menu }}</h6>
+                                        <span class="fw-bold text-accent font-sans" style="font-size: 0.88rem;">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
+                                    </div>
+                                    <a href="/katalog" class="btn btn-sm btn-soft rounded-pill px-3 font-sans fw-semibold">Pesan</a>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="bi bi-shop text-muted fs-1 opacity-50"></i>
+                            <p class="small text-muted mt-2 mb-0 font-sans">Nikmati hidangan khas racikan bumbu pilihan.</p>
+                        </div>
+                    @endif
+
+                    <div class="mt-4 pt-3 border-top text-center">
+                        <a href="/katalog" class="text-decoration-none fw-bold small text-primary font-sans">
+                            Lihat Seluruh Katalog Menu <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
                     </div>
                 </div>
             </div>
