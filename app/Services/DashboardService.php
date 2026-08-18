@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\{Pembayaran, Menu, Pengeluaran, Setting};
+use App\Models\{Pembayaran, Menu, DetailPesanan, Pengeluaran, Setting};
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardService
 {
     /**
-     * Ambil data lengkap dashboard analytics admin (penjualan, HPP, laba, chart).
+     * Ambil data lengkap dashboard analytics admin (penjualan, HPP, laba, chart, top menus).
      */
     public function getDashboardMetrics(): array
     {
@@ -104,6 +104,56 @@ class DashboardService
             $chartDailyLaba[] = $labaVal;
         }
 
+        // 6. Data Chart Bulanan (Tahun Ini)
+        $monthlySalesQuery = Pembayaran::selectRaw('MONTH(tanggal) AS month, SUM(total_bayar) AS total')
+            ->whereYear('tanggal', $hariIni->year)
+            ->where('status', 'paid')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $monthlyHppQuery = DB::table('pesanan')
+            ->join('pembayaran', 'pesanan.id', '=', 'pembayaran.id_pesanan')
+            ->whereYear('pembayaran.tanggal', $hariIni->year)
+            ->where('pembayaran.status', 'paid')
+            ->selectRaw('MONTH(pembayaran.tanggal) AS month, SUM(pesanan.total_hpp) AS total')
+            ->groupBy('month')
+            ->get()->keyBy('month');
+
+        $monthlyPengeluaranQuery = Pengeluaran::selectRaw('MONTH(tanggal) AS month, SUM(nominal) AS total')
+            ->whereYear('tanggal', $hariIni->year)
+            ->groupBy('month')
+            ->get()->keyBy('month');
+
+        $monthlySalesByMonth = $monthlySalesQuery->keyBy('month');
+        $chartMonthlyLabels = [];
+        $chartMonthlyData = [];
+        $chartMonthlyLaba = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $chartMonthlyLabels[] = Carbon::create($hariIni->year, $month, 1)->translatedFormat('M');
+
+            $rev = (float) ($monthlySalesByMonth[$month]->total ?? 0);
+            $hpp = (float) ($monthlyHppQuery[$month]->total ?? 0);
+            $pengeluaran = (float) ($monthlyPengeluaranQuery[$month]->total ?? 0);
+
+            $chartMonthlyData[] = $rev;
+            $chartMonthlyLaba[] = $rev - $hpp - $pengeluaran;
+        }
+
+        // 7. Top 5 Menu Terlaris Bulan Ini
+        $topMenus = DetailPesanan::join('pesanan', 'detail_pesanan.id_pesanan', '=', 'pesanan.id')
+            ->join('menu', 'detail_pesanan.id_menu', '=', 'menu.id')
+            ->join('pembayaran', 'pesanan.id', '=', 'pembayaran.id_pesanan')
+            ->whereMonth('pembayaran.tanggal', $hariIni->month)
+            ->whereYear('pembayaran.tanggal', $hariIni->year)
+            ->where('pembayaran.status', 'paid')
+            ->selectRaw('menu.nama_menu, menu.image, SUM(detail_pesanan.jumlah) as total_terjual')
+            ->groupBy('menu.id', 'menu.nama_menu', 'menu.image')
+            ->orderByDesc('total_terjual')
+            ->limit(5)
+            ->get();
+
         return compact(
             'totalPenjualanHariIni',
             'totalCash',
@@ -116,7 +166,11 @@ class DashboardService
             'labaBersihBulan',
             'chartDailyLabels',
             'chartDailyData',
-            'chartDailyLaba'
+            'chartDailyLaba',
+            'chartMonthlyLabels',
+            'chartMonthlyData',
+            'chartMonthlyLaba',
+            'topMenus'
         );
     }
 }
