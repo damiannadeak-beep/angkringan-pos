@@ -79,4 +79,12 @@ class LoginController extends Controller
         // Jika tidak punya role apapun, kembalikan ke halaman awal
         return redirect('/');
     }
+
+    /**
+     * Tampilkan halaman login khusus Staf Kasir & Pemilik.
+     */
+    public function showStaffLoginForm()
+    {
+        return view('auth.staff-login');
+    }
 }

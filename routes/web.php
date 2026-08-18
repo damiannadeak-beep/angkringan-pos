@@ -36,6 +36,7 @@ Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->n
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 
 // Route Autentikasi bawaan Laravel UI (Login, Register, Logout, Verify)
+Route::get('/staff/login', [App\Http\Controllers\Auth\LoginController::class, 'showStaffLoginForm'])->name('staff.login');
 Auth::routes(['verify' => true, 'middleware' => ['throttle:10,1']]);
 
 // Override logout: Kasir 1 (pemilik laci) tidak bisa logout biasa, harus Tutup Shift dulu
