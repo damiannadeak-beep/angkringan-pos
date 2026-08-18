@@ -8,10 +8,13 @@
                 <i class="bi bi-calendar-check me-2"></i>Laporan Tutup Shift
             </h4>
             <div>
-                <a href="{{ route('kasir.shift_report.pdf') }}" class="btn btn-danger rounded-pill me-2">
+                <a href="{{ route('kasir.shift_report.excel') }}" class="btn btn-success rounded-pill me-2 font-sans fw-bold">
+                    <i class="bi bi-file-earmark-excel me-2"></i>Export Excel
+                </a>
+                <a href="{{ route('kasir.shift_report.pdf') }}" class="btn btn-danger rounded-pill me-2 font-sans fw-bold">
                     <i class="bi bi-file-pdf me-2"></i>Export PDF
                 </a>
-                <button onclick="window.print()" class="btn btn-primary rounded-pill">
+                <button onclick="window.print()" class="btn btn-primary rounded-pill font-sans fw-bold">
                     <i class="bi bi-printer me-2"></i>Cetak Browser
                 </button>
             </div>

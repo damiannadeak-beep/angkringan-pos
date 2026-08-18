@@ -475,6 +475,48 @@ class PosController extends Controller
     }
 
     /**
+     * Ekspor Laporan Tutup Shift Kasir ke Microsoft Excel (.xls)
+     */
+    public function exportShiftReportExcel()
+    {
+        try {
+            $data = $this->getShiftReportData();
+            $shift = $data['shift'];
+            $hariIni = $shift->waktu_buka->format('Y-m-d');
+            $filename = 'Laporan_Shift_' . $hariIni . '_' . now()->format('His') . '.xls';
+
+            $html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+            $html .= '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Laporan Shift</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
+            $html .= '<body>';
+            $html .= '<table border="1" cellpadding="5" cellspacing="0" style="font-family: Arial, sans-serif;">';
+            $html .= '<tr><td colspan="4" style="background-color: #3E2723; color: white; font-size: 16px; font-weight: bold; text-align: center;">LAPORAN TUTUP SHIFT KASIR</td></tr>';
+            $html .= '<tr><td colspan="4" style="text-align: center; font-weight: bold;">Kasir: ' . auth()->user()->name . ' | Waktu Buka: ' . $shift->waktu_buka->format('d/m/Y H:i') . '</td></tr>';
+            $html .= '<tr><td colspan="4"></td></tr>';
+
+            $html .= '<tr style="font-weight: bold; background-color: #f2f2f2;"><td>No</td><td>Nama Menu / Item</td><td>Jumlah Terjual</td><td>Subtotal (Rp)</td></tr>';
+            $no = 1;
+            foreach ($data['rekapMenu'] as $nama => $item) {
+                $html .= '<tr><td>' . $no++ . '</td><td>' . $nama . '</td><td>' . $item['jumlah'] . '</td><td>Rp ' . number_format($item['subtotal'], 0, ',', '.') . '</td></tr>';
+            }
+            $html .= '<tr style="font-weight: bold; background-color: #e0e0e0;"><td colspan="2">TOTAL TERJUAL</td><td>' . $data['totalItemTerjual'] . '</td><td>Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr><td colspan="4"></td></tr>';
+
+            $html .= '<tr><td colspan="2" style="font-weight: bold;">Total Cash (Laci Kas)</td><td colspan="2">Rp ' . number_format($data['totalCash'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr><td colspan="2" style="font-weight: bold;">Total QRIS</td><td colspan="2">Rp ' . number_format($data['totalQris'], 0, ',', '.') . '</td></tr>';
+            $html .= '<tr style="font-weight: bold; background-color: #f2f2f2;"><td colspan="2">TOTAL PENJUALAN SHIFT</td><td colspan="2">Rp ' . number_format($data['totalSemua'], 0, ',', '.') . '</td></tr>';
+
+            $html .= '</table></body></html>';
+
+            return response($html, 200, [
+                'Content-Type' => 'application/vnd.ms-excel',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
      * Memisahkan pesanan (Split Bill)
      */
     public function splitOrder(SplitOrderRequest $request, $id_pesanan)

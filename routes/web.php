@@ -173,6 +173,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/order/{id}/kitchen-receipt', [PosController::class, 'printKitchenReceipt'])->name('kasir.order.kitchen');
         Route::get('/shift-report', [PosController::class, 'shiftReport'])->name('kasir.shift_report');
         Route::get('/shift-report/pdf', [PosController::class, 'exportShiftReportPdf'])->name('kasir.shift_report.pdf');
+        Route::get('/shift-report/excel', [PosController::class, 'exportShiftReportExcel'])->name('kasir.shift_report.excel');
         Route::get('/api/active-orders-count', [PosController::class, 'activeOrdersCount'])->name('kasir.active_orders_count');
         Route::get('/api/notifications', [PosController::class, 'getNotifications']);
         Route::post('/api/notifications/{id}/read', [PosController::class, 'readNotification']);
