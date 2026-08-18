@@ -2,347 +2,249 @@
 
 @section('content')
 <style>
-    /* Modern Clean F&B Design System */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     
-    :root {
-        --brand-dark: #2d1a11;
-        --brand-brown: #3e2723;
-        --brand-warm: #5d4037;
-        --brand-accent: #b05923;
-        --brand-cream: #f0e9dd;
-        --bg-warm: #fcfaf7;
-    }
-    
     body {
-        background-color: var(--bg-warm);
+        background-color: #fdfbf7;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
-        color: var(--brand-dark);
-        overflow-x: hidden;
+        color: #2d1a11;
     }
 
-    /* Hero Banner Section */
-    .hero-banner {
-        position: relative;
-        padding: 5.5rem 0 5rem 0;
-        background: linear-gradient(135deg, #f0e9dd 0%, #e6ddcf 50%, #fdfbf7 100%);
-        border-bottom: 1px solid rgba(62, 39, 35, 0.08);
-        overflow: hidden;
+    /* Minimalist Hero Section */
+    .hero-minimal {
+        padding: 4.5rem 0 3.5rem 0;
+        background: #fdfbf7;
+        border-bottom: 1px solid #eee8df;
     }
 
-    .hero-badge {
-        background: #ffffff;
-        color: var(--brand-brown);
-        border: 1px solid rgba(62, 39, 35, 0.12);
-        padding: 0.5rem 1.25rem;
-        border-radius: 999px;
-        font-size: 0.88rem;
+    .badge-subtle {
+        background: #f0e9dd;
+        color: #5d4037;
+        font-size: 0.85rem;
         font-weight: 700;
-        box-shadow: 0 4px 12px rgba(62, 39, 35, 0.04);
+        padding: 0.4rem 1.1rem;
+        border-radius: 999px;
     }
 
-    .hero-title {
+    .hero-headline {
         font-weight: 800;
-        color: var(--brand-dark);
+        font-size: 2.75rem;
+        color: #3e2723;
+        line-height: 1.25;
         letter-spacing: -0.02em;
-        line-height: 1.2;
     }
 
-    .hero-title span {
-        color: var(--brand-accent);
-    }
-
-    .hero-desc {
-        color: #665247;
-        font-size: 1.1rem;
+    .hero-subtext {
+        color: #6d584c;
+        font-size: 1.05rem;
         line-height: 1.7;
+        max-width: 600px;
     }
 
-    /* Primary Action Buttons */
-    .btn-main-order {
-        background: linear-gradient(135deg, #3e2723 0%, #2d1a11 100%);
+    /* Buttons */
+    .btn-minimal-primary {
+        background: #3e2723;
         color: #ffffff !important;
         font-weight: 700;
-        padding: 0.95rem 2.25rem;
+        padding: 0.85rem 2rem;
         border-radius: 999px;
         border: none;
-        box-shadow: 0 10px 24px rgba(62, 39, 35, 0.25);
-        transition: all 0.25s ease;
+        transition: background 0.2s ease, transform 0.2s ease;
     }
 
-    .btn-main-order:hover {
+    .btn-minimal-primary:hover {
+        background: #2d1a11;
         transform: translateY(-2px);
-        box-shadow: 0 14px 30px rgba(62, 39, 35, 0.35);
     }
 
-    .btn-secondary-outline {
-        background: #ffffff;
-        color: var(--brand-brown) !important;
+    .btn-minimal-outline {
+        background: transparent;
+        color: #3e2723 !important;
         font-weight: 700;
-        padding: 0.95rem 2rem;
+        padding: 0.85rem 1.75rem;
         border-radius: 999px;
-        border: 2px solid var(--brand-warm);
-        transition: all 0.25s ease;
+        border: 1.5px solid #d7ccc8;
+        transition: all 0.2s ease;
     }
 
-    .btn-secondary-outline:hover {
-        background: var(--brand-warm);
-        color: #ffffff !important;
-        transform: translateY(-2px);
+    .btn-minimal-outline:hover {
+        border-color: #3e2723;
+        background: #f0e9dd;
     }
 
-    /* Stat Highlight Bar */
-    .stat-bar-card {
+    /* Minimalist Product Card */
+    .card-minimal-product {
         background: #ffffff;
-        border: 1px solid rgba(62, 39, 35, 0.08);
+        border: 1px solid #eae3d8;
         border-radius: 1.25rem;
         padding: 1.25rem;
-        box-shadow: 0 8px 24px rgba(62, 39, 35, 0.04);
-        transition: transform 0.25s ease;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
-    .stat-bar-card:hover {
-        transform: translateY(-3px);
+    .card-minimal-product:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(62, 39, 35, 0.08);
+        border-color: #d49b78;
     }
 
-    /* Popular Product Cards Modern Showcase */
-    .product-showcase-card {
-        background: #ffffff;
-        border: 1px solid rgba(62, 39, 35, 0.08);
-        border-radius: 1.5rem;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(62, 39, 35, 0.05);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .product-showcase-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 18px 40px rgba(62, 39, 35, 0.12);
-        border-color: rgba(176, 89, 35, 0.25);
-    }
-
-    .product-img-wrapper {
-        height: 180px;
-        background: #faf5ee;
-        position: relative;
+    .product-img-box {
+        background: #faf6f0;
+        border-radius: 1rem;
+        height: 190px;
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 1rem;
         overflow: hidden;
     }
 
-    .product-img-wrapper img {
+    .product-img-box img {
         max-height: 85%;
         max-width: 85%;
         object-fit: contain;
-        transition: transform 0.35s ease;
     }
 
-    .product-showcase-card:hover .product-img-wrapper img {
-        transform: scale(1.08);
+    .price-text {
+        color: #b05923;
+        font-weight: 800;
+        font-size: 1.1rem;
     }
 
-    .price-tag {
-        background: var(--brand-brown);
-        color: #ffffff;
-        font-weight: 700;
-        font-size: 0.85rem;
-        padding: 0.35rem 0.85rem;
-        border-radius: 999px;
-        position: absolute;
-        bottom: 12px;
-        left: 12px;
-    }
-
-    .badge-category {
-        background: rgba(176, 89, 35, 0.12);
-        color: var(--brand-accent);
-        font-weight: 700;
-        font-size: 0.75rem;
-        padding: 0.3rem 0.75rem;
-        border-radius: 999px;
-    }
-
-    /* Clean Info Cards */
-    .info-feature-box {
+    /* Minimalist Story Section */
+    .story-card {
         background: #ffffff;
-        border: 1px solid rgba(62, 39, 35, 0.08);
+        border: 1px solid #eae3d8;
         border-radius: 1.5rem;
-        padding: 2.25rem 1.75rem;
-        box-shadow: 0 8px 24px rgba(62, 39, 35, 0.04);
-        transition: all 0.3s ease;
-    }
-
-    .info-feature-box:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 36px rgba(62, 39, 35, 0.1);
-        border-color: rgba(93, 64, 55, 0.2);
-    }
-
-    .info-icon-circle {
-        width: 64px;
-        height: 64px;
-        border-radius: 1.25rem;
-        background: linear-gradient(135deg, var(--brand-brown), var(--brand-warm));
-        color: #ffffff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1.25rem;
-        box-shadow: 0 8px 20px rgba(62, 39, 35, 0.15);
+        padding: 2.5rem;
     }
 </style>
 
 <!-- Hero Section -->
-<section class="hero-banner">
+<section class="hero-minimal">
     <div class="container text-center">
-        <div class="d-inline-flex align-items-center hero-badge mb-4">
-            <i class="bi bi-stars text-warning me-2 fs-5"></i> Aneka Makanan, Kopi & Minuman Segar
+        <div class="d-inline-block mb-3">
+            <span class="badge-subtle">
+                <i class="bi bi-cup-hot-fill me-1"></i> Angkringan & Racikan Minuman Segar
+            </span>
         </div>
-        
-        <h1 class="display-4 hero-title mb-4">
-            Nikmati Kehangatan Kuliner<br>
-            <span>& Pemesanan QR Code Cerdas</span>
+
+        <h1 class="hero-headline mb-3">
+            Kehangatan Racikan Minuman,<br>
+            Kesederhanaan Suasana Angkringan
         </h1>
-        
-        <p class="hero-desc mx-auto mb-5" style="max-width: 620px;">
-            Sajikan racikan minuman favorit dan hidangan lezat langsung dari meja Anda. Praktis, cepat, dan tanpa perlu antre lama.
+
+        <p class="hero-subtext mx-auto mb-4">
+            Nikmati sajian khas Teh Gentong, Lemon Tea, dan aneka racikan segar langsung dari meja Anda via Scan QR Code.
         </p>
 
-        <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-3">
-            <a href="/katalog" class="btn btn-main-order text-decoration-none">
-                <i class="bi bi-bag-check-fill me-2"></i> Lihat Semua Menu
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="/katalog" class="btn btn-minimal-primary text-decoration-none">
+                <i class="bi bi-grid-fill me-2"></i> Lihat Katalog Menu
             </a>
-            <a href="/lokasi" class="btn btn-secondary-outline text-decoration-none">
-                <i class="bi bi-geo-alt-fill me-2"></i> Lokasi Warung
+            <a href="/lokasi" class="btn btn-minimal-outline text-decoration-none">
+                <i class="bi bi-geo-alt-fill me-1"></i> Lokasi Warung
             </a>
         </div>
     </div>
 </section>
 
-<!-- Stat Bar Highlights (Sesuai Menu Asli Store: Mie & Kopi/Minuman) -->
-<section class="position-relative z-3" style="margin-top: -2rem;">
+<!-- Menu Highlights Section -->
+<section class="py-5">
     <div class="container">
-        <div class="row g-3 justify-content-center">
-            <div class="col-6 col-md-3">
-                <div class="stat-bar-card text-center">
-                    <h4 class="fw-bold text-dark mb-1">Makanan & Mie</h4>
-                    <small class="text-muted fw-semibold">Hidangan Lezat & Gurih</small>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-bar-card text-center">
-                    <h4 class="fw-bold text-dark mb-1">Coffee & Tea</h4>
-                    <small class="text-muted fw-semibold">Minuman Segar & Rempah</small>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-bar-card text-center">
-                    <h4 class="fw-bold text-dark mb-1">Order QR Code</h4>
-                    <small class="text-muted fw-semibold">Pesan Langsung dari Meja</small>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-bar-card text-center">
-                    <h4 class="fw-bold text-dark mb-1">PWA Offline</h4>
-                    <small class="text-muted fw-semibold">Aplikasi Selalu Siap 24/7</small>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Featured Popular Menu Cards Showcase -->
-<section class="py-5 my-3">
-    <div class="container">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <span class="badge-category mb-2 d-inline-block"><i class="bi bi-fire me-1"></i> Paling Disukai</span>
-                <h2 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.01em;">Menu Terfavorit</h2>
+                <span class="text-uppercase fw-bold small text-muted">Menu Pilihan</span>
+                <h3 class="fw-bold mb-0 text-dark">Daftar Minuman Segar</h3>
             </div>
-            <a href="/katalog" class="text-decoration-none fw-bold text-primary">
+            <a href="/katalog" class="text-decoration-none fw-bold text-dark small">
                 Lihat Semua Menu <i class="bi bi-arrow-right ms-1"></i>
             </a>
         </div>
 
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4">
             @if(isset($featuredMenus) && count($featuredMenus) > 0)
                 @foreach($featuredMenus as $menu)
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="product-showcase-card h-100 d-flex flex-column justify-content-between">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="card-minimal-product h-100 d-flex flex-column justify-content-between">
                             <div>
-                                <div class="product-img-wrapper">
+                                <div class="product-img-box">
                                     @if($menu->image)
                                         <img src="{{ asset('storage/'.$menu->image) }}" alt="{{ $menu->nama_menu }}">
                                     @else
-                                        <i class="bi bi-cup-hot text-muted" style="font-size: 3.5rem; opacity: 0.4;"></i>
+                                        <i class="bi bi-cup-straw text-muted fs-1 opacity-50"></i>
                                     @endif
-                                    <span class="price-tag">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
                                 </div>
-                                <div class="p-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge-category text-uppercase">{{ $menu->kategori }}</span>
-                                        <small class="text-muted fw-semibold">Sisa: {{ $menu->stok }}</small>
-                                    </div>
-                                    <h5 class="fw-bold text-dark mb-2">{{ $menu->nama_menu }}</h5>
-                                </div>
+                                <span class="badge bg-light text-dark fw-bold mb-2 font-sans" style="font-size: 0.75rem; border: 1px solid #ddd;">
+                                    {{ strtoupper($menu->kategori) }}
+                                </span>
+                                <h6 class="fw-bold text-dark mb-2">{{ $menu->nama_menu }}</h6>
                             </div>
-                            <div class="px-4 pb-4">
-                                <a href="/katalog" class="btn btn-outline-secondary w-100 rounded-pill fw-bold py-2 border-2">
-                                    Pesan Sekarang <i class="bi bi-cart-plus ms-1"></i>
-                                </a>
+                            <div class="pt-3 border-top d-flex align-items-center justify-content-between">
+                                <span class="price-text">Rp {{ number_format($menu->harga, 0, ',', '.') }}</span>
+                                <a href="/katalog" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-semibold">Pesan</a>
                             </div>
                         </div>
                     </div>
                 @endforeach
             @else
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-basket text-muted" style="font-size: 3rem; opacity: 0.4;"></i>
-                    <p class="text-muted mt-2 fw-semibold">Belum ada menu populer yang ditampilkan.</p>
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted">Menu sedang disiapkan.</p>
                 </div>
             @endif
         </div>
     </div>
 </section>
 
-<!-- Values Section (Modern Feature Cards) -->
-<section class="py-4 mb-5">
+<!-- Latar Belakang & Fitur Minimalis -->
+<section class="pb-5 mb-4">
     <div class="container">
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4 align-items-stretch">
             
-            <div class="col-lg-4 col-md-6">
-                <div class="info-feature-box h-100">
-                    <div class="info-icon-circle">
-                        <i class="bi bi-wallet2 fs-3"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-3">Harga Bersahabat</h4>
-                    <p class="text-muted mb-0" style="line-height: 1.7; font-size: 0.95rem;">
-                        Sajian hidangan lezat dan minuman segar dengan harga yang terjangkau untuk semua pelanggan.
+            <!-- Latar Belakang Pendirian Warung -->
+            <div class="col-lg-7">
+                <div class="story-card h-100">
+                    <span class="badge-subtle mb-3 d-inline-block">Latar Belakang Warung</span>
+                    <h3 class="fw-bold mb-3">Tentang Angkringan Kami</h3>
+                    <p class="text-muted mb-3" style="line-height: 1.8; text-align: justify;">
+                        Angkringan ini didirikan dari keinginan sederhana: menyediakan tempat santai yang hangat, ramah kantong, dan nyaman untuk melepas penat setelah seharian beraktivitas.
+                    </p>
+                    <p class="text-muted mb-0" style="line-height: 1.8; text-align: justify;">
+                        Fokus utama kami adalah menyajikan aneka racikan teh khas (seperti Teh Gentong, Lemon Tea, Teh Caramel, dan Teh Leci) serta sajian segar lainnya dengan pelayanan pemesanan mandiri berbasis QR Code yang cepat dan praktis.
                     </p>
                 </div>
             </div>
 
-            <div class="col-lg-4 col-md-6">
-                <div class="info-feature-box h-100">
-                    <div class="info-icon-circle" style="background: linear-gradient(135deg, var(--brand-accent), var(--brand-brown));">
-                        <i class="bi bi-qr-code-scan fs-3"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-3">Pesanan QR Code</h4>
-                    <p class="text-muted mb-0" style="line-height: 1.7; font-size: 0.95rem;">
-                        Pesan makanan & minuman langsung dari meja Anda secara praktis tanpa perlu antre di kasir.
-                    </p>
-                </div>
-            </div>
+            <!-- Ringkasan Fitur Layanan -->
+            <div class="col-lg-5">
+                <div class="story-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <span class="badge-subtle mb-3 d-inline-block">Keunggulan Layanan</span>
+                        <h4 class="fw-bold mb-4">Mengapa Pesan di Sini?</h4>
+                        
+                        <div class="d-flex align-items-start mb-3">
+                            <i class="bi bi-qr-code-scan fs-4 text-dark me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Scan QR Code Mandiri</h6>
+                                <small class="text-muted">Pesan minuman favorit langsung dari meja tanpa perlu mengantre.</small>
+                            </div>
+                        </div>
 
-            <div class="col-lg-4 col-md-6">
-                <div class="info-feature-box h-100">
-                    <div class="info-icon-circle">
-                        <i class="bi bi-cup-hot-fill fs-3"></i>
+                        <div class="d-flex align-items-start mb-3">
+                            <i class="bi bi-wallet2 fs-4 text-dark me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Harga Terjangkau</h6>
+                                <small class="text-muted">Pilihan menu nikmat dan bersahabat untuk semua kalangan.</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-wifi-off fs-4 text-dark me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Sistem PWA Offline-First</h6>
+                                <small class="text-muted">Aplikasi handal dan siap memproses pesanan kapan saja.</small>
+                            </div>
+                        </div>
                     </div>
-                    <h4 class="fw-bold text-dark mb-3">Suasana Hangat</h4>
-                    <p class="text-muted mb-0" style="line-height: 1.7; font-size: 0.95rem;">
-                        Tempat santai yang nyaman untuk berkumpul bersama teman dan keluarga sambil menikmati sajian favorit.
-                    </p>
                 </div>
             </div>
 
