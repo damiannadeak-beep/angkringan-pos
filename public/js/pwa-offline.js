@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('online', updateNetworkStatus);
     window.addEventListener('offline', updateNetworkStatus);
+    setInterval(updateNetworkStatus, 2000);
 
     if (!navigator.onLine) {
         updateNetworkStatus();
