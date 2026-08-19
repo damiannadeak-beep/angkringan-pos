@@ -62,9 +62,9 @@
                     <span class="badge bg-angkringan shadow-sm px-2 py-1 rounded-pill"><i class="bi bi-tag-fill me-1"></i> Promo</span>
                 </div>
                 @endif
-                @if($menu->image)
+                @if($menu->image_url)
                 <div style="aspect-ratio: 1/1; max-height: 140px; width: 100%; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                    <img src="{{ $menu->image_url }}" alt="{{ $menu->nama_menu }}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="{{ $menu->image_url }}" onerror="this.onerror=null; this.src='https://placehold.co/600x450/e9ecef/6c757d?text=Belum+Ada+Foto';" alt="{{ $menu->nama_menu }}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 @endif
                 <div class="card-body d-flex flex-column p-3">

@@ -272,8 +272,8 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-3">
-                                            @if($menu->image)
-                                                <img src="/storage/{{ $menu->image }}" alt="Menu" class="rounded object-fit-cover" width="40" height="40">
+                                            @if($menu->image_url)
+                                                <img src="{{ $menu->image_url }}" onerror="this.onerror=null; this.src='https://placehold.co/600x450/e9ecef/6c757d?text=Belum+Ada+Foto';" alt="Menu" class="rounded object-fit-cover" width="40" height="40">
                                             @else
                                                 <div class="bg-secondary bg-opacity-10 rounded d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
                                                     <i class="bi bi-image text-muted"></i>
