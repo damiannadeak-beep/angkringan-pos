@@ -263,9 +263,9 @@
         }
 
         menusToShow.forEach(menu => {
-            const imageHtml = menu.image 
+            const imageHtml = (menu.image_url || menu.image) 
                 ? `<div class="bg-white text-center border-bottom" style="height: 150px;">
-                     <img src="{{ asset('storage') }}/${menu.image}" alt="${menu.nama_menu}" style="object-fit: contain; width: 100%; height: 100%;">
+                     <img src="${menu.image_url || ('/storage/' + menu.image)}" onerror="this.onerror=null; this.src='https://placehold.co/600x450/e9ecef/6c757d?text=Belum+Ada+Foto';" alt="${menu.nama_menu}" style="object-fit: contain; width: 100%; height: 100%;">
                    </div>`
                 : `<div class="card-img-top bg-light d-flex justify-content-center align-items-center" style="height: 150px;">
                        <i class="bi bi-image text-muted opacity-50" style="font-size: 2.5rem;"></i>

@@ -60,9 +60,25 @@ class AdminMenuController extends Controller
 
     public function update(UpdateMenuRequest $request, $id, MenuService $menuService)
     {
-        if ($request->hasFile('image') && !$request->file('image')->isValid()) {
-            return redirect()->back()->withInput()->with('error', 'Gagal mengunggah foto. Ukuran file foto terlalu besar (maksimal 2MB). Silakan kompres atau pilih foto lain.');
+        if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_OK && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $errCode = $_FILES['image']['error'];
+            $errMsg = "Gagal upload (Kode Error PHP {$errCode}): ";
+            if ($errCode == UPLOAD_ERR_INI_SIZE || $errCode == UPLOAD_ERR_FORM_SIZE) {
+                $errMsg .= "Ukuran file foto terlalu besar melampaui batas PHP server (" . ini_get('upload_max_filesize') . "). Silakan kompres foto menjadi di bawah 1 MB.";
+            } else {
+                $errMsg .= "Server menolak file foto ini.";
+            }
+            return redirect()->back()->withInput()->with('error', $errMsg);
         }
+
+        if (!$request->hasFile('image')) {
+            session()->flash('upload_debug', [
+                'path' => 'TIDAK ADA FILE FOTO YANG DITERIMA SERVER',
+                'saved' => [],
+                'failed' => ['Form dikirim TANPA file foto (Silakan pastikan Anda memilih file foto sebelum klik Simpan).']
+            ]);
+        }
+
         $menu = Menu::findOrFail($id);
         $menuService->updateMenu($menu, $request->validated(), $request->all());
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil diperbarui.');

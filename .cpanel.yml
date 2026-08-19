@@ -1,6 +1,7 @@
 ---
 deployment:
   tasks:
+    # Deploy ke public_html (folder utama)
     - export DEPLOYPATH=/home/nadp3189/public_html
     - /bin/cp -Rf app $DEPLOYPATH/ 2>/dev/null || true
     - /bin/cp -Rf bootstrap $DEPLOYPATH/ 2>/dev/null || true
@@ -16,4 +17,30 @@ deployment:
     - /bin/cp -f artisan $DEPLOYPATH/ 2>/dev/null || true
     - /bin/mkdir -p $DEPLOYPATH/storage/app/public/menus 2>/dev/null || true
     - /bin/mkdir -p $DEPLOYPATH/public/storage/menus 2>/dev/null || true
+
+    # Deploy ke angkringan.nadeak.net di home (folder subdomain aktif)
+    - export DEPLOYPATH2=/home/nadp3189/angkringan.nadeak.net
+    - /bin/cp -Rf app $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf bootstrap $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf config $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf database $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf public $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf resources $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf routes $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -Rf storage $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -f .env $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -f .htaccess $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -f composer.json $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/cp -f artisan $DEPLOYPATH2/ 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH2/storage/app/public/menus 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH2/public/storage/menus 2>/dev/null || true
+
+    # Deploy ke public_html/angkringan.nadeak.net juga
+    - export DEPLOYPATH3=/home/nadp3189/public_html/angkringan.nadeak.net
+    - /bin/cp -Rf app $DEPLOYPATH3/ 2>/dev/null || true
+    - /bin/cp -Rf resources $DEPLOYPATH3/ 2>/dev/null || true
+    - /bin/cp -Rf routes $DEPLOYPATH3/ 2>/dev/null || true
+    - /bin/cp -Rf public $DEPLOYPATH3/ 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH3/storage/app/public/menus 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH3/public/storage/menus 2>/dev/null || true
 

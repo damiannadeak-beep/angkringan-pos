@@ -40,22 +40,44 @@ Route::get('/reset-images', function () {
 
 // Route Pembaca Gambar Fail-Safe (Ganti Symlink di Hostings cPanel)
 Route::get('/storage/{path}', function ($path) {
-    $file = storage_path('app/public/' . $path);
-    if (!file_exists($file)) {
-        $file = public_path('storage/' . $path);
+    $homeDir = env('HOME') ?: getenv('HOME') ?: '/home/nadp3189';
+    
+    // Cari file di SELURUH kemungkinan lokasi folder cPanel
+    $searchPaths = [
+        storage_path('app/public/' . $path),
+        public_path('storage/' . $path),
+        // Folder utama home
+        $homeDir . '/angkringan.nadeak.net/public/storage/' . $path,
+        $homeDir . '/angkringan.nadeak.net/storage/app/public/' . $path,
+        $homeDir . '/angkringan.nadeak.net/storage/' . $path,
+        // Folder public_html langsung
+        $homeDir . '/public_html/storage/app/public/' . $path,
+        $homeDir . '/public_html/storage/' . $path,
+        $homeDir . '/public_html/public/storage/' . $path,
+        // Folder public_html/angkringan.nadeak.net
+        $homeDir . '/public_html/angkringan.nadeak.net/public/storage/' . $path,
+        $homeDir . '/public_html/angkringan.nadeak.net/storage/app/public/' . $path,
+        $homeDir . '/public_html/angkringan.nadeak.net/storage/' . $path,
+        // Folder repositories
+        $homeDir . '/repositories/angkringan-pos/storage/app/public/' . $path,
+        $homeDir . '/repositories/angkringan-pos/public/storage/' . $path,
+    ];
+
+    if (isset($_SERVER['DOCUMENT_ROOT'])) {
+        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'], '/');
+        $searchPaths[] = $docRoot . '/storage/' . $path;
+        $searchPaths[] = $docRoot . '/public/storage/' . $path;
+        $searchPaths[] = $docRoot . '/storage/app/public/' . $path;
     }
-    if (!file_exists($file) && isset($_SERVER['DOCUMENT_ROOT'])) {
-        $file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/storage/' . $path;
-    }
-    if (!file_exists($file) && isset($_SERVER['DOCUMENT_ROOT'])) {
-        $file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/public/storage/' . $path;
-    }
-    if (file_exists($file) && is_file($file)) {
-        $mime = mime_content_type($file) ?: 'image/png';
-        return response()->file($file, ['Content-Type' => $mime]);
+
+    foreach (array_unique($searchPaths) as $candidate) {
+        if (file_exists($candidate) && is_file($candidate)) {
+            $mime = mime_content_type($candidate) ?: 'image/png';
+            return response()->file($candidate, ['Content-Type' => $mime, 'Cache-Control' => 'public, max-age=86400']);
+        }
     }
     
-    // Fail-safe: jika gambar terhapus / tidak ditemukan, kembalikan SVG placeholder lokal agar tampilan tidak pecah
+    // Fail-safe: jika gambar tidak ditemukan, kembalikan SVG placeholder
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450"><rect width="600" height="450" fill="#f8f9fa"/><rect x="240" y="150" width="120" height="90" rx="12" stroke="#adb5bd" stroke-width="4" fill="none"/><circle cx="275" cy="180" r="10" fill="#adb5bd"/><path d="M248 225L275 198L298 220L318 192L352 225" stroke="#adb5bd" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="300" y="280" font-family="sans-serif" font-size="18" font-weight="600" fill="#6c757d" text-anchor="middle">Belum Ada Foto</text></svg>';
     return response($svg, 200, ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'no-cache']);
 })->where('path', '.*');
