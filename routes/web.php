@@ -29,6 +29,12 @@ Route::get('/katalog', [PublicController::class, 'katalog']);
 Route::get('/lokasi', [PublicController::class, 'lokasi']);
 Route::get('/kontak', [PublicController::class, 'kontak']);
 
+// Route Pembersih Database Gambar Lama
+Route::get('/reset-images', function () {
+    \App\Models\Menu::query()->update(['image' => null]);
+    return redirect('/admin/menu')->with('success', 'Seluruh foto lama berhasil dibersihkan!');
+});
+
 // Route Pembaca Gambar Fail-Safe (Ganti Symlink di Hostings cPanel)
 Route::get('/storage/{path}', function ($path) {
     $file = storage_path('app/public/' . $path);
