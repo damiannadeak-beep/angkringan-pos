@@ -58,41 +58,33 @@ trait HandlesImageUpload
             throw new \RuntimeException('Gagal membaca data gambar yang diunggah.');
         }
 
-        // 1. Simpan ke Laravel Public Storage
-        Storage::disk('public')->put($path, $content);
-
-        // 2. Daftar seluruh lokasi target di cPanel
-        $homeDir = env('HOME') ?: getenv('HOME');
-        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
-
-        $targetPaths = [
+        // Tulis secara fisik ke seluruh lokasi storage cPanel
+        $destinations = [
             public_path('storage/' . $path),
             storage_path('app/public/' . $path),
         ];
 
-        if ($docRoot) {
-            $targetPaths[] = rtrim($docRoot, '/') . '/storage/' . $path;
-            $targetPaths[] = rtrim($docRoot, '/') . '/public/storage/' . $path;
-            $targetPaths[] = dirname(rtrim($docRoot, '/')) . '/storage/' . $path;
-            $targetPaths[] = dirname(rtrim($docRoot, '/')) . '/public/storage/' . $path;
+        if (isset($_SERVER['DOCUMENT_ROOT'])) {
+            $destinations[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/storage/' . $path;
+            $destinations[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/public/storage/' . $path;
         }
 
+        $homeDir = env('HOME') ?: getenv('HOME');
         if ($homeDir) {
-            $targetPaths[] = $homeDir . '/public_html/storage/' . $path;
-            $targetPaths[] = $homeDir . '/public_html/public/storage/' . $path;
-            $targetPaths[] = $homeDir . '/public_html/angkringan.nadeak.net/storage/' . $path;
-            $targetPaths[] = $homeDir . '/public_html/angkringan.nadeak.net/public/storage/' . $path;
-            $targetPaths[] = $homeDir . '/angkringan.nadeak.net/storage/' . $path;
-            $targetPaths[] = $homeDir . '/angkringan.nadeak.net/public/storage/' . $path;
+            $destinations[] = $homeDir . '/public_html/storage/' . $path;
+            $destinations[] = $homeDir . '/public_html/public/storage/' . $path;
         }
 
-        foreach ($targetPaths as $targetFile) {
+        foreach (array_unique($destinations) as $dest) {
             try {
-                @mkdir(dirname($targetFile), 0755, true);
-                @file_put_contents($targetFile, $content);
-                @chmod($targetFile, 0755);
+                $dir = dirname($dest);
+                if (!is_dir($dir)) {
+                    @mkdir($dir, 0755, true);
+                }
+                file_put_contents($dest, $content);
+                @chmod($dest, 0755);
             } catch (\Throwable $e) {
-                // Ignore permissions errors
+                \Illuminate\Support\Facades\Log::error("Failed saving uploaded image to {$dest}: " . $e->getMessage());
             }
         }
 
