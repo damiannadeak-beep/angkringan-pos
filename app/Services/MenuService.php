@@ -36,6 +36,8 @@ class MenuService
 
         if (isset($requestData['image']) && $requestData['image'] instanceof \Illuminate\Http\UploadedFile) {
             $data['image'] = $this->processImageUpload($requestData['image']);
+        } else {
+            unset($data['image']);
         }
 
         $menu = Menu::create($data);
@@ -55,6 +57,8 @@ class MenuService
         if (isset($requestData['image']) && $requestData['image'] instanceof \Illuminate\Http\UploadedFile) {
             $this->deleteOldImage($menu->image);
             $data['image'] = $this->processImageUpload($requestData['image']);
+        } else {
+            unset($data['image']);
         }
 
         $menu->update($data);

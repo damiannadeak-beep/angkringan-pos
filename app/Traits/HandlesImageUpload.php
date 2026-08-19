@@ -23,21 +23,45 @@ trait HandlesImageUpload
         int $maxWidth = 800,
         int $quality = 80
     ): string {
-        $extension = strtolower($file->extension() ?: 'jpg');
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $filename = time() . '_' . uniqid() . '.' . $extension;
         $path = $directory . '/' . $filename;
+
+        // Ambil isi file mentah sebagai fallback utama
         $content = null;
+        try {
+            $realPath = $file->getRealPath() ?: $file->getPathname();
+            if ($realPath && file_exists($realPath)) {
+                $content = file_get_contents($realPath);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to read uploaded file: ' . $e->getMessage());
+        }
 
         if (extension_loaded('gd') || extension_loaded('imagick')) {
             try {
                 $manager = extension_loaded('gd') ? ImageManager::gd() : ImageManager::imagick();
-                $img = $manager->read($file)->scaleDown($maxWidth)->toJpeg($quality);
-                $content = (string) $img;
+                $img = $manager->read($file);
+                if (method_exists($img, 'width') && $img->width() > $maxWidth) {
+                    $img->scaleDown(width: $maxWidth);
+                }
+                if ($extension === 'png') {
+                    $encoded = $img->toPng();
+                } else if ($extension === 'webp') {
+                    $encoded = $img->toWebp($quality);
+                } else if ($extension === 'gif') {
+                    $encoded = $img->toGif();
+                } else {
+                    $encoded = $img->toJpeg($quality);
+                }
+                $content = (string) $encoded;
             } catch (\Throwable $e) {
-                $content = file_get_contents($file->getRealPath());
+                \Illuminate\Support\Facades\Log::warning('Intervention Image failed, saving original uploaded file: ' . $e->getMessage());
             }
-        } else {
-            $content = file_get_contents($file->getRealPath());
+        }
+
+        if (!$content) {
+            throw new \RuntimeException('Gagal membaca data gambar yang diunggah.');
         }
 
         // 1. Simpan ke Laravel Public Storage
