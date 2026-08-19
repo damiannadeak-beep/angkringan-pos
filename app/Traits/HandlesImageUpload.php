@@ -9,8 +9,7 @@ use Intervention\Image\ImageManager;
 trait HandlesImageUpload
 {
     /**
-     * Proses upload gambar: resize + compress jika library tersedia.
-     * Simpan simultan ke storage/app/public, public/storage, dan ~/public_html/storage.
+     * Proses upload gambar: simpan simultan ke seluruh lokasi cPanel yang memungkinkan.
      *
      * @param  UploadedFile  $file
      * @param  string        $directory   Sub-directory di disk 'public'
@@ -41,20 +40,42 @@ trait HandlesImageUpload
             $content = file_get_contents($file->getRealPath());
         }
 
-        // 1. Simpan ke Laravel Public Disk
+        // 1. Simpan ke Laravel Public Storage
         Storage::disk('public')->put($path, $content);
 
-        // 2. Simpan langsung ke folder public/storage
-        $publicStorageFile = public_path('storage/' . $path);
-        @mkdir(dirname($publicStorageFile), 0755, true);
-        @file_put_contents($publicStorageFile, $content);
-
-        // 3. Simpan ke ~/public_html/storage jika berjalan di hosting cPanel
+        // 2. Daftar seluruh lokasi target di cPanel
         $homeDir = env('HOME') ?: getenv('HOME');
-        if ($homeDir && file_exists($homeDir . '/public_html')) {
-            $cpanelStorageFile = $homeDir . '/public_html/storage/' . $path;
-            @mkdir(dirname($cpanelStorageFile), 0755, true);
-            @file_put_contents($cpanelStorageFile, $content);
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
+
+        $targetPaths = [
+            public_path('storage/' . $path),
+            storage_path('app/public/' . $path),
+        ];
+
+        if ($docRoot) {
+            $targetPaths[] = rtrim($docRoot, '/') . '/storage/' . $path;
+            $targetPaths[] = rtrim($docRoot, '/') . '/public/storage/' . $path;
+            $targetPaths[] = dirname(rtrim($docRoot, '/')) . '/storage/' . $path;
+            $targetPaths[] = dirname(rtrim($docRoot, '/')) . '/public/storage/' . $path;
+        }
+
+        if ($homeDir) {
+            $targetPaths[] = $homeDir . '/public_html/storage/' . $path;
+            $targetPaths[] = $homeDir . '/public_html/public/storage/' . $path;
+            $targetPaths[] = $homeDir . '/public_html/angkringan.nadeak.net/storage/' . $path;
+            $targetPaths[] = $homeDir . '/public_html/angkringan.nadeak.net/public/storage/' . $path;
+            $targetPaths[] = $homeDir . '/angkringan.nadeak.net/storage/' . $path;
+            $targetPaths[] = $homeDir . '/angkringan.nadeak.net/public/storage/' . $path;
+        }
+
+        foreach ($targetPaths as $targetFile) {
+            try {
+                @mkdir(dirname($targetFile), 0755, true);
+                @file_put_contents($targetFile, $content);
+                @chmod($targetFile, 0755);
+            } catch (\Throwable $e) {
+                // Ignore permissions errors
+            }
         }
 
         return $path;
@@ -73,16 +94,29 @@ trait HandlesImageUpload
             Storage::disk('public')->delete($imagePath);
         }
 
-        $publicStorageFile = public_path('storage/' . $imagePath);
-        if (file_exists($publicStorageFile)) {
-            @unlink($publicStorageFile);
+        $homeDir = env('HOME') ?: getenv('HOME');
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
+
+        $targetPaths = [
+            public_path('storage/' . $imagePath),
+            storage_path('app/public/' . $imagePath),
+        ];
+
+        if ($docRoot) {
+            $targetPaths[] = rtrim($docRoot, '/') . '/storage/' . $imagePath;
+            $targetPaths[] = rtrim($docRoot, '/') . '/public/storage/' . $imagePath;
         }
 
-        $homeDir = env('HOME') ?: getenv('HOME');
-        if ($homeDir && file_exists($homeDir . '/public_html')) {
-            $cpanelStorageFile = $homeDir . '/public_html/storage/' . $imagePath;
-            if (file_exists($cpanelStorageFile)) {
-                @unlink($cpanelStorageFile);
+        if ($homeDir) {
+            $targetPaths[] = $homeDir . '/public_html/storage/' . $imagePath;
+            $targetPaths[] = $homeDir . '/public_html/public/storage/' . $imagePath;
+            $targetPaths[] = $homeDir . '/public_html/angkringan.nadeak.net/storage/' . $imagePath;
+            $targetPaths[] = $homeDir . '/public_html/angkringan.nadeak.net/public/storage/' . $imagePath;
+        }
+
+        foreach ($targetPaths as $targetFile) {
+            if (file_exists($targetFile)) {
+                @unlink($targetFile);
             }
         }
     }
