@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/nadp3189/public_html/
+    - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R storage/app/public/* $DEPLOYPATH/storage/ 2>/dev/null || true
+    - /bin/cp -R public/storage/* $DEPLOYPATH/storage/ 2>/dev/null || true
