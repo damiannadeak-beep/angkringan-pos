@@ -55,7 +55,7 @@
                                 <td>
                                     @if($m->image)
                                         <div class="bg-white border rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                                            <img src="{{ asset('storage/'.$m->image) }}" alt="img" style="object-fit: contain; width: 100%; height: 100%; padding: 4px;">
+                                            <img src="{{ secure_asset('storage/'.$m->image) }}" onerror="this.onerror=null; this.src='{{ asset('storage/'.$m->image) }}';" alt="img" style="object-fit: contain; width: 100%; height: 100%; padding: 4px;">
                                         </div>
                                     @else
                                         -

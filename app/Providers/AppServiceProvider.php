@@ -22,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->environment('production') || request()->header('x-forwarded-proto') === 'https' || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || str_contains(request()->url(), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         View::composer('layouts.admin', function ($view) {
             $menuMenipis = Menu::where('stok', '<', 10)->where('is_available', true)->get();
             $bahanMenipis = Bahan::where('stok', '<', 10)->get();
