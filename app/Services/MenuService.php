@@ -34,8 +34,9 @@ class MenuService
     {
         $data['is_available'] = !empty($requestData['is_available']);
 
-        if (isset($requestData['image']) && $requestData['image'] instanceof \Illuminate\Http\UploadedFile) {
-            $data['image'] = $this->processImageUpload($requestData['image']);
+        $imageFile = $requestData['image'] ?? request()->file('image');
+        if ($imageFile && $imageFile instanceof \Illuminate\Http\UploadedFile && $imageFile->isValid()) {
+            $data['image'] = $this->processImageUpload($imageFile);
         } else {
             unset($data['image']);
         }
@@ -54,9 +55,10 @@ class MenuService
     {
         $data['is_available'] = !empty($requestData['is_available']);
 
-        if (isset($requestData['image']) && $requestData['image'] instanceof \Illuminate\Http\UploadedFile) {
+        $imageFile = $requestData['image'] ?? request()->file('image');
+        if ($imageFile && $imageFile instanceof \Illuminate\Http\UploadedFile && $imageFile->isValid()) {
             $this->deleteOldImage($menu->image);
-            $data['image'] = $this->processImageUpload($requestData['image']);
+            $data['image'] = $this->processImageUpload($imageFile);
         } else {
             unset($data['image']);
         }

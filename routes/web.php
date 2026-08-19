@@ -41,6 +41,12 @@ Route::get('/storage/{path}', function ($path) {
     if (!file_exists($file)) {
         $file = public_path('storage/' . $path);
     }
+    if (!file_exists($file) && isset($_SERVER['DOCUMENT_ROOT'])) {
+        $file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/storage/' . $path;
+    }
+    if (!file_exists($file) && isset($_SERVER['DOCUMENT_ROOT'])) {
+        $file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/public/storage/' . $path;
+    }
     if (file_exists($file) && is_file($file)) {
         $mime = mime_content_type($file) ?: 'image/png';
         return response()->file($file, ['Content-Type' => $mime]);
