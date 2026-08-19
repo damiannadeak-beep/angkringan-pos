@@ -32,7 +32,10 @@ Route::get('/kontak', [PublicController::class, 'kontak']);
 // Route Pembersih Database Gambar Lama
 Route::get('/reset-images', function () {
     \App\Models\Menu::query()->update(['image' => null]);
-    return redirect('/admin/menu')->with('success', 'Seluruh foto lama berhasil dibersihkan!');
+    try {
+        \Illuminate\Support\Facades\DB::table('promos')->update(['image' => null]);
+    } catch (\Throwable $e) {}
+    return redirect('/admin/menu')->with('success', 'Seluruh referensi foto lama yang terhapus berhasil dibersihkan!');
 });
 
 // Route Pembaca Gambar Fail-Safe (Ganti Symlink di Hostings cPanel)
