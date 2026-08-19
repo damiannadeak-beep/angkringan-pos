@@ -8,7 +8,7 @@ class UpdateMenuRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('pemilik');
+        return auth()->check() && (auth()->user()->hasAnyRole(['pemilik', 'admin', 'adminpemilik']) || auth()->user()->hasRole('pemilik'));
     }
 
     public function rules(): array

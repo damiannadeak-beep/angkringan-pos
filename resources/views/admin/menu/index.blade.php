@@ -11,7 +11,12 @@
                 <p class="text-muted mb-0">Tambah, edit, dan pantau ketersediaan produk.</p>
             @endif
         </div>
-        <a href="{{ route('admin.menu.create') }}" class="btn btn-primary">Tambah Produk</a>
+        <div class="d-flex gap-2">
+            <a href="{{ url('/reset-images') }}" class="btn btn-outline-secondary shadow-sm" onclick="return confirm('Apakah Anda yakin ingin membersihkan status foto lama dari database agar bisa diunggah ulang?');" title="Bersihkan referensi foto lama yang terhapus">
+                <i class="bi bi-images me-1"></i> Reset Status Foto
+            </a>
+            <a href="{{ route('admin.menu.create') }}" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-1"></i> Tambah Produk</a>
+        </div>
     </div>
 
     @if(session('success'))

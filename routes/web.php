@@ -45,7 +45,10 @@ Route::get('/storage/{path}', function ($path) {
         $mime = mime_content_type($file) ?: 'image/png';
         return response()->file($file, ['Content-Type' => $mime]);
     }
-    abort(404);
+    
+    // Fail-safe: jika gambar terhapus / tidak ditemukan, kembalikan SVG placeholder lokal agar tampilan tidak pecah
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450"><rect width="600" height="450" fill="#f8f9fa"/><rect x="240" y="150" width="120" height="90" rx="12" stroke="#adb5bd" stroke-width="4" fill="none"/><circle cx="275" cy="180" r="10" fill="#adb5bd"/><path d="M248 225L275 198L298 220L318 192L352 225" stroke="#adb5bd" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="300" y="280" font-family="sans-serif" font-size="18" font-weight="600" fill="#6c757d" text-anchor="middle">Belum Ada Foto</text></svg>';
+    return response($svg, 200, ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'no-cache']);
 })->where('path', '.*');
 
 

@@ -101,7 +101,7 @@
                 <h5 class="fw-bold mb-3"><i class="bi bi-tags text-success me-2"></i>Varian & Toping (Add-ons)</h5>
                 <p class="text-muted small mb-3">Atur pilihan seperti "Level Pedas" atau tambahan "Toping" yang memiliki harga tersendiri.</p>
                 
-                <input type="hidden" name="variants_json" id="variants_json_input" value="{{ old('variants_json', $menu->variants_json ?? '[]') }}">
+                <input type="hidden" name="variants_json" id="variants_json_input" value="{{ is_array(old('variants_json', $menu->variants_json)) ? json_encode(old('variants_json', $menu->variants_json)) : (old('variants_json', $menu->variants_json) ?: '[]') }}">
                 
                 <div id="variants-container"></div>
                 
@@ -111,8 +111,8 @@
                 <hr class="my-4">
                 <div class="mb-3">
                     <label class="form-label">Gambar Produk</label>
-                    @if($menu->image)
-                        <div class="mb-2"><img src="{{ asset('storage/'.$menu->image) }}" alt="gambar" style="max-width:120px; height:auto;"></div>
+                    @if($menu->image_url)
+                        <div class="mb-2"><img src="{{ $menu->image_url }}" onerror="this.onerror=null; this.src='/storage/placeholder.svg';" alt="gambar" style="max-width:120px; height:auto;"></div>
                     @endif
                     <input type="file" name="image" accept="image/*" class="form-control">
                 </div>
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const template = `
         <div class="row g-2 mb-2 recipe-row">
             <div class="col-7">
-                <select name="bahans[]" class="form-select" required>
+                <select name="bahans[]" class="form-select">
                     <option value="">-- Pilih Bahan Baku --</option>
                     @if(isset($bahans))
                         @foreach($bahans as $b)
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="col-4">
                 <div class="input-group">
-                    <input type="number" name="jumlah_dibutuhkan[]" class="form-control" value="1" placeholder="Jumlah" min="1" required>
+                    <input type="number" name="jumlah_dibutuhkan[]" class="form-control" value="1" placeholder="Jumlah" min="1">
                     <span class="input-group-text">Satuan</span>
                 </div>
             </div>
@@ -165,7 +165,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- VARIANTS LOGIC ---
-    let variants = JSON.parse(document.getElementById('variants_json_input').value || '[]');
+    let variants = [];
+    try {
+        let rawVal = document.getElementById('variants_json_input').value || '[]';
+        const txt = document.createElement('textarea');
+        txt.innerHTML = rawVal;
+        rawVal = txt.value;
+        variants = typeof rawVal === 'string' ? JSON.parse(rawVal) : rawVal;
+    } catch(e) {
+        console.error('Failed to parse variants_json:', e);
+        variants = [];
+    }
+    if (!Array.isArray(variants)) {
+        variants = [];
+    }
     const variantsContainer = document.getElementById('variants-container');
     const inputVariants = document.getElementById('variants_json_input');
 
