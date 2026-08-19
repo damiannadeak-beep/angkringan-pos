@@ -1,7 +1,19 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/nadp3189/public_html/
-    - /bin/cp -R * $DEPLOYPATH
-    - /bin/cp -R storage/app/public/* $DEPLOYPATH/storage/ 2>/dev/null || true
-    - /bin/cp -R public/storage/* $DEPLOYPATH/storage/ 2>/dev/null || true
+    - export DEPLOYPATH=/home/nadp3189/public_html
+    - /bin/cp -Rf app $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf bootstrap $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf config $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf database $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf public $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf resources $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf routes $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -Rf storage $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -f .env $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -f .htaccess $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -f composer.json $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/cp -f artisan $DEPLOYPATH/ 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH/storage/app/public/menus 2>/dev/null || true
+    - /bin/mkdir -p $DEPLOYPATH/public/storage/menus 2>/dev/null || true
+
