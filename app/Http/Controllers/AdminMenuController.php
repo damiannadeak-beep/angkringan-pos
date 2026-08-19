@@ -44,6 +44,9 @@ class AdminMenuController extends Controller
 
     public function store(StoreMenuRequest $request, MenuService $menuService)
     {
+        if ($request->hasFile('image') && !$request->file('image')->isValid()) {
+            return redirect()->back()->withInput()->with('error', 'Gagal mengunggah foto. Ukuran file foto terlalu besar (maksimal 2MB). Silakan kompres atau pilih foto lain.');
+        }
         $menuService->createMenu($request->validated(), $request->all());
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil ditambahkan.');
     }
@@ -57,6 +60,9 @@ class AdminMenuController extends Controller
 
     public function update(UpdateMenuRequest $request, $id, MenuService $menuService)
     {
+        if ($request->hasFile('image') && !$request->file('image')->isValid()) {
+            return redirect()->back()->withInput()->with('error', 'Gagal mengunggah foto. Ukuran file foto terlalu besar (maksimal 2MB). Silakan kompres atau pilih foto lain.');
+        }
         $menu = Menu::findOrFail($id);
         $menuService->updateMenu($menu, $request->validated(), $request->all());
         return redirect()->route('admin.menu.index')->with('success', 'Menu berhasil diperbarui.');
