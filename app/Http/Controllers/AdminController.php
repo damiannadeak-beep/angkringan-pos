@@ -113,10 +113,29 @@ class AdminController extends Controller
 
         if ($request->hasFile('qris_image')) {
             $oldImage = Setting::getVal('qris_image');
-            if ($oldImage && Storage::disk('public')->exists($oldImage)) {
+            if ($oldImage) {
                 Storage::disk('public')->delete($oldImage);
+                @unlink(public_path('storage/' . $oldImage));
             }
-            $path = $request->file('qris_image')->store('qris', 'public');
+            $file = $request->file('qris_image');
+            $extension = strtolower($file->extension() ?: 'jpg');
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            $path = 'qris/' . $filename;
+            $content = file_get_contents($file->getRealPath());
+
+            Storage::disk('public')->put($path, $content);
+
+            $publicStorageFile = public_path('storage/' . $path);
+            @mkdir(dirname($publicStorageFile), 0755, true);
+            @file_put_contents($publicStorageFile, $content);
+
+            $homeDir = env('HOME') ?: getenv('HOME');
+            if ($homeDir && file_exists($homeDir . '/public_html')) {
+                $cpanelStorageFile = $homeDir . '/public_html/storage/' . $path;
+                @mkdir(dirname($cpanelStorageFile), 0755, true);
+                @file_put_contents($cpanelStorageFile, $content);
+            }
+
             Setting::updateOrCreate(['key' => 'qris_image'], ['value' => $path]);
         }
 
