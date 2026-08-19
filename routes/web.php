@@ -29,6 +29,19 @@ Route::get('/katalog', [PublicController::class, 'katalog']);
 Route::get('/lokasi', [PublicController::class, 'lokasi']);
 Route::get('/kontak', [PublicController::class, 'kontak']);
 
+// Route Pembaca Gambar Fail-Safe (Ganti Symlink di Hostings cPanel)
+Route::get('/storage/{path}', function ($path) {
+    $file = storage_path('app/public/' . $path);
+    if (!file_exists($file)) {
+        $file = public_path('storage/' . $path);
+    }
+    if (file_exists($file) && is_file($file)) {
+        $mime = mime_content_type($file) ?: 'image/png';
+        return response()->file($file, ['Content-Type' => $mime]);
+    }
+    abort(404);
+})->where('path', '.*');
+
 
 
 // Route Socialite (Google Login)
