@@ -25,28 +25,7 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-    @if(session('upload_debug'))
-        <div class="alert alert-info shadow-sm mb-4">
-            <h6 class="fw-bold mb-2"><i class="bi bi-info-circle-fill me-1"></i> Laporan Debug Lokasi Penyimpanan Foto:</h6>
-            <p class="mb-1"><strong>File Relatif:</strong> <code>{{ session('upload_debug.path') }}</code></p>
-            <div class="small">
-                <strong>Berhasil Ditulis ke Lokasi Fisik Server:</strong>
-                <ul class="mb-0 ps-3">
-                    @foreach(session('upload_debug.saved') as $sp)
-                        <li class="text-success fw-bold">✓ {{ $sp }}</li>
-                    @endforeach
-                </ul>
-                @if(count(session('upload_debug.failed')) > 0)
-                    <strong class="text-danger mt-1 d-block">Gagal Menulis ke:</strong>
-                    <ul class="mb-0 ps-3">
-                        @foreach(session('upload_debug.failed') as $fp)
-                            <li class="text-danger">✗ {{ $fp }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-        </div>
-    @endif
+
 
     <div class="card shadow-sm">
         <div class="card-body p-0">
