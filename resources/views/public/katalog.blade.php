@@ -80,7 +80,7 @@
                     <!-- Gambar -->
                     @if($menu->image)
                         <div class="bg-white text-center w-100 p-2" style="aspect-ratio: 4/3;">
-                            <img src="/storage/{{ $menu->image }}" onerror="this.onerror=null; this.src='https://placehold.co/600x450/e9ecef/6c757d?text=Belum+Ada+Foto';" alt="{{ $menu->nama_menu }}" style="object-fit: contain; width: 100%; height: 100%;">
+                            <img src="{{ $menu->image_url }}" onerror="this.onerror=null; this.src='https://placehold.co/600x450/e9ecef/6c757d?text=Belum+Ada+Foto';" alt="{{ $menu->nama_menu }}" style="object-fit: contain; width: 100%; height: 100%;">
                         </div>
                     @else
                         <div class="bg-light d-flex align-items-center justify-content-center text-secondary w-100" style="aspect-ratio: 4/3;">

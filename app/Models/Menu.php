@@ -15,6 +15,23 @@ class Menu extends Model
         'harga' => 'float',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+        $path = str_contains($this->image, '/') ? $this->image : 'menus/' . $this->image;
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, 8);
+        }
+        return '/storage/' . $path;
+    }
+
     public function detail_pesanan()
     {
         return $this->hasMany(DetailPesanan::class, 'id_menu');
