@@ -273,7 +273,7 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-3">
                                             @if($menu->image)
-                                                <img src="{{ asset('storage/'.$menu->image) }}" alt="Menu" class="rounded object-fit-cover" width="40" height="40">
+                                                <img src="/storage/{{ $menu->image }}" alt="Menu" class="rounded object-fit-cover" width="40" height="40">
                                             @else
                                                 <div class="bg-secondary bg-opacity-10 rounded d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
                                                     <i class="bi bi-image text-muted"></i>
