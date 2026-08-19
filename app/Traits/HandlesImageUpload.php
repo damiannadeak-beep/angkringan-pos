@@ -107,11 +107,7 @@ trait HandlesImageUpload
             }
         }
 
-        session()->flash('upload_debug', [
-            'path' => $path,
-            'saved' => $savedPaths,
-            'failed' => $failedPaths
-        ]);
+
 
         return $path;
     }

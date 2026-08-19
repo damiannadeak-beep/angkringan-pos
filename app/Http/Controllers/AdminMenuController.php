@@ -71,13 +71,7 @@ class AdminMenuController extends Controller
             return redirect()->back()->withInput()->with('error', $errMsg);
         }
 
-        if (!$request->hasFile('image')) {
-            session()->flash('upload_debug', [
-                'path' => 'TIDAK ADA FILE FOTO YANG DITERIMA SERVER',
-                'saved' => [],
-                'failed' => ['Form dikirim TANPA file foto (Silakan pastikan Anda memilih file foto sebelum klik Simpan).']
-            ]);
-        }
+
 
         $menu = Menu::findOrFail($id);
         $menuService->updateMenu($menu, $request->validated(), $request->all());
