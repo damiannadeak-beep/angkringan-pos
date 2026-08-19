@@ -27,21 +27,14 @@ trait HandlesImageUpload
         $filename = time() . '_' . uniqid() . '.' . $extension;
         $path = $directory . '/' . $filename;
 
-        // Ambil isi file mentah sebagai fallback utama
-        $content = null;
-        try {
-            $realPath = $file->getRealPath() ?: $file->getPathname();
-            if ($realPath && file_exists($realPath)) {
-                $content = file_get_contents($realPath);
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to read uploaded file: ' . $e->getMessage());
-        }
+        // Ambil data biner mentah secara langsung via Laravel UploadedFile get()
+        $rawBytes = $file->get();
+        $content = $rawBytes;
 
         if (extension_loaded('gd') || extension_loaded('imagick')) {
             try {
                 $manager = extension_loaded('gd') ? ImageManager::gd() : ImageManager::imagick();
-                $img = $manager->read($file);
+                $img = $manager->read($rawBytes);
                 if (method_exists($img, 'width') && $img->width() > $maxWidth) {
                     $img->scaleDown(width: $maxWidth);
                 }
@@ -56,7 +49,8 @@ trait HandlesImageUpload
                 }
                 $content = (string) $encoded;
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('Intervention Image failed, saving original uploaded file: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning('Intervention Image failed, saving raw uploaded bytes: ' . $e->getMessage());
+                $content = $rawBytes;
             }
         }
 
