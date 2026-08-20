@@ -105,9 +105,23 @@
                 
                 <div id="variants-container"></div>
                 
-                <button type="button" class="btn btn-sm btn-outline-success mb-4" id="add-variant-group">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah Grup Varian (Misal: Level Pedas)
-                </button>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button type="button" class="btn btn-sm btn-outline-success" id="add-variant-group">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Grup Kosong
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addPresetVariant('saus')">
+                        <i class="bi bi-magic me-1"></i> Preset Pilihan Saus
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addPresetVariant('pedas')">
+                        <i class="bi bi-fire me-1"></i> Preset Level Pedas
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addPresetVariant('suhu')">
+                        <i class="bi bi-thermometer-half me-1"></i> Preset Suhu (Es/Hot)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addPresetVariant('toping')">
+                        <i class="bi bi-egg-fried me-1"></i> Preset Toping Extra
+                    </button>
+                </div>
                 <hr class="my-4">
 
 
@@ -249,6 +263,53 @@ document.addEventListener('DOMContentLoaded', function() {
         variants.push({ group_name: '', type: 'single', options: [{ name: '', price: 0 }] });
         renderVariants();
     });
+
+    window.addPresetVariant = function(type) {
+        if (type === 'saus') {
+            variants.push({
+                group_name: 'Pilihan Saus',
+                type: 'single',
+                options: [
+                    { name: 'Saus Original / Biasa', price: 0 },
+                    { name: 'Saus Lada Hitam', price: 3000 },
+                    { name: 'Saus Asam Manis', price: 2000 },
+                    { name: 'Saus BBQ', price: 3000 }
+                ]
+            });
+        } else if (type === 'pedas') {
+            variants.push({
+                group_name: 'Level Pedas',
+                type: 'single',
+                options: [
+                    { name: 'Level 0 (Tidak Pedas)', price: 0 },
+                    { name: 'Level 1 (Sedang)', price: 0 },
+                    { name: 'Level 2 (Pedas)', price: 1000 },
+                    { name: 'Level 3 (Extra Pedas)', price: 2000 }
+                ]
+            });
+        } else if (type === 'suhu') {
+            variants.push({
+                group_name: 'Suhu / Penyajian',
+                type: 'single',
+                options: [
+                    { name: 'Dingin / Pakai Es', price: 0 },
+                    { name: 'Panas / Hangat', price: 0 }
+                ]
+            });
+        } else if (type === 'toping') {
+            variants.push({
+                group_name: 'Toping Extra',
+                type: 'multiple',
+                options: [
+                    { name: 'Extra Keju', price: 2000 },
+                    { name: 'Extra Telur', price: 3000 },
+                    { name: 'Extra Sosis', price: 3000 },
+                    { name: 'Extra Mozzarella', price: 5000 }
+                ]
+            });
+        }
+        renderVariants();
+    };
 
     variantsContainer.addEventListener('input', function(e) {
         if(e.target.classList.contains('var-group-name')) {
